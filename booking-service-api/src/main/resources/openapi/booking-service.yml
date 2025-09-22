@@ -1,0 +1,52 @@
+openapi: 3.0.3
+info:
+  title: Booking Service API
+  version: 1.0.0
+paths:
+  /bookings:
+    post:
+      summary: Create booking
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateBookingRequest'
+      responses:
+        '201':
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BookingResponse'
+
+components:
+  schemas:
+    CreateBookingRequest:
+      type: object
+      properties:
+        userId:
+          type: string
+          format: uuid
+        resourceId:
+          type: string
+          format: uuid
+
+    BookingResponse:
+      type: object
+      properties:
+        bookingId:
+          type: string
+          format: uuid
+        userId:
+          type: string
+          format: uuid
+        resourceId:
+          type: string
+          format: uuid
+        status:
+          type: string
+          enum: [CREATED, CANCELLED]
+        createdAt:
+          type: string
+          format: date-time

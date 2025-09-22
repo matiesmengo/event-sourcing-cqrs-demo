@@ -1,0 +1,13 @@
+{
+  "type": "record",
+  "name": "BookingCreated",
+  "namespace": "com.example.booking.events",
+  "fields": [
+    { "name": "bookingId", "type": "string" },
+    { "name": "userId", "type": "string" },
+    { "name": "productId", "type": "string" },
+    { "name": "amount", "type": "double" },
+    { "name": "status", "type": "string" },
+    { "name": "createdAt", "type": "string" }
+  ]
+}
