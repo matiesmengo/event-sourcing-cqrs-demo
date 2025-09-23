@@ -7,7 +7,6 @@ spring:
     hikari:
       maximum-pool-size: 10
       connection-timeout: 10000
-
   jpa:
     hibernate:
       ddl-auto: validate
@@ -16,11 +15,18 @@ spring:
       hibernate:
         dialect: org.hibernate.dialect.PostgreSQLDialect
         format_sql: true
-
   flyway:
     enabled: true
     locations: classpath:db/migration
     connect-retries: 3
+  kafka:
+    bootstrap-servers: localhost:9092
+    producer:
+      key-serializer: org.apache.kafka.common.serialization.StringSerializer
+      value-serializer: io.confluent.kafka.serializers.KafkaAvroSerializer
+      properties:
+        schema.registry.url: http://localhost:8081
+        auto.register.schemas: true
 
 logging:
   level:
@@ -33,4 +39,3 @@ springdoc:
   swagger-ui:
     path: /swagger-ui.html
     enable: true
-
