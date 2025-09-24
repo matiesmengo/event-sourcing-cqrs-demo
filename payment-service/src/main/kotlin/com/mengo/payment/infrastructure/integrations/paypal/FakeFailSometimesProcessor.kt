@@ -1,0 +1,19 @@
+package com.mengo.payment.infrastructure.integrations.paypal
+
+import com.mengo.payment.domain.model.Payment
+import com.mengo.payment.domain.service.PaymentProcessor
+import com.mengo.payment.domain.service.PaymentProcessorResult
+import org.springframework.stereotype.Component
+import java.util.concurrent.ThreadLocalRandom
+
+@Component
+class FakeFailSometimesProcessor : PaymentProcessor {
+    override fun executePayment(payment: Payment): PaymentProcessorResult {
+        val r = ThreadLocalRandom.current().nextInt(0, 10)
+        return if (r < 7) { // 70% d'èxit
+            PaymentProcessorResult.Success("Random success occurred - ${payment.paymentId}")
+        } else {
+            PaymentProcessorResult.Failure("Random failure occurred")
+        }
+    }
+}

@@ -2,11 +2,11 @@ package com.mengo.booking.infrastructure.events
 
 import com.mengo.booking.domain.model.Booking
 import com.mengo.booking.domain.model.BookingStatus
-import com.mengo.booking.events.BookingCreatedEvent
 import com.mengo.booking.fixtures.BookingConstants.BOOKING_ID
 import com.mengo.booking.fixtures.BookingConstants.RESOURCE_ID
 import com.mengo.booking.fixtures.BookingConstants.USER_ID
 import com.mengo.booking.infrastructure.events.mappers.toAvro
+import org.apache.avro.specific.SpecificRecord
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.mockito.kotlin.eq
@@ -16,7 +16,7 @@ import org.springframework.kafka.core.KafkaTemplate
 import java.time.OffsetDateTime
 
 class KafkaBookingEventPublisherTest {
-    private lateinit var kafkaTemplate: KafkaTemplate<String, BookingCreatedEvent>
+    private lateinit var kafkaTemplate: KafkaTemplate<String, SpecificRecord>
     private lateinit var publisher: KafkaBookingEventPublisher
 
     @BeforeEach

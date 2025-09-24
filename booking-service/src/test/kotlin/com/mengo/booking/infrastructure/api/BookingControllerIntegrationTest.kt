@@ -6,6 +6,7 @@ import com.mengo.booking.events.BookingCreatedEvent
 import com.mengo.booking.fixtures.BookingConstants.RESOURCE_ID
 import com.mengo.booking.fixtures.BookingConstants.USER_ID
 import com.mengo.booking.fixtures.minimalBookingApiRequestJson
+import com.mengo.booking.infrastructure.events.KafkaTopics.KAFKA_BOOKING_CREATED
 import com.mengo.booking.model.BookingResponse
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
@@ -36,7 +37,7 @@ class BookingIntegrationTest {
 
     private val receivedEvents = mutableListOf<BookingCreatedEvent>()
 
-    @KafkaListener(topics = ["booking.created"], groupId = "test-consumer")
+    @KafkaListener(topics = [KAFKA_BOOKING_CREATED], groupId = "test-consumer")
     fun listen(event: BookingCreatedEvent) {
         receivedEvents.add(event)
     }
