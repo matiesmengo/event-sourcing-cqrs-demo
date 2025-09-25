@@ -1,4 +1,4 @@
-package com.mengo.payment.infrastructure.persist.jpa
+package com.mengo.payment.infrastructure.persist
 
 import jakarta.persistence.Column
 import jakarta.persistence.DiscriminatorColumn

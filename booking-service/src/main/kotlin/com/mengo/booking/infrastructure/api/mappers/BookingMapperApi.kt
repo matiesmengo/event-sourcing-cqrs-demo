@@ -24,4 +24,5 @@ private fun BookingStatus.toApi(): BookingResponse.StatusEnum =
     when (this) {
         BookingStatus.CREATED -> BookingResponse.StatusEnum.CREATED
         BookingStatus.CANCELLED -> BookingResponse.StatusEnum.CANCELLED
+        BookingStatus.PAID -> BookingResponse.StatusEnum.PAID
     }

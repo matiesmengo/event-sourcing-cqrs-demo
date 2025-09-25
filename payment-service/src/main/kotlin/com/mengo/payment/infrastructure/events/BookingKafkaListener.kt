@@ -8,7 +8,7 @@ import org.springframework.kafka.annotation.KafkaListener
 import org.springframework.stereotype.Component
 
 @Component
-class BookingCreatedListener(
+class BookingKafkaListener(
     private val paymentService: PaymentService,
 ) {
     @KafkaListener(topics = [KAFKA_BOOKING_CREATED], groupId = "payment-service-group")

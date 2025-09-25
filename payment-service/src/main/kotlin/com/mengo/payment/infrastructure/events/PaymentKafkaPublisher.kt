@@ -11,7 +11,7 @@ import org.springframework.kafka.core.KafkaTemplate
 import org.springframework.stereotype.Component
 
 @Component
-class KafkaPaymentEventPublisher(
+class PaymentKafkaPublisher(
     private val kafkaTemplate: KafkaTemplate<String, SpecificRecord>,
 ) : PaymentEventPublisher {
     override fun publishPaymentCompleted(payment: CompletedPayment) {

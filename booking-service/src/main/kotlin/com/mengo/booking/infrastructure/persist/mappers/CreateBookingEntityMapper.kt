@@ -23,4 +23,14 @@ fun BookingEntity.toDomain() =
         resourceId = resourceId,
         bookingStatus = bookingStatus,
         createdAt = createdAt,
+        updatedAt = updatedAt,
+    )
+
+fun Booking.toEntity() =
+    BookingEntity(
+        bookingId = bookingId,
+        userId = userId,
+        resourceId = resourceId,
+        bookingStatus = bookingStatus,
+        createdAt = createdAt,
     )

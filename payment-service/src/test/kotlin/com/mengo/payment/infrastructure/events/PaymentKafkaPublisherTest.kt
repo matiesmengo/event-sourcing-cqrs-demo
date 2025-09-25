@@ -15,14 +15,14 @@ import org.mockito.kotlin.mock
 import org.mockito.kotlin.verify
 import org.springframework.kafka.core.KafkaTemplate
 
-class KafkaPaymentEventPublisherTest {
+class PaymentKafkaPublisherTest {
     private lateinit var kafkaTemplate: KafkaTemplate<String, SpecificRecord>
-    private lateinit var publisher: KafkaPaymentEventPublisher
+    private lateinit var publisher: PaymentKafkaPublisher
 
     @BeforeEach
     fun setUp() {
         kafkaTemplate = mock()
-        publisher = KafkaPaymentEventPublisher(kafkaTemplate)
+        publisher = PaymentKafkaPublisher(kafkaTemplate)
     }
 
     @Test

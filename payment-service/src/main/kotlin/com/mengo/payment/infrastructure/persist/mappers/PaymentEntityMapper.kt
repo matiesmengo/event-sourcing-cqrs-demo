@@ -1,13 +1,13 @@
-package com.mengo.payment.infrastructure.persist.jpa.mappers
+package com.mengo.payment.infrastructure.persist.mappers
 
 import com.mengo.payment.domain.model.CompletedPayment
 import com.mengo.payment.domain.model.FailedPayment
 import com.mengo.payment.domain.model.Payment
 import com.mengo.payment.domain.model.PendingPayment
-import com.mengo.payment.infrastructure.persist.jpa.CompletedPaymentEntity
-import com.mengo.payment.infrastructure.persist.jpa.FailedPaymentEntity
-import com.mengo.payment.infrastructure.persist.jpa.PaymentEntity
-import com.mengo.payment.infrastructure.persist.jpa.PendingPaymentEntity
+import com.mengo.payment.infrastructure.persist.CompletedPaymentEntity
+import com.mengo.payment.infrastructure.persist.FailedPaymentEntity
+import com.mengo.payment.infrastructure.persist.PaymentEntity
+import com.mengo.payment.infrastructure.persist.PendingPaymentEntity
 
 fun Payment.toEntity(): PaymentEntity =
     when (this) {

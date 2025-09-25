@@ -14,6 +14,8 @@ class BookingRepositoryService(
 ) : BookingRepository {
     override fun save(createBooking: CreateBooking): Booking = bookingRepository.save(createBooking.toEntity()).toDomain()
 
+    override fun update(booking: Booking): Booking = bookingRepository.save(booking.toEntity()).toDomain()
+
     override fun findById(bookingId: UUID): Booking =
         bookingRepository
             .findById(bookingId)

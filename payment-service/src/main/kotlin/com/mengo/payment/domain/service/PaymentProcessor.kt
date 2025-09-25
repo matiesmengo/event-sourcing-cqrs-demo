@@ -5,7 +5,7 @@ import com.mengo.payment.domain.model.Payment
 /**
  * Port that defines an external payment engine.
  */
-interface PaymentProcessor {
+fun interface PaymentProcessor {
     /**
      * Try to authorize the payment and return a reference or fill in an exception in case of error
      * The implementation must be idempotent respecting a "paidId"/"bookingId" if escaped.

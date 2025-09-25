@@ -9,7 +9,7 @@ import org.springframework.kafka.core.KafkaTemplate
 import org.springframework.stereotype.Service
 
 @Service
-class KafkaBookingEventPublisher(
+class BookingKafkaPublisher(
     private val kafkaTemplate: KafkaTemplate<String, SpecificRecord>,
 ) : BookingEventPublisher {
     override fun publishBookingCreated(booking: Booking) {

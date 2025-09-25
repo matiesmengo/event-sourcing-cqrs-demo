@@ -11,9 +11,9 @@ import org.mockito.kotlin.verify
 import java.time.Instant
 import java.util.UUID
 
-class BookingCreatedListenerTest {
+class BookingKafkaListenerTest {
     private val paymentService: PaymentService = mock()
-    private val listener = BookingCreatedListener(paymentService)
+    private val listener = BookingKafkaListener(paymentService)
 
     @Test
     fun `should call paymentService on consumeBookingCreatedEvent`() {

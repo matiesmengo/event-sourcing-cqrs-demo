@@ -1,4 +1,4 @@
-package com.mengo.payment.infrastructure.persist.jpa
+package com.mengo.payment.infrastructure.persist
 
 import org.springframework.data.jpa.repository.JpaRepository
 import java.util.UUID

@@ -10,7 +10,6 @@ fun CompletedPayment.toAvro() =
         paymentId.toString(),
         bookingId.toString(),
         reference,
-        createdAt,
     )
 
 fun FailedPayment.toAvro() =
@@ -18,5 +17,4 @@ fun FailedPayment.toAvro() =
         paymentId.toString(),
         bookingId.toString(),
         reason,
-        createdAt,
     )

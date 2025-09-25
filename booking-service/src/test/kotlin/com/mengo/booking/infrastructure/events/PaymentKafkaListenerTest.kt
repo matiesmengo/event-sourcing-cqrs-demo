@@ -1,0 +1,45 @@
+package com.mengo.booking.infrastructure.events
+
+import com.mengo.booking.application.BookingService
+import com.mengo.booking.fixtures.BookingTestData.BOOKING_ID
+import com.mengo.booking.fixtures.BookingTestData.PAYMENT_ID
+import com.mengo.payment.events.PaymentCompletedEvent
+import com.mengo.payment.events.PaymentFailedEvent
+import org.junit.jupiter.api.Assertions.assertEquals
+import org.junit.jupiter.api.Test
+import org.mockito.Mockito.mock
+import org.mockito.kotlin.check
+import org.mockito.kotlin.verify
+
+class PaymentKafkaListenerTest {
+    private val bookingService: BookingService = mock()
+    private val listener = PaymentKafkaListener(bookingService)
+
+    @Test
+    fun `should call bookingService on consumePaymentCompletedEvent`() {
+        // given
+        val payload = PaymentCompletedEvent(PAYMENT_ID.toString(), BOOKING_ID.toString(), "ref-123")
+
+        // when
+        listener.consumePaymentCompletedEvent(payload)
+
+        // then
+        verify(bookingService).onPaymentCompleted(
+            check { assertEquals(PAYMENT_ID, it.paymentId) },
+        )
+    }
+
+    @Test
+    fun `should call bookingService on consumePaymentFailedEvent`() {
+        // given
+        val payload = PaymentFailedEvent(PAYMENT_ID.toString(), BOOKING_ID.toString(), "reason")
+
+        // when
+        listener.consumePaymentFailedEvent(payload)
+
+        // then
+        verify(bookingService).onPaymentFailed(
+            check { assertEquals(PAYMENT_ID, it.paymentId) },
+        )
+    }
+}

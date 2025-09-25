@@ -1,9 +1,9 @@
-package com.mengo.payment.infrastructure.persist.jpa
+package com.mengo.payment.infrastructure.persist
 
 import com.mengo.payment.domain.model.Payment
 import com.mengo.payment.domain.service.PaymentRepository
-import com.mengo.payment.infrastructure.persist.jpa.mappers.toDomain
-import com.mengo.payment.infrastructure.persist.jpa.mappers.toEntity
+import com.mengo.payment.infrastructure.persist.mappers.toDomain
+import com.mengo.payment.infrastructure.persist.mappers.toEntity
 import org.springframework.stereotype.Repository
 import java.util.UUID
 

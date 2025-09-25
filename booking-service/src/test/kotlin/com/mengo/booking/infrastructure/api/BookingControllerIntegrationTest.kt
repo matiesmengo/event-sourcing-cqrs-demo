@@ -1,49 +1,47 @@
 package com.mengo.booking.infrastructure.api
 
 import com.fasterxml.jackson.databind.ObjectMapper
-import com.mengo.booking.domain.service.BookingRepository
-import com.mengo.booking.events.BookingCreatedEvent
-import com.mengo.booking.fixtures.BookingConstants.RESOURCE_ID
-import com.mengo.booking.fixtures.BookingConstants.USER_ID
+import com.mengo.booking.application.BookingService
+import com.mengo.booking.fixtures.BookingTestData.BOOKING_ID
+import com.mengo.booking.fixtures.BookingTestData.RESOURCE_ID
+import com.mengo.booking.fixtures.BookingTestData.USER_ID
+import com.mengo.booking.fixtures.BookingTestData.buildBookingDomain
 import com.mengo.booking.fixtures.minimalBookingApiRequestJson
-import com.mengo.booking.infrastructure.events.KafkaTopics.KAFKA_BOOKING_CREATED
 import com.mengo.booking.model.BookingResponse
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
+import org.mockito.kotlin.any
+import org.mockito.kotlin.check
+import org.mockito.kotlin.verify
+import org.mockito.kotlin.whenever
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc
 import org.springframework.boot.test.context.SpringBootTest
+import org.springframework.boot.test.mock.mockito.MockBean
 import org.springframework.http.MediaType
-import org.springframework.kafka.annotation.KafkaListener
-import org.springframework.kafka.test.context.EmbeddedKafka
-import org.springframework.test.context.ActiveProfiles
 import org.springframework.test.web.servlet.MockMvc
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers.status
 
 @SpringBootTest
 @AutoConfigureMockMvc
-@EmbeddedKafka(partitions = 1, topics = ["booking.created"])
-@ActiveProfiles("test")
-class BookingIntegrationTest {
+class BookingControllerIntegrationTest {
     @Autowired
     private lateinit var mockMvc: MockMvc
 
     @Autowired
-    private lateinit var bookingRepository: BookingRepository
-
-    @Autowired
     private lateinit var objectMapper: ObjectMapper
 
-    private val receivedEvents = mutableListOf<BookingCreatedEvent>()
-
-    @KafkaListener(topics = [KAFKA_BOOKING_CREATED], groupId = "test-consumer")
-    fun listen(event: BookingCreatedEvent) {
-        receivedEvents.add(event)
-    }
+    @MockBean
+    private lateinit var bookingService: BookingService
 
     @Test
-    fun `bookingsPost should return a 200 OK with the created booking and publish Kafka message`() {
+    fun `bookingsPost should return 200 OK and call service`() {
+        // given
+        val bookingDomain = buildBookingDomain()
+        whenever(bookingService.createBooking(any())).thenReturn(bookingDomain)
+
+        // when
         val mvcResult =
             mockMvc
                 .perform(
@@ -53,16 +51,22 @@ class BookingIntegrationTest {
                 ).andExpect(status().isOk)
                 .andReturn()
 
+        // then
         val responseBody = mvcResult.response.contentAsString
         val response = objectMapper.readValue(responseBody, BookingResponse::class.java)
 
-        val saved = bookingRepository.findById(response.bookingId)
-        assertEquals(saved.bookingId, response.bookingId)
+        // from request body to domain mapper
+        verify(bookingService).createBooking(
+            check {
+                assertEquals(USER_ID, it.userId)
+                assertEquals(RESOURCE_ID, it.resourceId)
+            },
+        )
 
-        Thread.sleep(1000)
-        assertEquals(1, receivedEvents.size)
-        val received = receivedEvents.first()
-        assertEquals(USER_ID.toString(), received.userId)
-        assertEquals(RESOURCE_ID.toString(), received.resourceId)
+        // from domain to api mapper
+        assertEquals(BOOKING_ID, response.bookingId)
+        assertEquals(USER_ID, response.userId)
+        assertEquals(RESOURCE_ID, response.resourceId)
+        assertEquals(BookingResponse.StatusEnum.CREATED, response.status)
     }
 }

@@ -2,6 +2,8 @@ package com.mengo.booking.application
 
 import com.mengo.booking.domain.model.Booking
 import com.mengo.booking.domain.model.CreateBooking
+import com.mengo.booking.domain.model.FailedPayment
+import com.mengo.booking.domain.model.SuccessPayment
 import com.mengo.booking.domain.service.BookingEventPublisher
 import com.mengo.booking.domain.service.BookingRepository
 import jakarta.transaction.Transactional
@@ -13,9 +15,23 @@ class BookingService(
     private val eventPublisher: BookingEventPublisher,
 ) {
     @Transactional
-    fun execute(createBooking: CreateBooking): Booking {
+    fun createBooking(createBooking: CreateBooking): Booking {
         val saved = repository.save(createBooking)
         eventPublisher.publishBookingCreated(saved)
         return saved
+    }
+
+    @Transactional
+    fun onPaymentCompleted(payment: SuccessPayment) {
+        val booking = repository.findById(payment.bookingId)
+        val completedBooking = booking.confirm()
+        repository.update(completedBooking)
+    }
+
+    @Transactional
+    fun onPaymentFailed(payment: FailedPayment) {
+        val booking = repository.findById(payment.bookingId)
+        val cancelledBooking = booking.cancel()
+        repository.update(cancelledBooking)
     }
 }

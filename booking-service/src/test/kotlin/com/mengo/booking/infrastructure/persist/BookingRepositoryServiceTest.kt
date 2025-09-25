@@ -1,10 +1,11 @@
 package com.mengo.booking.infrastructure.persist
 
+import com.mengo.booking.domain.model.Booking
 import com.mengo.booking.domain.model.BookingStatus
 import com.mengo.booking.domain.model.CreateBooking
-import com.mengo.booking.fixtures.BookingConstants.BOOKING_ID
-import com.mengo.booking.fixtures.BookingConstants.RESOURCE_ID
-import com.mengo.booking.fixtures.BookingConstants.USER_ID
+import com.mengo.booking.fixtures.BookingTestData.BOOKING_ID
+import com.mengo.booking.fixtures.BookingTestData.RESOURCE_ID
+import com.mengo.booking.fixtures.BookingTestData.USER_ID
 import com.mengo.booking.infrastructure.persist.mappers.toDomain
 import com.mengo.booking.infrastructure.persist.mappers.toEntity
 import org.junit.jupiter.api.Assertions.assertEquals
@@ -37,6 +38,26 @@ class BookingRepositoryServiceTest {
         whenever(bookingRepository.save(any<BookingEntity>())).thenReturn(entity)
 
         service.save(createBooking)
+
+        verify(bookingRepository).save(any<BookingEntity>())
+    }
+
+    @Test
+    fun `update should delegate to repository and return domain Booking`() {
+        val booking =
+            Booking(
+                userId = USER_ID,
+                resourceId = RESOURCE_ID,
+                bookingId = BOOKING_ID,
+                bookingStatus = BookingStatus.PAID,
+                createdAt = OffsetDateTime.now(),
+                updatedAt = OffsetDateTime.now(),
+            )
+        val entity: BookingEntity = booking.toEntity()
+
+        whenever(bookingRepository.save(any<BookingEntity>())).thenReturn(entity)
+
+        service.update(booking)
 
         verify(bookingRepository).save(any<BookingEntity>())
     }

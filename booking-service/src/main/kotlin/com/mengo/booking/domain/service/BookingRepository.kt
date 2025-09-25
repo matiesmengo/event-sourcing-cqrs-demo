@@ -7,5 +7,7 @@ import java.util.UUID
 interface BookingRepository {
     fun save(createBooking: CreateBooking): Booking
 
+    fun update(booking: Booking): Booking
+
     fun findById(bookingId: UUID): Booking
 }

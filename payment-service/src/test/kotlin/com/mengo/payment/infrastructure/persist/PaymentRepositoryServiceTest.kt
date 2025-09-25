@@ -1,10 +1,10 @@
-package com.mengo.payment.infrastructure.persist.jpa
+package com.mengo.payment.infrastructure.persist
 
 import com.mengo.payment.domain.model.CompletedPayment
 import com.mengo.payment.domain.model.FailedPayment
 import com.mengo.payment.domain.model.Payment
 import com.mengo.payment.domain.model.PendingPayment
-import com.mengo.payment.infrastructure.persist.jpa.mappers.toEntity
+import com.mengo.payment.infrastructure.persist.mappers.toEntity
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.Arguments

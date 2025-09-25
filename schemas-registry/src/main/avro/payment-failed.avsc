@@ -14,13 +14,6 @@
     {
       "name": "reason",
       "type": "string"
-    },
-    {
-      "name": "failedAt",
-      "type": {
-        "type": "long",
-        "logicalType": "timestamp-millis"
-      }
     }
   ]
 }

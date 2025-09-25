@@ -14,13 +14,6 @@
     {
       "name": "reference",
       "type": "string"
-    },
-    {
-      "name": "completedAt",
-      "type": {
-        "type": "long",
-        "logicalType": "timestamp-millis"
-      }
     }
   ]
 }
