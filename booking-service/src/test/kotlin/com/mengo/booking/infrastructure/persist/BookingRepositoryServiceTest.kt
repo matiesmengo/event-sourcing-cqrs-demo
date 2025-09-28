@@ -3,21 +3,21 @@ package com.mengo.booking.infrastructure.persist
 import com.mengo.booking.domain.model.Booking
 import com.mengo.booking.domain.model.BookingStatus
 import com.mengo.booking.domain.model.CreateBooking
-import com.mengo.booking.fixtures.BookingTestData.BOOKING_ID
-import com.mengo.booking.fixtures.BookingTestData.RESOURCE_ID
-import com.mengo.booking.fixtures.BookingTestData.USER_ID
+import com.mengo.booking.fixtures.BookingConstants.BOOKING_ID
+import com.mengo.booking.fixtures.BookingConstants.RESOURCE_ID
+import com.mengo.booking.fixtures.BookingConstants.USER_ID
 import com.mengo.booking.infrastructure.persist.mappers.toDomain
 import com.mengo.booking.infrastructure.persist.mappers.toEntity
-import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
-import org.mockito.Mockito.mock
 import org.mockito.kotlin.any
+import org.mockito.kotlin.mock
 import org.mockito.kotlin.verify
 import org.mockito.kotlin.whenever
 import java.time.OffsetDateTime
 import java.util.Optional
 import java.util.UUID
+import kotlin.test.assertEquals
 import kotlin.test.assertFailsWith
 
 class BookingRepositoryServiceTest {

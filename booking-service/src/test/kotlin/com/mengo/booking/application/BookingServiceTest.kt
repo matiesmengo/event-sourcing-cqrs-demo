@@ -7,16 +7,16 @@ import com.mengo.booking.domain.model.FailedPayment
 import com.mengo.booking.domain.model.SuccessPayment
 import com.mengo.booking.domain.service.BookingEventPublisher
 import com.mengo.booking.domain.service.BookingRepository
-import com.mengo.booking.fixtures.BookingTestData.BOOKING_ID
-import com.mengo.booking.fixtures.BookingTestData.PAYMENT_ID
-import com.mengo.booking.fixtures.BookingTestData.RESOURCE_ID
-import com.mengo.booking.fixtures.BookingTestData.USER_ID
-import org.junit.jupiter.api.Assertions.assertEquals
+import com.mengo.booking.fixtures.BookingConstants.BOOKING_ID
+import com.mengo.booking.fixtures.BookingConstants.PAYMENT_ID
+import com.mengo.booking.fixtures.BookingConstants.RESOURCE_ID
+import com.mengo.booking.fixtures.BookingConstants.USER_ID
 import org.junit.jupiter.api.Test
 import org.mockito.kotlin.mock
 import org.mockito.kotlin.verify
 import org.mockito.kotlin.whenever
 import java.time.OffsetDateTime
+import kotlin.test.assertEquals
 
 class BookingServiceTest {
     private val repository: BookingRepository = mock()

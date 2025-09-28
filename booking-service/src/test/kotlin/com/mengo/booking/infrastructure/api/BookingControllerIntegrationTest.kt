@@ -2,13 +2,13 @@ package com.mengo.booking.infrastructure.api
 
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.mengo.booking.application.BookingService
-import com.mengo.booking.fixtures.BookingTestData.BOOKING_ID
-import com.mengo.booking.fixtures.BookingTestData.RESOURCE_ID
-import com.mengo.booking.fixtures.BookingTestData.USER_ID
-import com.mengo.booking.fixtures.BookingTestData.buildBookingDomain
+import com.mengo.booking.fixtures.BookingConstants.BOOKING_ID
+import com.mengo.booking.fixtures.BookingConstants.RESOURCE_ID
+import com.mengo.booking.fixtures.BookingConstants.USER_ID
+import com.mengo.booking.fixtures.BookingTestData.buildBooking
 import com.mengo.booking.fixtures.minimalBookingApiRequestJson
 import com.mengo.booking.model.BookingResponse
-import org.junit.jupiter.api.Assertions.assertEquals
+import kotlin.test.assertEquals
 import org.junit.jupiter.api.Test
 import org.mockito.kotlin.any
 import org.mockito.kotlin.check
@@ -38,7 +38,7 @@ class BookingControllerIntegrationTest {
     @Test
     fun `bookingsPost should return 200 OK and call service`() {
         // given
-        val bookingDomain = buildBookingDomain()
+        val bookingDomain = buildBooking()
         whenever(bookingService.createBooking(any())).thenReturn(bookingDomain)
 
         // when

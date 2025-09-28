@@ -5,6 +5,13 @@ import com.mengo.payment.domain.model.FailedPayment
 import com.mengo.payment.domain.model.Payment
 import com.mengo.payment.domain.model.PendingPayment
 import com.mengo.payment.infrastructure.persist.mappers.toEntity
+import java.time.Instant
+import java.util.Optional
+import java.util.UUID
+import java.util.stream.Stream
+import kotlin.test.assertEquals
+import kotlin.test.assertFailsWith
+import kotlin.test.assertNull
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.Arguments
@@ -13,13 +20,6 @@ import org.mockito.kotlin.any
 import org.mockito.kotlin.mock
 import org.mockito.kotlin.verify
 import org.mockito.kotlin.whenever
-import java.time.Instant
-import java.util.Optional
-import java.util.UUID
-import java.util.stream.Stream
-import kotlin.test.assertEquals
-import kotlin.test.assertFailsWith
-import kotlin.test.assertNull
 
 class PaymentRepositoryServiceTest {
     private val jpaRepository: PaymentJpaRepository = mock()
@@ -28,7 +28,6 @@ class PaymentRepositoryServiceTest {
     @ParameterizedTest
     @MethodSource("paymentsProvider")
     fun `save should persist and return domain`(payment: Payment) {
-        // mock JPA repository save
         whenever(jpaRepository.save(any())).thenAnswer { it.arguments[0] as PaymentEntity }
 
         val result = repository.save(payment)
@@ -64,12 +63,13 @@ class PaymentRepositoryServiceTest {
 
     @Test
     fun `toDomain should throw IllegalArgumentException for unknown entity`() {
-        val unknownEntity =
-            object : PaymentEntity(
-                paymentId = UUID.randomUUID(),
-                bookingId = UUID.randomUUID(),
-                createdAt = Instant.now(),
-            ) {}
+        val unknownEntity = object : PaymentEntity() {
+            init {
+                paymentId = UUID.randomUUID()
+                bookingId = UUID.randomUUID()
+                createdAt = Instant.now()
+            }
+        }
 
         whenever(jpaRepository.findById(any())).thenReturn(Optional.of(unknownEntity))
 

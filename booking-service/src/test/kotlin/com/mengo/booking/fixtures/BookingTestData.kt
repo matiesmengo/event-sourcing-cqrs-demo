@@ -2,16 +2,14 @@ package com.mengo.booking.fixtures
 
 import com.mengo.booking.domain.model.Booking
 import com.mengo.booking.domain.model.BookingStatus
+import com.mengo.booking.fixtures.BookingConstants.BOOKING_ID
+import com.mengo.booking.fixtures.BookingConstants.RESOURCE_ID
+import com.mengo.booking.fixtures.BookingConstants.USER_ID
 import java.time.OffsetDateTime
 import java.util.UUID
 
 object BookingTestData {
-    val BOOKING_ID = UUID.randomUUID()
-    val PAYMENT_ID = UUID.randomUUID()
-    val USER_ID = UUID.randomUUID()
-    val RESOURCE_ID = UUID.randomUUID()
-
-    fun buildBookingDomain(
+    fun buildBooking(
         bookingId: UUID = BOOKING_ID,
         userId: UUID = USER_ID,
         resourceId: UUID = RESOURCE_ID,

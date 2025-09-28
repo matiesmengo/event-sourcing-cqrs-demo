@@ -7,7 +7,7 @@ import com.mengo.booking.infrastructure.persist.BookingEntity
 import java.time.OffsetDateTime
 import java.util.UUID
 
-fun CreateBooking.toEntity() =
+fun CreateBooking.toEntity(): BookingEntity =
     BookingEntity(
         bookingId = UUID.randomUUID(),
         userId = userId,
@@ -16,7 +16,7 @@ fun CreateBooking.toEntity() =
         createdAt = OffsetDateTime.now(),
     )
 
-fun BookingEntity.toDomain() =
+fun BookingEntity.toDomain(): Booking =
     Booking(
         bookingId = bookingId,
         userId = userId,
@@ -26,7 +26,7 @@ fun BookingEntity.toDomain() =
         updatedAt = updatedAt,
     )
 
-fun Booking.toEntity() =
+fun Booking.toEntity(): BookingEntity =
     BookingEntity(
         bookingId = bookingId,
         userId = userId,

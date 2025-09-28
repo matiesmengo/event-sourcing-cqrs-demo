@@ -1,7 +1,7 @@
 package com.mengo.booking.fixtures
 
-import com.mengo.booking.fixtures.BookingTestData.RESOURCE_ID
-import com.mengo.booking.fixtures.BookingTestData.USER_ID
+import com.mengo.booking.fixtures.BookingConstants.RESOURCE_ID
+import com.mengo.booking.fixtures.BookingConstants.USER_ID
 
 val minimalBookingApiRequestJson =
     """

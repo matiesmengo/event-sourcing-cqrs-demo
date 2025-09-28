@@ -27,6 +27,13 @@ spring:
       properties:
         schema.registry.url: http://localhost:8081
         auto.register.schemas: true
+    consumer:
+      group-id: booking-service-group
+      key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+      value-deserializer: io.confluent.kafka.serializers.KafkaAvroDeserializer
+      properties:
+        schema.registry.url: http://localhost:8081
+        specific.avro.reader: true
 
 logging:
   level:

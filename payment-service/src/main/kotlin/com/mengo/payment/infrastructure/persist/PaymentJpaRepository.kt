@@ -1,6 +1,6 @@
 package com.mengo.payment.infrastructure.persist
 
-import org.springframework.data.jpa.repository.JpaRepository
 import java.util.UUID
+import org.springframework.data.jpa.repository.JpaRepository
 
 interface PaymentJpaRepository : JpaRepository<PaymentEntity, UUID>

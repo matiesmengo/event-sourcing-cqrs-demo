@@ -8,7 +8,7 @@ import com.mengo.payment.domain.model.Payment
 fun interface PaymentProcessor {
     /**
      * Try to authorize the payment and return a reference or fill in an exception in case of error
-     * The implementation must be idempotent respecting a "paidId"/"bookingId" if escaped.
+     * The implementation must be idempotent.
      */
     fun executePayment(payment: Payment): PaymentProcessorResult
 }

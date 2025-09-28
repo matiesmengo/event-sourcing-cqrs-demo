@@ -8,17 +8,17 @@ import com.mengo.payment.domain.service.PaymentEventPublisher
 import com.mengo.payment.domain.service.PaymentProcessor
 import com.mengo.payment.domain.service.PaymentProcessorResult
 import com.mengo.payment.domain.service.PaymentRepository
+import java.util.UUID
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
-import org.mockito.Mockito.mock
-import org.mockito.Mockito.times
 import org.mockito.kotlin.any
 import org.mockito.kotlin.check
+import org.mockito.kotlin.mock
+import org.mockito.kotlin.times
 import org.mockito.kotlin.verify
 import org.mockito.kotlin.verifyNoInteractions
 import org.mockito.kotlin.whenever
-import java.util.UUID
 
 class PaymentServiceTest {
     private val repository: PaymentRepository = mock()
@@ -38,7 +38,7 @@ class PaymentServiceTest {
 
         service.onBookingCreated(bookingPayment)
 
-        verify(repository, times(2)).save(any()) // initial + completed
+        verify(repository, times(2)).save(any())
         verify(eventPublisher).publishPaymentCompleted(
             check {
                 assertEquals("ref-123", it.reference)

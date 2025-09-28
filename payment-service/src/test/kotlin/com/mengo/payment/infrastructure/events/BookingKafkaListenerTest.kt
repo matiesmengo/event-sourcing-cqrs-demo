@@ -3,13 +3,12 @@ package com.mengo.payment.infrastructure.events
 import com.mengo.booking.events.BookingCreatedEvent
 import com.mengo.payment.application.PaymentService
 import com.mengo.payment.fixtures.PaymentConstants.BOOKING_ID
+import java.util.UUID
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
-import org.mockito.Mockito.mock
 import org.mockito.kotlin.check
+import org.mockito.kotlin.mock
 import org.mockito.kotlin.verify
-import java.time.Instant
-import java.util.UUID
 
 class BookingKafkaListenerTest {
     private val paymentService: PaymentService = mock()
@@ -23,8 +22,6 @@ class BookingKafkaListenerTest {
                 BOOKING_ID.toString(),
                 UUID.randomUUID().toString(),
                 UUID.randomUUID().toString(),
-                "CREATED",
-                Instant.now(),
             )
 
         // when

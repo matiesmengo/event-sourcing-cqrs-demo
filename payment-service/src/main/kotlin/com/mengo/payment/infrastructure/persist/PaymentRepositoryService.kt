@@ -4,8 +4,8 @@ import com.mengo.payment.domain.model.Payment
 import com.mengo.payment.domain.service.PaymentRepository
 import com.mengo.payment.infrastructure.persist.mappers.toDomain
 import com.mengo.payment.infrastructure.persist.mappers.toEntity
-import org.springframework.stereotype.Repository
 import java.util.UUID
+import org.springframework.stereotype.Repository
 
 @Repository
 class PaymentRepositoryService(
@@ -18,4 +18,6 @@ class PaymentRepositoryService(
             .findById(paymentId)
             .map { it.toDomain() }
             .orElse(null)
+
+    override fun deleteById(paymentId: UUID) = paymentRepository.deleteById(paymentId)
 }

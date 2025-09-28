@@ -5,26 +5,25 @@
         <groupId>org.springframework.boot</groupId>
         <artifactId>spring-boot-starter-parent</artifactId>
         <version>3.3.3</version>
-        <relativePath/>
     </parent>
 
     <modelVersion>4.0.0</modelVersion>
     <groupId>com.mengo</groupId>
-    <artifactId>event-driven-demo</artifactId>
+    <artifactId>common-starters</artifactId>
     <version>0.0.1-SNAPSHOT</version>
     <packaging>pom</packaging>
 
-    <name>event-driven-demo</name>
+    <name>common-starters</name>
     <description>Demo project for event driven architecture</description>
 
     <properties>
         <java.version>21</java.version>
         <kotlin.version>2.2.10</kotlin.version>
-        <avro.version>1.11.1</avro.version>
+        <avro.version>1.11.0</avro.version>
         <kafka-avro-serializer.version>7.5.0</kafka-avro-serializer.version>
         <lombok.version>1.18.30</lombok.version>
         <mockito-kotlin.version>5.1.0</mockito-kotlin.version>
-        <flyway-core.version>10.20.1</flyway-core.version>
+        <testcontainers.version>1.19.1</testcontainers.version>
     </properties>
 
     <repositories>
@@ -39,6 +38,7 @@
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter</artifactId>
         </dependency>
+
         <dependency>
             <groupId>org.jetbrains.kotlin</groupId>
             <artifactId>kotlin-reflect</artifactId>
@@ -65,13 +65,11 @@
             <artifactId>spring-boot-starter-test</artifactId>
             <scope>test</scope>
         </dependency>
+
         <dependency>
-            <groupId>org.springframework.boot</groupId>
-            <artifactId>spring-boot-starter-web</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>org.springframework.kafka</groupId>
-            <artifactId>spring-kafka-test</artifactId>
+            <groupId>org.jetbrains.kotlin</groupId>
+            <artifactId>kotlin-test</artifactId>
+            <version>${kotlin.version}</version>
             <scope>test</scope>
         </dependency>
         <dependency>

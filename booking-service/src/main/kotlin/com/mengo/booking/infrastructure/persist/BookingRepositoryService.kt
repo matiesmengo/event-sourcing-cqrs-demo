@@ -5,8 +5,8 @@ import com.mengo.booking.domain.model.CreateBooking
 import com.mengo.booking.domain.service.BookingRepository
 import com.mengo.booking.infrastructure.persist.mappers.toDomain
 import com.mengo.booking.infrastructure.persist.mappers.toEntity
-import org.springframework.stereotype.Repository
 import java.util.UUID
+import org.springframework.stereotype.Repository
 
 @Repository
 class BookingRepositoryService(
@@ -16,6 +16,7 @@ class BookingRepositoryService(
 
     override fun update(booking: Booking): Booking = bookingRepository.save(booking.toEntity()).toDomain()
 
+    // TODO: Don't throw error, return null, domain must decide
     override fun findById(bookingId: UUID): Booking =
         bookingRepository
             .findById(bookingId)

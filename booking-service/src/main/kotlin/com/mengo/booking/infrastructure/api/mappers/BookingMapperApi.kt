@@ -6,13 +6,13 @@ import com.mengo.booking.domain.model.CreateBooking
 import com.mengo.booking.model.BookingResponse
 import com.mengo.booking.model.CreateBookingRequest
 
-fun CreateBookingRequest.toDomain() =
+fun CreateBookingRequest.toDomain(): CreateBooking =
     CreateBooking(
         userId = userId,
         resourceId = resourceId,
     )
 
-fun Booking.toApi() =
+fun Booking.toApi(): BookingResponse =
     BookingResponse()
         .bookingId(bookingId)
         .userId(userId)

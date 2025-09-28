@@ -1,5 +1,6 @@
 package com.mengo.payment.infrastructure.persist.mappers
 
+
 import com.mengo.payment.domain.model.CompletedPayment
 import com.mengo.payment.domain.model.FailedPayment
 import com.mengo.payment.domain.model.Payment
@@ -12,24 +13,26 @@ import com.mengo.payment.infrastructure.persist.PendingPaymentEntity
 fun Payment.toEntity(): PaymentEntity =
     when (this) {
         is PendingPayment ->
-            PendingPaymentEntity(
-                paymentId = this.paymentId,
+            PendingPaymentEntity.create(
                 bookingId = this.bookingId,
-                createdAt = this.createdAt,
-            )
-        is CompletedPayment ->
-            CompletedPaymentEntity(
                 paymentId = this.paymentId,
+                createdAt = this.createdAt
+            )
+
+        is CompletedPayment ->
+            CompletedPaymentEntity.create(
                 bookingId = this.bookingId,
                 reference = this.reference,
-                createdAt = this.createdAt,
-            )
-        is FailedPayment ->
-            FailedPaymentEntity(
                 paymentId = this.paymentId,
+                createdAt = this.createdAt
+            )
+
+        is FailedPayment ->
+            FailedPaymentEntity.create(
                 bookingId = this.bookingId,
                 reason = this.reason,
-                createdAt = this.createdAt,
+                paymentId = this.paymentId,
+                createdAt = this.createdAt
             )
     }
 
@@ -41,6 +44,7 @@ fun PaymentEntity.toDomain(): Payment =
                 bookingId = this.bookingId,
                 createdAt = this.createdAt,
             )
+
         is CompletedPaymentEntity ->
             CompletedPayment(
                 paymentId = this.paymentId,
@@ -48,6 +52,7 @@ fun PaymentEntity.toDomain(): Payment =
                 reference = this.reference,
                 createdAt = this.createdAt,
             )
+
         is FailedPaymentEntity ->
             FailedPayment(
                 paymentId = this.paymentId,
