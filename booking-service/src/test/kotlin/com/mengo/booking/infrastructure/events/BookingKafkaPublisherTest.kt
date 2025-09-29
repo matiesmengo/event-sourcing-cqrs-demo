@@ -6,6 +6,7 @@ import com.mengo.booking.fixtures.BookingConstants.BOOKING_ID
 import com.mengo.booking.fixtures.BookingConstants.RESOURCE_ID
 import com.mengo.booking.fixtures.BookingConstants.USER_ID
 import com.mengo.booking.infrastructure.events.mappers.toAvro
+import java.time.Instant
 import org.apache.avro.specific.SpecificRecord
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
@@ -13,7 +14,6 @@ import org.mockito.kotlin.eq
 import org.mockito.kotlin.mock
 import org.mockito.kotlin.verify
 import org.springframework.kafka.core.KafkaTemplate
-import java.time.OffsetDateTime
 
 class BookingKafkaPublisherTest {
     private lateinit var kafkaTemplate: KafkaTemplate<String, SpecificRecord>
@@ -34,7 +34,7 @@ class BookingKafkaPublisherTest {
                 userId = USER_ID,
                 resourceId = RESOURCE_ID,
                 bookingStatus = BookingStatus.CREATED,
-                createdAt = OffsetDateTime.now(),
+                createdAt = Instant.now(),
             )
         val avroBooking = booking.toAvro()
 

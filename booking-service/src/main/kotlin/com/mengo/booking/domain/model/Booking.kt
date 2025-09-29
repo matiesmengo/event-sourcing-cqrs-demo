@@ -1,6 +1,6 @@
 package com.mengo.booking.domain.model
 
-import java.time.OffsetDateTime
+import java.time.Instant
 import java.util.UUID
 
 data class Booking(
@@ -8,10 +8,10 @@ data class Booking(
     val userId: UUID,
     val resourceId: UUID,
     var bookingStatus: BookingStatus,
-    val createdAt: OffsetDateTime,
-    val updatedAt: OffsetDateTime = OffsetDateTime.now(),
+    val createdAt: Instant,
+    val updatedAt: Instant = Instant.now(),
 ) {
-    fun confirm(): Booking = this.copy(bookingStatus = BookingStatus.PAID, updatedAt = OffsetDateTime.now())
+    fun confirm(): Booking = this.copy(bookingStatus = BookingStatus.PAID, updatedAt = Instant.now())
 
-    fun cancel(): Booking = this.copy(bookingStatus = BookingStatus.CANCELLED, updatedAt = OffsetDateTime.now())
+    fun cancel(): Booking = this.copy(bookingStatus = BookingStatus.CANCELLED, updatedAt = Instant.now())
 }

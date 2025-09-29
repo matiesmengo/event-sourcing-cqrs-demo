@@ -18,7 +18,6 @@ fun Booking.toApi(): BookingResponse =
         .userId(userId)
         .resourceId(resourceId)
         .status(bookingStatus.toApi())
-        .createdAt(createdAt)
 
 private fun BookingStatus.toApi(): BookingResponse.StatusEnum =
     when (this) {

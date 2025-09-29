@@ -1,3 +1,6 @@
+server:
+  port: 8083
+
 spring:
   datasource:
     url: jdbc:postgresql://localhost:5432/demoEventDrivenDB
@@ -9,15 +12,17 @@ spring:
       connection-timeout: 10000
   jpa:
     hibernate:
-      ddl-auto: update
+      ddl-auto: validate
     show-sql: true
     properties:
       hibernate:
+        default_schema: payment
         dialect: org.hibernate.dialect.PostgreSQLDialect
         format_sql: true
   flyway:
     enabled: true
-    locations: classpath:db/migration
+    schemas: payment
+    locations: classpath:db/migration/payment
     connect-retries: 3
   kafka:
     bootstrap-servers: localhost:9092
@@ -28,6 +33,7 @@ spring:
         schema.registry.url: http://localhost:8081
         auto.register.schemas: true
     consumer:
+      group-id: payment-service-group
       key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
       value-deserializer: io.confluent.kafka.serializers.KafkaAvroDeserializer
       properties:

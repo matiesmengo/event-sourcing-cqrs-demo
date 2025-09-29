@@ -7,7 +7,7 @@ import jakarta.persistence.EnumType
 import jakarta.persistence.Enumerated
 import jakarta.persistence.Id
 import jakarta.persistence.Table
-import java.time.OffsetDateTime
+import java.time.Instant
 import java.util.UUID
 
 @Entity
@@ -24,16 +24,16 @@ class BookingEntity(
     @Column(name = "booking_status", nullable = false)
     var bookingStatus: BookingStatus,
     @Column(name = "created_at", nullable = false)
-    val createdAt: OffsetDateTime = OffsetDateTime.now(),
+    val createdAt: Instant = Instant.now(),
     @Column(name = "updated_at", nullable = false)
-    val updatedAt: OffsetDateTime = OffsetDateTime.now(),
+    val updatedAt: Instant = Instant.now(),
 ) {
     private constructor() : this(
         bookingId = UUID.randomUUID(),
         userId = UUID.randomUUID(),
         resourceId = UUID.randomUUID(),
         bookingStatus = BookingStatus.CANCELLED,
-        createdAt = OffsetDateTime.now(),
-        updatedAt = OffsetDateTime.now(),
+        createdAt = Instant.now(),
+        updatedAt = Instant.now(),
     )
 }

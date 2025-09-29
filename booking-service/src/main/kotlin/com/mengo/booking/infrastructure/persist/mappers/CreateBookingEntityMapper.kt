@@ -4,7 +4,8 @@ import com.mengo.booking.domain.model.Booking
 import com.mengo.booking.domain.model.BookingStatus
 import com.mengo.booking.domain.model.CreateBooking
 import com.mengo.booking.infrastructure.persist.BookingEntity
-import java.time.OffsetDateTime
+import java.time.Instant
+
 import java.util.UUID
 
 fun CreateBooking.toEntity(): BookingEntity =
@@ -13,7 +14,7 @@ fun CreateBooking.toEntity(): BookingEntity =
         userId = userId,
         resourceId = resourceId,
         bookingStatus = BookingStatus.CREATED,
-        createdAt = OffsetDateTime.now(),
+        createdAt = Instant.now(),
     )
 
 fun BookingEntity.toDomain(): Booking =

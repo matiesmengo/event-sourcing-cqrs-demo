@@ -47,6 +47,3 @@ components:
         status:
           type: string
           enum: [CREATED, CANCELLED, PAID]
-        createdAt:
-          type: string
-          format: date-time

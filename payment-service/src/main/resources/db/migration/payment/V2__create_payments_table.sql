@@ -1,3 +1,5 @@
+CREATE SCHEMA IF NOT EXISTS payment;
+
 CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
 
 CREATE TABLE payments (

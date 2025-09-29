@@ -5,7 +5,7 @@ import com.mengo.booking.domain.model.BookingStatus
 import com.mengo.booking.fixtures.BookingConstants.BOOKING_ID
 import com.mengo.booking.fixtures.BookingConstants.RESOURCE_ID
 import com.mengo.booking.fixtures.BookingConstants.USER_ID
-import java.time.OffsetDateTime
+import java.time.Instant
 import java.util.UUID
 
 object BookingTestData {
@@ -14,7 +14,7 @@ object BookingTestData {
         userId: UUID = USER_ID,
         resourceId: UUID = RESOURCE_ID,
         bookingStatus: BookingStatus = BookingStatus.CREATED,
-        createdAt: OffsetDateTime = OffsetDateTime.now(),
+        createdAt: Instant = Instant.now(),
     ): Booking =
         Booking(
             bookingId = bookingId,

@@ -16,7 +16,7 @@ import java.util.UUID
 @Table(name = "payments")
 @Inheritance(strategy = InheritanceType.SINGLE_TABLE)
 @DiscriminatorColumn(name = "payment_type", discriminatorType = DiscriminatorType.STRING)
-abstract class PaymentEntity protected constructor() { // Hibernate
+abstract class PaymentEntity protected constructor() {
     @Id
     @Column(name = "payment_id", nullable = false, updatable = false)
     lateinit var paymentId: UUID
@@ -30,7 +30,8 @@ abstract class PaymentEntity protected constructor() { // Hibernate
 
 @Entity
 @DiscriminatorValue("PENDING")
-class PendingPaymentEntity private constructor() : PaymentEntity() { // Hibernate
+class PendingPaymentEntity private constructor() : PaymentEntity() {
+    // Hibernate
     companion object {
         fun create(paymentId: UUID, bookingId: UUID, createdAt: Instant): PendingPaymentEntity {
             val p = PendingPaymentEntity()
@@ -44,10 +45,11 @@ class PendingPaymentEntity private constructor() : PaymentEntity() { // Hibernat
 
 @Entity
 @DiscriminatorValue("COMPLETED")
-class CompletedPaymentEntity private constructor() : PaymentEntity() { // Hibernate
+class CompletedPaymentEntity private constructor() : PaymentEntity() {
     @Column(name = "reference")
     lateinit var reference: String
 
+    // Hibernate
     companion object {
         fun create(paymentId: UUID, bookingId: UUID, reference: String, createdAt: Instant): CompletedPaymentEntity {
             val p = CompletedPaymentEntity()
@@ -62,10 +64,11 @@ class CompletedPaymentEntity private constructor() : PaymentEntity() { // Hibern
 
 @Entity
 @DiscriminatorValue("FAILED")
-class FailedPaymentEntity private constructor() : PaymentEntity() { // Hibernate
+class FailedPaymentEntity private constructor() : PaymentEntity() {
     @Column(name = "reason")
     lateinit var reason: String
 
+    // Hibernate
     companion object {
         fun create(paymentId: UUID, bookingId: UUID, reason: String,  createdAt: Instant): FailedPaymentEntity {
             val p = FailedPaymentEntity()
