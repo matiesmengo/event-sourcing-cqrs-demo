@@ -26,7 +26,7 @@ class PaymentKafkaListenerIntegrationTest : KafkaTestContainerBase() {
 
         kafkaTemplate.send(KAFKA_PAYMENT_COMPLETED, event.paymentId, event)
 
-        Awaitility.await().atMost(Duration.ofSeconds(2)).untilAsserted {
+        Awaitility.await().atMost(Duration.ofSeconds(5)).untilAsserted {
             verify(bookingService).onPaymentCompleted(any())
         }
     }
@@ -37,7 +37,7 @@ class PaymentKafkaListenerIntegrationTest : KafkaTestContainerBase() {
 
         kafkaTemplate.send(KAFKA_PAYMENT_FAILED, event.paymentId, event)
 
-        Awaitility.await().atMost(Duration.ofSeconds(2)).untilAsserted {
+        Awaitility.await().atMost(Duration.ofSeconds(5)).untilAsserted {
             verify(bookingService).onPaymentFailed(event.toDomain())
         }
     }

@@ -8,7 +8,7 @@ import java.util.UUID
 import org.springframework.stereotype.Repository
 
 @Repository
-class PaymentRepositoryService(
+open class PaymentRepositoryService(
     private val paymentRepository: PaymentJpaRepository,
 ) : PaymentRepository {
     override fun save(payment: Payment): Payment = paymentRepository.save(payment.toEntity()).toDomain()

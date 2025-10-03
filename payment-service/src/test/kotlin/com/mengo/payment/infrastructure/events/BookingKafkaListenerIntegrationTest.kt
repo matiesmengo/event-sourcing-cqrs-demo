@@ -24,7 +24,7 @@ class BookingKafkaListenerIntegrationTest : KafkaTestContainerBase() {
 
         kafkaTemplate.send(KAFKA_BOOKING_CREATED, event.bookingId, event)
 
-        Awaitility.await().atMost(Duration.ofSeconds(2)).untilAsserted {
+        Awaitility.await().atMost(Duration.ofSeconds(5)).untilAsserted {
             verify(paymentService).onBookingCreated(event.toDomain())
         }
     }

@@ -14,12 +14,7 @@
     <packaging>jar</packaging>
     <name>kafka starter</name>
 
-    <properties>
-        <testcontainers.version>1.19.1</testcontainers.version>
-    </properties>
-
     <dependencies>
-        <!-- Runtime -->
         <dependency>
             <groupId>org.springframework.kafka</groupId>
             <artifactId>spring-kafka</artifactId>

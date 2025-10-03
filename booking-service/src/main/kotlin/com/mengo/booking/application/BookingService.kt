@@ -10,7 +10,7 @@ import jakarta.transaction.Transactional
 import org.springframework.stereotype.Service
 
 @Service
-class BookingService(
+open class BookingService(
     private val repository: BookingRepository,
     private val eventPublisher: BookingEventPublisher,
 ) {

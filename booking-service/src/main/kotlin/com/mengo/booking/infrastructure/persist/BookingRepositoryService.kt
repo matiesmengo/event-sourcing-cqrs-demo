@@ -9,10 +9,11 @@ import java.util.UUID
 import org.springframework.stereotype.Repository
 
 @Repository
-class BookingRepositoryService(
+open class BookingRepositoryService(
     private val bookingRepository: BookingJpaRepository,
 ) : BookingRepository {
-    override fun save(createBooking: CreateBooking): Booking = bookingRepository.save(createBooking.toEntity()).toDomain()
+    override fun save(createBooking: CreateBooking): Booking =
+        bookingRepository.save(createBooking.toEntity()).toDomain()
 
     override fun update(booking: Booking): Booking = bookingRepository.save(booking.toEntity()).toDomain()
 
