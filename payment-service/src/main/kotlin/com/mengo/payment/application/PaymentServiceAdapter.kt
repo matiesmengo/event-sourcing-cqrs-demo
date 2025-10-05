@@ -9,17 +9,18 @@ import com.mengo.payment.domain.service.PaymentEventPublisher
 import com.mengo.payment.domain.service.PaymentProcessor
 import com.mengo.payment.domain.service.PaymentProcessorResult
 import com.mengo.payment.domain.service.PaymentRepository
+import com.mengo.payment.domain.service.PaymentService
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 
 @Service
-open class PaymentService(
+open class PaymentServiceAdapter(
     private val repository: PaymentRepository,
     private val processor: PaymentProcessor,
     private val eventPublisher: PaymentEventPublisher,
-) {
+) : PaymentService {
     @Transactional
-    fun onBookingCreated(bookingPayment: BookingPayment) {
+    override fun onBookingCreated(bookingPayment: BookingPayment) {
         val payment = resolvePayment(bookingPayment)
         processPayment(payment)
     }
@@ -38,28 +39,28 @@ open class PaymentService(
         }
 
     private fun processPayment(payment: Payment) {
-        val saved = repository.save(payment)
+        val pendingPayment = repository.save(payment as PendingPayment)
 
-        when (val result = processor.executePayment(saved)) {
+        when (val result = processor.executePayment(pendingPayment)) {
             is PaymentProcessorResult.Success -> {
                 val completedPayment =
                     CompletedPayment(
-                        paymentId = payment.paymentId,
-                        bookingId = payment.bookingId,
+                        paymentId = pendingPayment.paymentId,
+                        bookingId = pendingPayment.bookingId,
                         reference = result.reference,
                     )
-                repository.save(completedPayment)
+                repository.update(completedPayment)
                 eventPublisher.publishPaymentCompleted(completedPayment)
             }
 
             is PaymentProcessorResult.Failure -> {
                 val failedPayment =
                     FailedPayment(
-                        paymentId = payment.paymentId,
-                        bookingId = payment.bookingId,
+                        paymentId = pendingPayment.paymentId,
+                        bookingId = pendingPayment.bookingId,
                         reason = result.reason,
                     )
-                repository.save(failedPayment)
+                repository.update(failedPayment)
                 eventPublisher.publishPaymentFailed(failedPayment)
             }
         }

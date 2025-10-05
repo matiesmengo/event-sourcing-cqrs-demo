@@ -1,14 +1,13 @@
 package com.mengo.booking.infrastructure.api
 
 import com.fasterxml.jackson.databind.ObjectMapper
-import com.mengo.booking.application.BookingService
+import com.mengo.booking.application.BookingServiceAdapter
 import com.mengo.booking.fixtures.BookingConstants.BOOKING_ID
 import com.mengo.booking.fixtures.BookingConstants.RESOURCE_ID
 import com.mengo.booking.fixtures.BookingConstants.USER_ID
 import com.mengo.booking.fixtures.BookingTestData.buildBooking
 import com.mengo.booking.fixtures.minimalBookingApiRequestJson
 import com.mengo.booking.model.BookingResponse
-import kotlin.test.assertEquals
 import org.junit.jupiter.api.Test
 import org.mockito.kotlin.any
 import org.mockito.kotlin.check
@@ -23,6 +22,7 @@ import org.springframework.test.context.ActiveProfiles
 import org.springframework.test.web.servlet.MockMvc
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers.status
+import kotlin.test.assertEquals
 
 @SpringBootTest
 @AutoConfigureMockMvc
@@ -35,13 +35,13 @@ class BookingControllerIntegrationTest {
     private lateinit var objectMapper: ObjectMapper
 
     @MockBean
-    private lateinit var bookingService: BookingService
+    private lateinit var bookingServiceAdapter: BookingServiceAdapter
 
     @Test
     fun `bookingsPost should return 200 OK and call service`() {
         // given
         val bookingDomain = buildBooking()
-        whenever(bookingService.createBooking(any())).thenReturn(bookingDomain)
+        whenever(bookingServiceAdapter.createBooking(any())).thenReturn(bookingDomain)
 
         // when
         val mvcResult =
@@ -58,7 +58,7 @@ class BookingControllerIntegrationTest {
         val response = objectMapper.readValue(responseBody, BookingResponse::class.java)
 
         // from request body to domain mapper
-        verify(bookingService).createBooking(
+        verify(bookingServiceAdapter).createBooking(
             check {
                 assertEquals(USER_ID, it.userId)
                 assertEquals(RESOURCE_ID, it.resourceId)

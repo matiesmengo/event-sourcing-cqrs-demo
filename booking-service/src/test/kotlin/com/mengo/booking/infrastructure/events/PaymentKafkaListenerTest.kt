@@ -1,6 +1,6 @@
 package com.mengo.booking.infrastructure.events
 
-import com.mengo.booking.application.BookingService
+import com.mengo.booking.application.BookingServiceAdapter
 import com.mengo.booking.fixtures.BookingConstants.BOOKING_ID
 import com.mengo.booking.fixtures.BookingConstants.PAYMENT_ID
 import com.mengo.payment.events.PaymentCompletedEvent
@@ -12,8 +12,8 @@ import org.mockito.kotlin.verify
 import kotlin.test.assertEquals
 
 class PaymentKafkaListenerTest {
-    private val bookingService: BookingService = mock()
-    private val listener = PaymentKafkaListener(bookingService)
+    private val bookingServiceAdapter: BookingServiceAdapter = mock()
+    private val listener = PaymentKafkaListener(bookingServiceAdapter)
 
     @Test
     fun `should call bookingService on consumePaymentCompletedEvent`() {
@@ -24,7 +24,7 @@ class PaymentKafkaListenerTest {
         listener.consumePaymentCompletedEvent(payload)
 
         // then
-        verify(bookingService).onPaymentCompleted(
+        verify(bookingServiceAdapter).onPaymentCompleted(
             check { assertEquals(PAYMENT_ID, it.paymentId) },
         )
     }
@@ -38,7 +38,7 @@ class PaymentKafkaListenerTest {
         listener.consumePaymentFailedEvent(payload)
 
         // then
-        verify(bookingService).onPaymentFailed(
+        verify(bookingServiceAdapter).onPaymentFailed(
             check { assertEquals(PAYMENT_ID, it.paymentId) },
         )
     }

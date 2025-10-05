@@ -78,6 +78,6 @@
         <module>payment-service</module>
 
         <!-- Test -->
-        <!-- <module>e2e-tests</module> -->
+        <module>e2e-tests</module>
     </modules>
 </project>

@@ -1,7 +1,7 @@
 package com.mengo.payment.infrastructure.events
 
 import com.mengo.booking.events.BookingCreatedEvent
-import com.mengo.payment.application.PaymentService
+import com.mengo.payment.domain.service.PaymentService
 import com.mengo.payment.infrastructure.events.KafkaTopics.KAFKA_BOOKING_CREATED
 import com.mengo.payment.infrastructure.events.mappers.toDomain
 import org.springframework.kafka.annotation.KafkaListener

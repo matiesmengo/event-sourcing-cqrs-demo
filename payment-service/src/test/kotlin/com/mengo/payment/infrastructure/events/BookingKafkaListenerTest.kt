@@ -1,14 +1,14 @@
 package com.mengo.payment.infrastructure.events
 
 import com.mengo.booking.events.BookingCreatedEvent
-import com.mengo.payment.application.PaymentService
+import com.mengo.payment.domain.service.PaymentService
 import com.mengo.payment.fixtures.PaymentConstants.BOOKING_ID
-import java.util.UUID
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
 import org.mockito.kotlin.check
 import org.mockito.kotlin.mock
 import org.mockito.kotlin.verify
+import java.util.UUID
 
 class BookingKafkaListenerTest {
     private val paymentService: PaymentService = mock()

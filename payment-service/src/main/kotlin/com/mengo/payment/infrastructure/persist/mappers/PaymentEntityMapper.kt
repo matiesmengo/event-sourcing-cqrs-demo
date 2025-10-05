@@ -1,65 +1,71 @@
 package com.mengo.payment.infrastructure.persist.mappers
 
-
 import com.mengo.payment.domain.model.CompletedPayment
 import com.mengo.payment.domain.model.FailedPayment
 import com.mengo.payment.domain.model.Payment
+import com.mengo.payment.domain.model.PaymentStatus
 import com.mengo.payment.domain.model.PendingPayment
-import com.mengo.payment.infrastructure.persist.CompletedPaymentEntity
-import com.mengo.payment.infrastructure.persist.FailedPaymentEntity
 import com.mengo.payment.infrastructure.persist.PaymentEntity
-import com.mengo.payment.infrastructure.persist.PendingPaymentEntity
 
 fun Payment.toEntity(): PaymentEntity =
     when (this) {
-        is PendingPayment ->
-            PendingPaymentEntity.create(
-                bookingId = this.bookingId,
-                paymentId = this.paymentId,
-                createdAt = this.createdAt
-            )
-
-        is CompletedPayment ->
-            CompletedPaymentEntity.create(
-                bookingId = this.bookingId,
-                reference = this.reference,
-                paymentId = this.paymentId,
-                createdAt = this.createdAt
-            )
-
-        is FailedPayment ->
-            FailedPaymentEntity.create(
-                bookingId = this.bookingId,
-                reason = this.reason,
-                paymentId = this.paymentId,
-                createdAt = this.createdAt
-            )
+        is PendingPayment -> this.toEntity()
+        is CompletedPayment -> this.toEntity()
+        is FailedPayment -> this.toEntity()
     }
 
+fun PendingPayment.toEntity(): PaymentEntity =
+    PaymentEntity(
+        paymentId = this.paymentId,
+        bookingId = this.bookingId,
+        paymentStatus = PaymentStatus.PENDING,
+        reference = null,
+        reason = null,
+        createdAt = this.createdAt,
+    )
+
+fun CompletedPayment.toEntity(): PaymentEntity =
+    PaymentEntity(
+        paymentId = this.paymentId,
+        bookingId = this.bookingId,
+        paymentStatus = PaymentStatus.COMPLETED,
+        reference = this.reference,
+        reason = null,
+        createdAt = this.createdAt,
+    )
+
+fun FailedPayment.toEntity(): PaymentEntity =
+    PaymentEntity(
+        paymentId = this.paymentId,
+        bookingId = this.bookingId,
+        paymentStatus = PaymentStatus.FAILED,
+        reference = null,
+        reason = this.reason,
+        createdAt = this.createdAt,
+    )
+
 fun PaymentEntity.toDomain(): Payment =
-    when (this) {
-        is PendingPaymentEntity ->
+    when (this.paymentStatus) {
+        PaymentStatus.PENDING ->
             PendingPayment(
                 paymentId = this.paymentId,
                 bookingId = this.bookingId,
                 createdAt = this.createdAt,
             )
 
-        is CompletedPaymentEntity ->
+        PaymentStatus.COMPLETED ->
             CompletedPayment(
                 paymentId = this.paymentId,
                 bookingId = this.bookingId,
-                reference = this.reference,
+                reference = this.reference ?: throw IllegalArgumentException("CompletedPayment: ${this::paymentId} has not reference"),
                 createdAt = this.createdAt,
             )
 
-        is FailedPaymentEntity ->
+        PaymentStatus.FAILED ->
             FailedPayment(
                 paymentId = this.paymentId,
                 bookingId = this.bookingId,
-                reason = this.reason,
+                reason = this.reason ?: throw IllegalArgumentException("FailedPayment: ${this::paymentId} has not reason"),
                 createdAt = this.createdAt,
             )
-
-        else -> throw IllegalArgumentException("Unknown PaymentEntity subtype: ${this::class}")
     }

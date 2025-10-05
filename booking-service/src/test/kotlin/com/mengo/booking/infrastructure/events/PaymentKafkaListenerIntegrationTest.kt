@@ -1,6 +1,6 @@
 package com.mengo.booking.infrastructure.events
 
-import com.mengo.booking.application.BookingService
+import com.mengo.booking.application.BookingServiceAdapter
 import com.mengo.booking.fixtures.BookingConstants.BOOKING_ID
 import com.mengo.booking.fixtures.BookingConstants.PAYMENT_ID
 import com.mengo.booking.infrastructure.events.KafkaTopics.KAFKA_PAYMENT_COMPLETED
@@ -9,16 +9,16 @@ import com.mengo.booking.infrastructure.events.mappers.toDomain
 import com.mengo.kafka.test.KafkaTestContainerBase
 import com.mengo.payment.events.PaymentCompletedEvent
 import com.mengo.payment.events.PaymentFailedEvent
-import java.time.Duration
 import org.awaitility.Awaitility
 import org.junit.jupiter.api.Test
 import org.mockito.kotlin.any
 import org.mockito.kotlin.verify
 import org.springframework.boot.test.mock.mockito.MockBean
+import java.time.Duration
 
 class PaymentKafkaListenerIntegrationTest : KafkaTestContainerBase() {
     @MockBean
-    private lateinit var bookingService: BookingService
+    private lateinit var bookingServiceAdapter: BookingServiceAdapter
 
     @Test
     fun `should consume PaymentCompletedEvent and call bookingService`() {
@@ -27,7 +27,7 @@ class PaymentKafkaListenerIntegrationTest : KafkaTestContainerBase() {
         kafkaTemplate.send(KAFKA_PAYMENT_COMPLETED, event.paymentId, event)
 
         Awaitility.await().atMost(Duration.ofSeconds(5)).untilAsserted {
-            verify(bookingService).onPaymentCompleted(any())
+            verify(bookingServiceAdapter).onPaymentCompleted(any())
         }
     }
 
@@ -38,7 +38,7 @@ class PaymentKafkaListenerIntegrationTest : KafkaTestContainerBase() {
         kafkaTemplate.send(KAFKA_PAYMENT_FAILED, event.paymentId, event)
 
         Awaitility.await().atMost(Duration.ofSeconds(5)).untilAsserted {
-            verify(bookingService).onPaymentFailed(event.toDomain())
+            verify(bookingServiceAdapter).onPaymentFailed(event.toDomain())
         }
     }
 }

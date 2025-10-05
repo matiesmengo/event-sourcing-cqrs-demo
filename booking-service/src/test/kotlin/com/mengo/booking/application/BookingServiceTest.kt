@@ -11,17 +11,17 @@ import com.mengo.booking.fixtures.BookingConstants.BOOKING_ID
 import com.mengo.booking.fixtures.BookingConstants.PAYMENT_ID
 import com.mengo.booking.fixtures.BookingConstants.RESOURCE_ID
 import com.mengo.booking.fixtures.BookingConstants.USER_ID
-import java.time.Instant
-import kotlin.test.assertEquals
 import org.junit.jupiter.api.Test
 import org.mockito.kotlin.mock
 import org.mockito.kotlin.verify
 import org.mockito.kotlin.whenever
+import java.time.Instant
+import kotlin.test.assertEquals
 
 class BookingServiceTest {
     private val repository: BookingRepository = mock()
     private val eventPublisher: BookingEventPublisher = mock()
-    private val service = BookingService(repository, eventPublisher)
+    private val service = BookingServiceAdapter(repository, eventPublisher)
 
     @Test
     fun `createBooking should persisted and event is published`() {

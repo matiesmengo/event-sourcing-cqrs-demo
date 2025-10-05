@@ -1,6 +1,6 @@
 package com.mengo.booking.infrastructure.events
 
-import com.mengo.booking.application.BookingService
+import com.mengo.booking.domain.service.BookingService
 import com.mengo.booking.infrastructure.events.KafkaTopics.KAFKA_PAYMENT_COMPLETED
 import com.mengo.booking.infrastructure.events.KafkaTopics.KAFKA_PAYMENT_FAILED
 import com.mengo.booking.infrastructure.events.mappers.toDomain

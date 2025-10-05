@@ -4,14 +4,14 @@ import com.mengo.payment.domain.model.CompletedPayment
 import com.mengo.payment.domain.model.FailedPayment
 import com.mengo.payment.fixtures.PaymentTestData
 import com.mengo.postgres.test.PostgresTestContainerBase
+import org.junit.jupiter.api.Test
+import org.springframework.beans.factory.annotation.Autowired
 import java.time.temporal.ChronoUnit
 import java.util.UUID
 import kotlin.test.assertEquals
 import kotlin.test.assertNotNull
 import kotlin.test.assertNull
 import kotlin.test.assertTrue
-import org.junit.jupiter.api.Test
-import org.springframework.beans.factory.annotation.Autowired
 
 class PaymentRepositoryServiceIntegrationTest : PostgresTestContainerBase() {
     @Autowired
@@ -19,7 +19,7 @@ class PaymentRepositoryServiceIntegrationTest : PostgresTestContainerBase() {
 
     @Test
     fun `save and findById PendingPayment should persist and return payment`() {
-       // given
+        // given
         val pendingPayment = PaymentTestData.buildPendingPayment()
 
         // when
@@ -31,50 +31,57 @@ class PaymentRepositoryServiceIntegrationTest : PostgresTestContainerBase() {
         assertNotNull(fetched)
         assertEquals(saved.paymentId, fetched.paymentId)
         assertEquals(saved.bookingId, fetched.bookingId)
-        assertEquals(saved.createdAt.truncatedTo(ChronoUnit.MINUTES),
-            fetched.createdAt.truncatedTo(ChronoUnit.MINUTES))
+        assertEquals(
+            saved.createdAt.truncatedTo(ChronoUnit.MINUTES),
+            fetched.createdAt.truncatedTo(ChronoUnit.MINUTES),
+        )
     }
 
     @Test
     fun `save and findById CompletedPayment should persist and return payment`() {
-       // given
+        // given
+        val pendingPayment = PaymentTestData.buildPendingPayment()
         val completedPayment = PaymentTestData.buildCompletedPayment()
 
         // when
-        val saved = paymentRepositoryService.save(completedPayment)
-        val fetched = paymentRepositoryService.findById(saved.paymentId)
-        paymentRepositoryService.deleteById(saved.paymentId)
+        paymentRepositoryService.save(pendingPayment)
+        paymentRepositoryService.update(completedPayment)
+        val fetched = paymentRepositoryService.findById(completedPayment.paymentId)
+        paymentRepositoryService.deleteById(completedPayment.paymentId)
 
         // then
-        assertTrue(saved is CompletedPayment)
         assertTrue(fetched is CompletedPayment)
-        assertEquals(saved.paymentId, fetched.paymentId)
-        assertEquals(saved.bookingId, fetched.bookingId)
-        assertEquals(saved.reference, fetched.reference)
-        assertEquals(saved.createdAt.truncatedTo(ChronoUnit.MINUTES),
-            fetched.createdAt.truncatedTo(ChronoUnit.MINUTES))
+        assertEquals(completedPayment.paymentId, fetched.paymentId)
+        assertEquals(completedPayment.bookingId, fetched.bookingId)
+        assertEquals(completedPayment.reference, fetched.reference)
+        assertEquals(
+            completedPayment.createdAt.truncatedTo(ChronoUnit.MINUTES),
+            fetched.createdAt.truncatedTo(ChronoUnit.MINUTES),
+        )
     }
 
     @Test
     fun `save and findById FailedPayment should persist and return payment`() {
-       // given
+        // given
+        val pendingPayment = PaymentTestData.buildPendingPayment()
         val failedPayment = PaymentTestData.buildFailedPayment()
 
         // when
-        val saved = paymentRepositoryService.save(failedPayment)
-        val fetched = paymentRepositoryService.findById(saved.paymentId)
-        paymentRepositoryService.deleteById(saved.paymentId)
+        paymentRepositoryService.save(pendingPayment)
+        paymentRepositoryService.update(failedPayment)
+        val fetched = paymentRepositoryService.findById(failedPayment.paymentId)
+        paymentRepositoryService.deleteById(failedPayment.paymentId)
 
         // then
-        assertTrue(saved is FailedPayment)
         assertTrue(fetched is FailedPayment)
-        assertEquals(saved.paymentId, fetched.paymentId)
-        assertEquals(saved.bookingId, fetched.bookingId)
-        assertEquals(saved.reason, fetched.reason)
-        assertEquals(saved.createdAt.truncatedTo(ChronoUnit.MINUTES),
-            fetched.createdAt.truncatedTo(ChronoUnit.MINUTES))
+        assertEquals(failedPayment.paymentId, fetched.paymentId)
+        assertEquals(failedPayment.bookingId, fetched.bookingId)
+        assertEquals(failedPayment.reason, fetched.reason)
+        assertEquals(
+            failedPayment.createdAt.truncatedTo(ChronoUnit.MINUTES),
+            fetched.createdAt.truncatedTo(ChronoUnit.MINUTES),
+        )
     }
-
 
     @Test
     fun `findById should return null when payment id not exist`() {

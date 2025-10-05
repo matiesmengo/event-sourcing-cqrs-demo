@@ -1,7 +1,7 @@
 package com.mengo.booking.infrastructure.api
 
 import com.mengo.booking.api.BookingsApi
-import com.mengo.booking.application.BookingService
+import com.mengo.booking.domain.service.BookingService
 import com.mengo.booking.infrastructure.api.mappers.toApi
 import com.mengo.booking.infrastructure.api.mappers.toDomain
 import com.mengo.booking.model.BookingResponse
