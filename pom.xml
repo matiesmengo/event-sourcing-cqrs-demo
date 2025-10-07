@@ -4,68 +4,22 @@
                              http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
-    <groupId>com.mengo</groupId>
-    <artifactId>monorepo-parent</artifactId>
-    <version>0.0.1-SNAPSHOT</version>
+    <groupId>com.mengo.platform</groupId>
+    <artifactId>monorepo-aggregator</artifactId>
+    <version>1.0.0</version>
     <packaging>pom</packaging>
 
-    <name>Monorepo Parent</name>
-    <description>Parent POM per tots els submodules del monorepo</description>
-
-    <properties>
-        <java.version>21</java.version>
-        <maven.compiler.source>${java.version}</maven.compiler.source>
-        <maven.compiler.target>${java.version}</maven.compiler.target>
-        <spring.boot.version>3.3.1</spring.boot.version>
-        <junit.jupiter.version>5.10.0</junit.jupiter.version>
-    </properties>
-
-    <dependencyManagement>
-        <dependencies>
-            <dependency>
-                <groupId>org.springframework.boot</groupId>
-                <artifactId>spring-boot-starter</artifactId>
-                <version>${spring.boot.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>org.junit.jupiter</groupId>
-                <artifactId>junit-jupiter</artifactId>
-                <version>${junit.jupiter.version}</version>
-                <scope>test</scope>
-            </dependency>
-        </dependencies>
-    </dependencyManagement>
-
-    <build>
-        <pluginManagement>
-            <plugins>
-                <plugin>
-                    <groupId>org.springframework.boot</groupId>
-                    <artifactId>spring-boot-maven-plugin</artifactId>
-                    <configuration>
-                        <skip>true</skip>
-                    </configuration>
-                </plugin>
-                <plugin>
-                    <groupId>org.apache.maven.plugins</groupId>
-                    <artifactId>maven-compiler-plugin</artifactId>
-                    <version>3.11.0</version>
-                    <configuration>
-                        <source>${java.version}</source>
-                        <target>${java.version}</target>
-                    </configuration>
-                </plugin>
-            </plugins>
-        </pluginManagement>
-    </build>
+    <name>Monorepo Aggregator</name>
+    <description>Aggregator POM to build and test the full monorepo (no build config defined here)</description>
 
     <modules>
         <!-- Common starters -->
-        <module>common-starters</module>
-        <module>common-starters/kafka-starter</module>
-        <module>common-starters/kafka-starter-test</module>
-        <module>common-starters/postgresql-starter</module>
-        <module>common-starters/postgresql-starter-test</module>
+        <module>mengo-platform/mengo-bom</module>
+        <module>mengo-platform/mengo-parent</module>
+        <module>mengo-platform/mengo-starters/kafka-starter</module>
+        <module>mengo-platform/mengo-starters/kafka-starter-test</module>
+        <module>mengo-platform/mengo-starters/postgresql-starter</module>
+        <module>mengo-platform/mengo-starters/postgresql-starter-test</module>
 
         <!-- Registry -->
         <module>schemas-registry</module>

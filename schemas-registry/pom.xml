@@ -3,34 +3,29 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0
          http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
-    <groupId>com.mengo</groupId>
+    <parent>
+        <groupId>com.mengo.platform</groupId>
+        <artifactId>mengo-parent</artifactId>
+        <version>1.0.0</version>
+        <relativePath>../mengo-platform/mengo-parent/pom.xml</relativePath>
+    </parent>
+
     <artifactId>schemas-registry</artifactId>
     <name>schemas-registry</name>
     <version>1.0.0-SNAPSHOT</version>
     <packaging>jar</packaging>
-
-    <properties>
-        <maven.compiler.source>17</maven.compiler.source>
-        <maven.compiler.target>17</maven.compiler.target>
-        <avro.version>1.11.4</avro.version>
-        <java.version>21</java.version>
-        <kotlin.version>2.2.10</kotlin.version>
-        <jackson-module-kotlin.version>2.17.2</jackson-module-kotlin.version>
-    </properties>
 
     <dependencies>
         <!-- Avro runtime -->
         <dependency>
             <groupId>org.apache.avro</groupId>
             <artifactId>avro</artifactId>
-            <version>${avro.version}</version>
         </dependency>
 
         <!-- Generate Kotlin class -->
         <dependency>
             <groupId>com.fasterxml.jackson.module</groupId>
             <artifactId>jackson-module-kotlin</artifactId>
-            <version>${jackson-module-kotlin.version}</version>
         </dependency>
     </dependencies>
 
@@ -39,7 +34,6 @@
             <plugin>
                 <groupId>org.apache.avro</groupId>
                 <artifactId>avro-maven-plugin</artifactId>
-                <version>${avro.version}</version>
                 <executions>
                     <execution>
                         <phase>generate-sources</phase>
@@ -55,11 +49,10 @@
                 </executions>
             </plugin>
 
-            <!-- Plugin Kotlin si vols generar classes Kotlin -->
+            <!-- Generate classes Kotlin -->
             <plugin>
                 <groupId>org.jetbrains.kotlin</groupId>
                 <artifactId>kotlin-maven-plugin</artifactId>
-                <version>${kotlin.version}</version>
                 <executions>
                     <execution>
                         <id>compile</id>

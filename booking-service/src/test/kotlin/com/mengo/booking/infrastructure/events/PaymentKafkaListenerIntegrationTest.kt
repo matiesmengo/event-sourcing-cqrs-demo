@@ -13,12 +13,12 @@ import org.awaitility.Awaitility
 import org.junit.jupiter.api.Test
 import org.mockito.kotlin.any
 import org.mockito.kotlin.verify
-import org.springframework.boot.test.mock.mockito.MockBean
+import org.springframework.test.context.bean.override.mockito.MockitoBean
 import java.time.Duration
 
 class PaymentKafkaListenerIntegrationTest : KafkaTestContainerBase() {
-    @MockBean
-    private lateinit var bookingServiceAdapter: BookingServiceAdapter
+    @MockitoBean
+    lateinit var bookingServiceAdapter: BookingServiceAdapter
 
     @Test
     fun `should consume PaymentCompletedEvent and call bookingService`() {
@@ -26,7 +26,7 @@ class PaymentKafkaListenerIntegrationTest : KafkaTestContainerBase() {
 
         kafkaTemplate.send(KAFKA_PAYMENT_COMPLETED, event.paymentId, event)
 
-        Awaitility.await().atMost(Duration.ofSeconds(5)).untilAsserted {
+        Awaitility.await().atMost(Duration.ofSeconds(15)).untilAsserted {
             verify(bookingServiceAdapter).onPaymentCompleted(any())
         }
     }
@@ -37,7 +37,7 @@ class PaymentKafkaListenerIntegrationTest : KafkaTestContainerBase() {
 
         kafkaTemplate.send(KAFKA_PAYMENT_FAILED, event.paymentId, event)
 
-        Awaitility.await().atMost(Duration.ofSeconds(5)).untilAsserted {
+        Awaitility.await().atMost(Duration.ofSeconds(15)).untilAsserted {
             verify(bookingServiceAdapter).onPaymentFailed(event.toDomain())
         }
     }

@@ -9,15 +9,15 @@ import feign.Feign
 import feign.jackson.JacksonDecoder
 import feign.jackson.JacksonEncoder
 import org.awaitility.Awaitility.await
-import org.junit.Before
+import org.junit.jupiter.api.BeforeEach
+import org.junit.jupiter.api.Test
 import org.springframework.cloud.openfeign.support.SpringMvcContract
 import java.util.UUID
 import java.util.concurrent.TimeUnit
-import kotlin.test.Test
 import kotlin.test.assertEquals
 
 class BookingE2ETest : AbstractServicesE2ETest() {
-    @Before
+    @BeforeEach
     fun startContainers() {
         bookingService.start()
         paymentService.start()

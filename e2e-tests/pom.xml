@@ -3,10 +3,10 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
     <parent>
-        <groupId>com.mengo</groupId>
-        <artifactId>common-starters</artifactId>
-        <version>0.0.1-SNAPSHOT</version>
-        <relativePath>../common-starters/pom.xml</relativePath>
+        <groupId>com.mengo.platform</groupId>
+        <artifactId>mengo-parent</artifactId>
+        <version>1.0.0</version>
+        <relativePath>../mengo-platform/mengo-parent/pom.xml</relativePath>
     </parent>
 
     <artifactId>e2e-tests</artifactId>
@@ -14,55 +14,47 @@
     <packaging>jar</packaging>
     <name>e2e-tests</name>
 
-    <properties>
-        <kotlin.version>2.2.0</kotlin.version>
-    </properties>
-
     <dependencies>
         <!-- Internal applications -->
         <dependency>
-            <groupId>com.mengo</groupId>
+            <groupId>com.mengo.platform</groupId>
             <artifactId>booking-service</artifactId>
             <version>0.0.1-SNAPSHOT</version>
         </dependency>
         <dependency>
-            <groupId>com.mengo</groupId>
+            <groupId>com.mengo.platform</groupId>
             <artifactId>payment-service</artifactId>
             <version>0.0.1-SNAPSHOT</version>
         </dependency>
 
         <!-- Internal starters -->
         <dependency>
-            <groupId>com.mengo</groupId>
+            <groupId>com.mengo.platform</groupId>
             <artifactId>kafka-starter</artifactId>
-            <version>0.0.1-SNAPSHOT</version>
         </dependency>
         <dependency>
-            <groupId>com.mengo</groupId>
+            <groupId>com.mengo.platform</groupId>
             <artifactId>kafka-starter-test</artifactId>
-            <version>0.0.1-SNAPSHOT</version>
             <scope>test</scope>
         </dependency>
         <dependency>
-            <groupId>com.mengo</groupId>
+            <groupId>com.mengo.platform</groupId>
             <artifactId>postgresql-starter</artifactId>
-            <version>0.0.1-SNAPSHOT</version>
         </dependency>
         <dependency>
-            <groupId>com.mengo</groupId>
+            <groupId>com.mengo.platform</groupId>
             <artifactId>postgresql-starter-test</artifactId>
-            <version>0.0.1-SNAPSHOT</version>
             <scope>test</scope>
         </dependency>
 
         <!-- Internal libraries -->
         <dependency>
-            <groupId>com.mengo</groupId>
+            <groupId>com.mengo.platform</groupId>
             <artifactId>schemas-registry</artifactId>
             <version>1.0.0-SNAPSHOT</version>
         </dependency>
         <dependency>
-            <groupId>com.mengo</groupId>
+            <groupId>com.mengo.platform</groupId>
             <artifactId>booking-service-api</artifactId>
             <version>1.0.0-SNAPSHOT</version>
         </dependency>
@@ -79,12 +71,10 @@
         <dependency>
             <groupId>org.jetbrains.kotlin</groupId>
             <artifactId>kotlin-stdlib-jdk8</artifactId>
-            <version>${kotlin.version}</version>
         </dependency>
         <dependency>
             <groupId>org.jetbrains.kotlin</groupId>
             <artifactId>kotlin-test</artifactId>
-            <version>${kotlin.version}</version>
             <scope>test</scope>
         </dependency>
 
@@ -108,7 +98,6 @@
         <dependency>
             <groupId>org.jetbrains.kotlin</groupId>
             <artifactId>kotlin-stdlib-jdk8</artifactId>
-            <version>${kotlin.version}</version>
         </dependency>
     </dependencies>
 
@@ -117,7 +106,6 @@
             <plugin>
                 <groupId>org.jetbrains.kotlin</groupId>
                 <artifactId>kotlin-maven-plugin</artifactId>
-                <version>${kotlin.version}</version>
                 <executions>
                     <execution>
                         <id>compile</id>
@@ -141,7 +129,7 @@
                     </execution>
                 </executions>
                 <configuration>
-                    <jvmTarget>1.8</jvmTarget>
+                    <jvmTarget>21</jvmTarget>
                 </configuration>
             </plugin>
         </plugins>

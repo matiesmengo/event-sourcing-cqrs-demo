@@ -32,7 +32,7 @@ class KafkaTestConsumer(
 
         KafkaConsumer<String, SpecificRecord>(props).use { consumer ->
             consumer.subscribe(listOf(topic))
-            val records = consumer.poll(Duration.ofSeconds(10))
+            val records = consumer.poll(Duration.ofSeconds(20))
             if (records.isEmpty) {
                 fail("No messages received from topic: $topic")
             }

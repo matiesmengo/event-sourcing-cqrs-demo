@@ -11,11 +11,11 @@ import com.mengo.payment.infrastructure.events.mappers.toDomain
 import org.awaitility.Awaitility
 import org.junit.jupiter.api.Test
 import org.mockito.kotlin.verify
-import org.springframework.boot.test.mock.mockito.MockBean
+import org.springframework.test.context.bean.override.mockito.MockitoBean
 import java.time.Duration
 
 class BookingKafkaListenerIntegrationTest : KafkaTestContainerBase() {
-    @MockBean
+    @MockitoBean
     private lateinit var paymentService: PaymentService
 
     @Test

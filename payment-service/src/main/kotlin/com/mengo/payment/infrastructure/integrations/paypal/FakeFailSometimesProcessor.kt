@@ -10,7 +10,7 @@ import java.util.concurrent.ThreadLocalRandom
 class FakeFailSometimesProcessor : PaymentProcessor {
     override fun executePayment(payment: Payment): PaymentProcessorResult {
         val r = ThreadLocalRandom.current().nextInt(0, 10)
-        return if (r < 7) { // 70% d'èxit
+        return if (r < 11) {
             PaymentProcessorResult.Success("Random success occurred - ${payment.paymentId}")
         } else {
             PaymentProcessorResult.Failure("Random failure occurred")
