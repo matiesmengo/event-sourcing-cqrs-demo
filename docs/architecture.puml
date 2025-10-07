@@ -1,0 +1,66 @@
+@startuml
+title Event-Driven Demo – System Architecture
+!theme plain
+
+' ========= GLOBAL STYLING =========
+skinparam backgroundColor #FFFFFF
+skinparam defaultFontName "Inter, Segoe UI, Helvetica"
+skinparam defaultFontColor #2C3E50
+skinparam shadowing false
+skinparam arrowThickness 1.2
+skinparam arrowColor #555555
+
+skinparam rectangle {
+  FontSize 14
+  RoundCorner 15
+  BorderColor #CCCCCC
+  BackgroundColor #FAFAFA
+}
+skinparam database {
+  BackgroundColor #EAF4F9
+  BorderColor #9CC3D5
+}
+skinparam node {
+  BackgroundColor #F8F9FA
+  BorderColor #BBBBBB
+}
+skinparam component {
+  BackgroundColor #F8F9FA
+  BorderColor #BBBBBB
+}
+skinparam actorStyle awesome
+
+' ========= ACTORS =========
+actor "User" as user #4F81BD
+
+' ========= GROUPS =========
+rectangle "<b>Booking Context</b>" as booking #EFF6FF {
+  node "Booking API" as booking_api
+  node "Booking Service" as booking_service
+}
+
+rectangle "<b>Payment Context</b>" as payment #FDF6EC {
+  node "Payment Service" as payment_service
+}
+
+rectangle "<b>Infrastructure Layer</b>" as infra #F8F8F8 {
+  node "Kafka Broker" as kafka #FFF4E6
+  node "Schema Registry" as registry #FFF9E8
+  database "Booking DB\n(PostgreSQL)" as booking_db
+  database "Payment DB\n(PostgreSQL)" as payment_db
+}
+
+' ========= FLOWS =========
+user --> booking_api
+
+booking_api --> booking_service
+
+booking_service --> booking_db
+booking_service <-[#3366CC,dashed]-> kafka
+
+payment_service --> payment_db
+payment_service <-[#3366CC,dashed]-> kafka
+
+' Infrastructure
+kafka --> registry: Validate
+@enduml
