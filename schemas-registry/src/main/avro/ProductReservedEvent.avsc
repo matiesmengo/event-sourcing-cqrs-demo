@@ -1,0 +1,11 @@
+{
+  "namespace": "com.mengo.product.payload",
+  "type": "record",
+  "name": "ProductReservedPayload",
+  "fields": [
+    {"name": "productId", "type": "string"},
+    {"name": "bookingId", "type": "string"},
+    {"name": "quantity", "type": "int"},
+    {"name": "createdAt", "type": "string"}
+  ]
+}

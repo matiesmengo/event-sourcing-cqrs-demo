@@ -1,7 +1,13 @@
 package com.mengo.booking.domain.service
 
-import com.mengo.booking.domain.model.Booking
+import com.mengo.booking.domain.model.BookingCreatedEvent
+import com.mengo.booking.domain.model.BookingPaymentConfirmedEvent
+import com.mengo.booking.domain.model.BookingPaymentFailedEvent
 
-fun interface BookingEventPublisher {
-    fun publishBookingCreated(booking: Booking)
+interface BookingEventPublisher {
+    fun publishBookingCreated(bookingCreated: BookingCreatedEvent)
+
+    fun publishBookingCompleted(completedBooking: BookingPaymentConfirmedEvent)
+
+    fun publishBookingFailed(failedBooking: BookingPaymentFailedEvent)
 }

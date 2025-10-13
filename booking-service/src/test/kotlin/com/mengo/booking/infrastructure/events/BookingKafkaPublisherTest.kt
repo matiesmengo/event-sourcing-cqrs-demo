@@ -1,12 +1,8 @@
 package com.mengo.booking.infrastructure.events
 
-import com.mengo.booking.domain.model.Booking
-import com.mengo.booking.domain.model.BookingStatus
 import com.mengo.booking.fixtures.BookingConstants.BOOKING_ID
-import com.mengo.booking.fixtures.BookingConstants.RESOURCE_ID
-import com.mengo.booking.fixtures.BookingConstants.USER_ID
+import com.mengo.booking.fixtures.BookingTestData.buildBookingCreatedEvent
 import com.mengo.booking.infrastructure.events.mappers.toAvro
-import java.time.Instant
 import org.apache.avro.specific.SpecificRecord
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
@@ -28,14 +24,7 @@ class BookingKafkaPublisherTest {
     @Test
     fun `should publish BookingCreated event`() {
         // given
-        val booking =
-            Booking(
-                bookingId = BOOKING_ID,
-                userId = USER_ID,
-                resourceId = RESOURCE_ID,
-                bookingStatus = BookingStatus.CREATED,
-                createdAt = Instant.now(),
-            )
+        val booking = buildBookingCreatedEvent()
         val avroBooking = booking.toAvro()
 
         // when

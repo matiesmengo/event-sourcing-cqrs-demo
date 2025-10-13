@@ -1,0 +1,23 @@
+{
+  "namespace": "com.mengo.payment.payload",
+  "type": "record",
+  "name": "PaymentInitiatedPayload",
+  "fields": [
+    {
+      "name": "paymentId",
+      "type": "string"
+    },
+    {
+      "name": "bookingId",
+      "type": "string"
+    },
+    {
+      "name": "totalAmount",
+      "type": "string"
+    },
+    {
+      "name": "createdAt",
+      "type": "string"
+    }
+  ]
+}

@@ -8,7 +8,6 @@ import org.testcontainers.containers.wait.strategy.Wait
 import org.testcontainers.junit.jupiter.Container
 import org.testcontainers.junit.jupiter.Testcontainers
 import org.testcontainers.utility.DockerImageName
-import java.sql.DriverManager
 
 @Testcontainers
 abstract class AbstractInfrastructureE2ETest {
@@ -50,28 +49,14 @@ abstract class AbstractInfrastructureE2ETest {
                 .withPassword("pass")
                 .withNetwork(network)
                 .withNetworkAliases("payment-postgres")
-    }
 
-    fun queryStatus(
-        jdbcUrl: String,
-        schema: String,
-        username: String,
-        password: String,
-        query: String,
-        parameters: List<Any?> = emptyList(),
-    ): Boolean {
-        val urlWithSchema = if (jdbcUrl.contains("?")) "$jdbcUrl&currentSchema=$schema" else "$jdbcUrl?currentSchema=$schema"
-
-        DriverManager.getConnection(urlWithSchema, username, password).use { conn ->
-            conn.prepareStatement(query).use { stmt ->
-                parameters.forEachIndexed { index, param ->
-                    stmt.setObject(index + 1, param)
-                }
-
-                stmt.executeQuery().use { rs ->
-                    return rs.next()
-                }
-            }
-        }
+        @Container
+        val productPostgres =
+            PostgreSQLContainer("postgres:16")
+                .withDatabaseName("product")
+                .withUsername("user")
+                .withPassword("pass")
+                .withNetwork(network)
+                .withNetworkAliases("product-postgres")
     }
 }

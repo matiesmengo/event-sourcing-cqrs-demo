@@ -1,10 +1,13 @@
 package com.mengo.payment.domain.service
 
-import com.mengo.payment.domain.model.CompletedPayment
-import com.mengo.payment.domain.model.FailedPayment
+import com.mengo.payment.domain.model.PaymentCompletedEvent
+import com.mengo.payment.domain.model.PaymentFailedEvent
+import com.mengo.payment.domain.model.PaymentInitiatedEvent
 
 interface PaymentEventPublisher {
-    fun publishPaymentCompleted(payment: CompletedPayment)
+    fun publishPaymentInitiated(payment: PaymentInitiatedEvent)
 
-    fun publishPaymentFailed(payment: FailedPayment)
+    fun publishPaymentCompleted(payment: PaymentCompletedEvent)
+
+    fun publishPaymentFailed(payment: PaymentFailedEvent)
 }

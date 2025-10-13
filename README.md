@@ -119,6 +119,7 @@ mvn clean package
 # 3. Launch run time services
 cd booking-service && mvn spring-boot:run
 cd payment-service && mvn spring-boot:run
+cd product-service && mvn spring-boot:run
 ```
 
 ### Access points
@@ -155,8 +156,7 @@ mvn clean verify
 
 ```bash
 # Run e2e tests
-# 1. Start infrastructure
-docker-compose up -d
+# 1. Start docker engine
 
 # 2. Build all modules
 mvn clean package
@@ -164,6 +164,7 @@ mvn clean package
 # 3. Build images
 docker build -t booking-service:latest -f booking-service/Dockerfile .
 docker build -t payment-service:latest -f payment-service/Dockerfile .
+docker build -t product-service:latest -f product-service/Dockerfile .
 
 # 4. Execute tests
 mvn -pl e2e-tests test

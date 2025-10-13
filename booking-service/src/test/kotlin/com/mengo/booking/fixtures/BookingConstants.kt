@@ -6,5 +6,5 @@ object BookingConstants {
     val BOOKING_ID: UUID = UUID.randomUUID()
     val PAYMENT_ID: UUID = UUID.randomUUID()
     val USER_ID: UUID = UUID.randomUUID()
-    val RESOURCE_ID: UUID = UUID.randomUUID()
+    val PRODUCT_ID: UUID = UUID.randomUUID()
 }

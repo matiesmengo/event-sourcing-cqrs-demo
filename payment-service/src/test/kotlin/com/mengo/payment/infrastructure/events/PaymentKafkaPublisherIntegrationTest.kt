@@ -1,44 +1,75 @@
 package com.mengo.payment.infrastructure.events
 
 import com.mengo.kafka.test.KafkaTestContainerBase
-import com.mengo.payment.domain.model.CompletedPayment
-import com.mengo.payment.domain.model.FailedPayment
-import com.mengo.payment.events.PaymentCompletedEvent
-import com.mengo.payment.events.PaymentFailedEvent
+import com.mengo.payment.domain.model.PaymentCompletedEvent
+import com.mengo.payment.domain.model.PaymentFailedEvent
+import com.mengo.payment.domain.model.PaymentInitiatedEvent
 import com.mengo.payment.fixtures.PaymentConstants.BOOKING_ID
 import com.mengo.payment.fixtures.PaymentConstants.PAYMENT_ID
 import com.mengo.payment.infrastructure.events.KafkaTopics.KAFKA_PAYMENT_COMPLETED
 import com.mengo.payment.infrastructure.events.KafkaTopics.KAFKA_PAYMENT_FAILED
+import com.mengo.payment.infrastructure.events.KafkaTopics.KAFKA_PAYMENT_INITIATED
 import com.mengo.payment.infrastructure.events.mappers.toAvro
-import java.time.Duration
-import kotlin.test.assertEquals
+import com.mengo.payment.payload.PaymentCompletedPayload
+import com.mengo.payment.payload.PaymentFailedPayload
+import com.mengo.payment.payload.PaymentInitiatedPayload
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
+import java.time.Duration
+import kotlin.test.assertEquals
 
 class PaymentKafkaPublisherIntegrationTest : KafkaTestContainerBase() {
     @Autowired
     private lateinit var publisher: PaymentKafkaPublisher
 
     @Test
-    fun `should publish payment completed event to Kafka`() {
+    fun `should publish payment initiated event to Kafka`() {
         // given
-        kafkaConsumer.subscribe(listOf(KAFKA_PAYMENT_COMPLETED))
-        val booking = CompletedPayment(
-            bookingId = BOOKING_ID,
-            paymentId = PAYMENT_ID,
-            reference = "ref-123",
-        )
-        val avroBooking = booking.toAvro()
+        kafkaConsumer.subscribe(listOf(KAFKA_PAYMENT_INITIATED))
+
+        val initiatedPayment =
+            PaymentInitiatedEvent(
+                paymentId = PAYMENT_ID,
+                bookingId = BOOKING_ID,
+                totalAmount = 123.45.toBigDecimal(),
+                aggregateVersion = 1,
+            )
+        val avroPayment = initiatedPayment.toAvro()
 
         // when
-        publisher.publishPaymentCompleted(booking)
+        publisher.publishPaymentInitiated(initiatedPayment)
 
         // then
         val records = kafkaConsumer.poll(Duration.ofSeconds(10))
         assertEquals(1, records.count())
         val record = records.first()
-        assertEquals(avroBooking.paymentId.toString(), record.key())
-        assertEquals(avroBooking.paymentId, (record.value() as PaymentCompletedEvent).paymentId)
+        assertEquals(avroPayment.bookingId.toString(), record.key())
+        assertEquals(avroPayment.paymentId, (record.value() as PaymentInitiatedPayload).get("paymentId"))
+    }
+
+    @Test
+    fun `should publish payment completed event to Kafka`() {
+        // given
+        kafkaConsumer.subscribe(listOf(KAFKA_PAYMENT_COMPLETED))
+
+        val completedPayment =
+            PaymentCompletedEvent(
+                paymentId = PAYMENT_ID,
+                bookingId = BOOKING_ID,
+                reference = "ref-123",
+                aggregateVersion = 2,
+            )
+        val avroPayment = completedPayment.toAvro()
+
+        // when
+        publisher.publishPaymentCompleted(completedPayment)
+
+        // then
+        val records = kafkaConsumer.poll(Duration.ofSeconds(10))
+        assertEquals(1, records.count())
+        val record = records.first()
+        assertEquals(avroPayment.bookingId.toString(), record.key())
+        assertEquals(avroPayment.paymentId, (record.value() as PaymentCompletedPayload).get("paymentId"))
     }
 
     @Test
@@ -46,12 +77,14 @@ class PaymentKafkaPublisherIntegrationTest : KafkaTestContainerBase() {
         // given
         kafkaConsumer.subscribe(listOf(KAFKA_PAYMENT_FAILED))
 
-        val failedPayment = FailedPayment(
-            bookingId = BOOKING_ID,
-            paymentId = PAYMENT_ID,
-            reason = "reason failed payment",
-        )
-        val avroBooking = failedPayment.toAvro()
+        val failedPayment =
+            PaymentFailedEvent(
+                paymentId = PAYMENT_ID,
+                bookingId = BOOKING_ID,
+                reason = "reason failed payment",
+                aggregateVersion = 2,
+            )
+        val avroPayment = failedPayment.toAvro()
 
         // when
         publisher.publishPaymentFailed(failedPayment)
@@ -60,8 +93,7 @@ class PaymentKafkaPublisherIntegrationTest : KafkaTestContainerBase() {
         val records = kafkaConsumer.poll(Duration.ofSeconds(10))
         assertEquals(1, records.count())
         val record = records.first()
-        assertEquals(avroBooking.paymentId.toString(), record.key())
-        assertEquals(avroBooking.paymentId, (record.value() as PaymentFailedEvent).paymentId)
+        assertEquals(avroPayment.bookingId.toString(), record.key())
+        assertEquals(avroPayment.paymentId, (record.value() as PaymentFailedPayload).get("paymentId"))
     }
-
 }
