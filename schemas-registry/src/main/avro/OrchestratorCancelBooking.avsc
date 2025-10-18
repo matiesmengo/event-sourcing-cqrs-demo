@@ -1,0 +1,11 @@
+{
+  "namespace": "com.mengo.orchestrator.payload",
+  "type": "record",
+  "name": "OrchestratorCancelBookingPayload",
+  "fields": [
+    {
+      "name": "bookingId",
+      "type": "string"
+    }
+  ]
+}

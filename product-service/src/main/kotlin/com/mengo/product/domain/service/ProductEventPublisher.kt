@@ -1,7 +1,9 @@
 package com.mengo.product.domain.service
 
-import com.mengo.product.domain.model.ProductReservedEvent
+import com.mengo.product.domain.model.BookingCommand
 
-fun interface ProductEventPublisher {
-    fun publishProductReserved(productReservedEvent: ProductReservedEvent)
+interface ProductEventPublisher {
+    fun publishProductReserved(reserved: BookingCommand.Reserved)
+
+    fun publishProductReservedFailed(reservedFailed: BookingCommand.ReservedFailed)
 }

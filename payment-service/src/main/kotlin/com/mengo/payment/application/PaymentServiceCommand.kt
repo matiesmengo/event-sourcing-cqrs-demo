@@ -18,12 +18,14 @@ open class PaymentServiceCommand(
     private val eventStoreRepository: PaymentEventStoreRepository,
     private val eventPublisher: PaymentEventPublisher,
 ) : PaymentService {
+    // TODO: command class
+
     @Transactional
-    override fun onBookingReserved(bookingPayment: BookingPayment) {
+    override fun onRequestPayment(bookingPayment: BookingPayment) {
         val createdEvent =
             PaymentInitiatedEvent(
                 bookingId = bookingPayment.bookingId,
-                totalAmount = bookingPayment.price,
+                totalPrice = bookingPayment.totalPrice,
                 aggregateVersion = 1,
             )
         eventStoreRepository.save(createdEvent)

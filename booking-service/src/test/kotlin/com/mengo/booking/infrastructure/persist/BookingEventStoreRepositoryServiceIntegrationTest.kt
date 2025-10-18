@@ -1,8 +1,8 @@
 package com.mengo.booking.infrastructure.persist
 
+import com.mengo.booking.domain.model.BookingConfirmedEvent
 import com.mengo.booking.domain.model.BookingCreatedEvent
-import com.mengo.booking.domain.model.BookingPaymentConfirmedEvent
-import com.mengo.booking.domain.model.BookingPaymentFailedEvent
+import com.mengo.booking.domain.model.BookingFailedEvent
 import com.mengo.booking.fixtures.BookingTestData.buildBookingCreatedEvent
 import com.mengo.booking.fixtures.BookingTestData.buildBookingPaymentConfirmedEvent
 import com.mengo.booking.fixtures.BookingTestData.buildBookingPaymentFailedEvent
@@ -47,7 +47,7 @@ class BookingEventStoreRepositoryServiceIntegrationTest : PostgresTestContainerB
 
         // then
         assertNotNull(fetched)
-        assertTrue(fetched is BookingPaymentConfirmedEvent)
+        assertTrue(fetched is BookingConfirmedEvent)
         assertEquals(booking.bookingId, fetched.bookingId)
         assertEquals(booking.aggregateVersion, fetched.aggregateVersion)
     }
@@ -64,7 +64,7 @@ class BookingEventStoreRepositoryServiceIntegrationTest : PostgresTestContainerB
 
         // then
         assertNotNull(fetched)
-        assertTrue(fetched is BookingPaymentFailedEvent)
+        assertTrue(fetched is BookingFailedEvent)
         assertEquals(booking.bookingId, fetched.bookingId)
         assertEquals(booking.aggregateVersion, fetched.aggregateVersion)
     }

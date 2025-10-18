@@ -1,0 +1,11 @@
+{
+  "namespace": "com.mengo.booking.payload",
+  "type": "record",
+  "name": "BookingConfirmedPayload",
+  "fields": [
+    {
+      "name": "bookingId",
+      "type": "string"
+    }
+  ]
+}

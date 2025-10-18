@@ -30,8 +30,7 @@ class PaymentServiceCommandTest {
     private lateinit var service: PaymentServiceCommand
 
     private val bookingId = UUID.randomUUID()
-    private val productId = UUID.randomUUID()
-    private val bookingPayment = BookingPayment(bookingId, productId, BigDecimal("123.45"))
+    private val bookingPayment = BookingPayment(bookingId, BigDecimal("123.45"))
 
     @BeforeEach
     fun setUp() {
@@ -40,11 +39,14 @@ class PaymentServiceCommandTest {
 
     @Test
     fun `should process new payment successfully`() {
-        whenever(processor.executePayment(any())).thenReturn(PaymentProcessorResult.Success("ref-123"))
+        // given
+        whenever(processor.executePayment(any()))
+            .thenReturn(PaymentProcessorResult.Success("ref-123"))
 
-        service.onBookingReserved(bookingPayment)
+        // when
+        service.onRequestPayment(bookingPayment)
 
-        // Captura tots els events guardats
+        // then
         val captor = argumentCaptor<PaymentEvent>()
         verify(eventStoreRepository, times(2)).save(captor.capture())
 
@@ -55,7 +57,7 @@ class PaymentServiceCommandTest {
         // PaymentInitiatedEvent
         assertTrue(initiated is PaymentInitiatedEvent)
         assertEquals(bookingId, initiated.bookingId)
-        assertEquals(bookingPayment.price, initiated.totalAmount)
+        assertEquals(bookingPayment.totalPrice, initiated.totalPrice)
         assertEquals(1, initiated.aggregateVersion)
 
         verify(eventPublisher).publishPaymentInitiated(initiated)
@@ -71,10 +73,14 @@ class PaymentServiceCommandTest {
 
     @Test
     fun `should process new payment with failure`() {
-        whenever(processor.executePayment(any())).thenReturn(PaymentProcessorResult.Failure("insufficient funds"))
+        // given
+        whenever(processor.executePayment(any()))
+            .thenReturn(PaymentProcessorResult.Failure("insufficient funds"))
 
-        service.onBookingReserved(bookingPayment)
+        // when
+        service.onRequestPayment(bookingPayment)
 
+        // then
         val captor = argumentCaptor<PaymentEvent>()
         verify(eventStoreRepository, times(2)).save(captor.capture())
 
@@ -85,7 +91,7 @@ class PaymentServiceCommandTest {
         // PaymentInitiatedEvent
         assertTrue(initiated is PaymentInitiatedEvent)
         assertEquals(bookingId, initiated.bookingId)
-        assertEquals(bookingPayment.price, initiated.totalAmount)
+        assertEquals(bookingPayment.totalPrice, initiated.totalPrice)
         assertEquals(1, initiated.aggregateVersion)
 
         verify(eventPublisher).publishPaymentInitiated(initiated)

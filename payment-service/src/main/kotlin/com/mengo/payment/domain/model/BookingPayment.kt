@@ -5,6 +5,5 @@ import java.util.UUID
 
 data class BookingPayment(
     val bookingId: UUID,
-    val productId: UUID,
-    val price: BigDecimal,
+    val totalPrice: BigDecimal,
 )

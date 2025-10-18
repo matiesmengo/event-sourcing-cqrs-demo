@@ -2,6 +2,7 @@ package com.mengo.booking.fixtures
 
 import org.intellij.lang.annotations.Language
 
+// TODO: Refactor
 class JsonString(
     @Language("JSON") private val json: String,
 ) {

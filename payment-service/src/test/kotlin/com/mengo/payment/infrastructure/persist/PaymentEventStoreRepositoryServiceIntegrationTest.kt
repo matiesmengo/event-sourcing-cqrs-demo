@@ -40,7 +40,7 @@ class PaymentEventStoreRepositoryServiceIntegrationTest : PostgresTestContainerB
                 PaymentInitiatedEvent(
                     paymentId = UUID.randomUUID(),
                     bookingId = bookingId,
-                    totalAmount = BigDecimal("123.45"),
+                    totalPrice = BigDecimal("123.45"),
                     aggregateVersion = 1,
                 ),
                 PaymentCompletedEvent(

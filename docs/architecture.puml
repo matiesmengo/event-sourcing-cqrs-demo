@@ -1,5 +1,5 @@
 @startuml
-title Event-Driven Demo – System Architecture
+title System Architecture - Event-Source + CQRS + SAGA Demo
 !theme plain
 
 ' ========= GLOBAL STYLING =========
@@ -30,37 +30,70 @@ skinparam component {
 }
 skinparam actorStyle awesome
 
-' ========= ACTORS =========
+' ========= ACTOR =========
 actor "User" as user #4F81BD
 
-' ========= GROUPS =========
+' ========= SERVICE CONTEXTS =========
 rectangle "<b>Booking Context</b>" as booking #EFF6FF {
-  node "Booking API" as booking_api
-  node "Booking Service" as booking_service
+    node "Booking API" as booking_api
+    node "Booking Service" as booking_service
+}
+
+rectangle "<b>Infrastructure</b>" as bookingdb #F8F8F8 {
+    database "Booking\nWrite model\nPostgreSQL" as booking_write_db
+    database "Booking\nRead model\nMongoDB" as booking_read_db
+    database "Orchestrator\nWrite model\nPostgreSQL" as orchestrator_write_db
+    database "Orchestrator\nRead model\nMongoDB" as orchestrator_read_db
+    database "Product\nWrite model\nPostgreSQL" as product_write_db
+    database "Product\nRead model\nMongoDB" as product_read_db
+    database "Payment\nWrite model\nPostgreSQL" as payment_write_db
+    database "Payment\nRead model\nMongoDB" as payment_read_db
+}
+
+rectangle "<b>Orchestrator Context</b>" as orchestrator #FFF3F3 {
+  node "Orchestrator Service" as saga
+
+  rectangle "<b>Broker</b>" as broker #F8F8F8 {
+    node "Kafka Broker" as kafka #FFF4E6
+    node "Schema Registry" as registry #FFF9E8
+  }
+}
+
+rectangle "<b>Product Context</b>" as product #F0FDF4 {
+    node "Product Service" as product_service
 }
 
 rectangle "<b>Payment Context</b>" as payment #FDF6EC {
-  node "Payment Service" as payment_service
-}
-
-rectangle "<b>Infrastructure Layer</b>" as infra #F8F8F8 {
-  node "Kafka Broker" as kafka #FFF4E6
-  node "Schema Registry" as registry #FFF9E8
-  database "Booking DB\n(PostgreSQL)" as booking_db
-  database "Payment DB\n(PostgreSQL)" as payment_db
+    node "Payment Service" as payment_service
 }
 
 ' ========= FLOWS =========
+
+' User -> Booking
 user --> booking_api
-
 booking_api --> booking_service
+booking_service --> booking_write_db
+booking_service --> booking_read_db
 
-booking_service --> booking_db
-booking_service <-[#3366CC,dashed]-> kafka
+' Booking & Orchestrator
+kafka <-[#3366CC,dashed]-> booking_service
+kafka <-[#3366CC,dashed]-> saga
+saga --> orchestrator_write_db
+saga --> orchestrator_read_db
 
-payment_service --> payment_db
-payment_service <-[#3366CC,dashed]-> kafka
+' Product
+product_service --> product_write_db
+product_service --> product_read_db
+kafka <-[#3366CC,dashed]-> product_service
 
-' Infrastructure
+' Payment
+kafka <-[#3366CC,dashed]-> payment_service
+payment_service --> payment_write_db
+payment_service --> payment_read_db
+
+
+' DataBase
 kafka --> registry: Validate
+
+
 @enduml

@@ -1,7 +1,7 @@
 package com.mengo.product.domain.service
 
-import com.mengo.product.domain.model.Booking
+import com.mengo.product.domain.model.BookingProduct
 
 fun interface ProductService {
-    fun onBookingCreated(booking: Booking)
+    fun onBookingCreated(product: BookingProduct)
 }

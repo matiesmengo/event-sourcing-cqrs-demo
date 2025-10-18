@@ -9,7 +9,6 @@
 
 The `payment-service` is responsible for all payment-related operations:
 
-- Expose payment endpoints to other microservices via **Feign clients**.
 - Communicate asynchronously using **Kafka events** (e.g., payment completed, payment failed).
 - Persist payment data in **PostgreSQL**, using a dedicated **`payment` schema** with **Flyway** migrations.
 - Handle **create, update, and query payment transactions** with proper validations and business logic.

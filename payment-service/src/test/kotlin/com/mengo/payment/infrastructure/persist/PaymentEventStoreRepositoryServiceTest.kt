@@ -48,7 +48,7 @@ class PaymentEventStoreRepositoryServiceTest {
             PaymentInitiatedEvent(
                 paymentId = UUID.randomUUID(),
                 bookingId = UUID.randomUUID(),
-                totalAmount = BigDecimal("123.45"),
+                totalPrice = BigDecimal("123.45"),
                 aggregateVersion = 1,
             )
 

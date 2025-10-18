@@ -33,6 +33,15 @@ abstract class AbstractInfrastructureE2ETest {
                 .waitingFor(Wait.forHttp("/subjects").forStatusCode(200))
 
         @Container
+        val orchestratorPostgres =
+            PostgreSQLContainer("postgres:16")
+                .withDatabaseName("orchestrator")
+                .withUsername("user")
+                .withPassword("pass")
+                .withNetwork(network)
+                .withNetworkAliases("orchestrator-postgres")
+
+        @Container
         val bookingPostgres =
             PostgreSQLContainer("postgres:16")
                 .withDatabaseName("booking")

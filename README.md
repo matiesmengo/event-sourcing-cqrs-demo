@@ -1,4 +1,4 @@
-# Event-Driven Demo
+# Event-Sourcing + CQRS + SAGA Demo
 ![Spring Boot](https://img.shields.io/badge/SpringBoot-3.5.6-brightgreen)
 ![Kotlin](https://img.shields.io/badge/Kotlin-1.9.25-blue)
 ![Java](https://img.shields.io/badge/Java-21-orange)
@@ -12,39 +12,42 @@
 ![Maven](https://img.shields.io/badge/Maven-3.9.11-brightgreen)
 ![Docker](https://img.shields.io/badge/Docker-required-blue)
 
-This project is a technical demonstration of an event-driven microservices architecture, designed to showcase advanced backend engineering concepts such as CQRS, partial Event Sourcing, idempotency, event versioning, distributed tracing, and resilience patterns.
+This project is a technical demonstration of an event-sourcing microservices architecture, designed to showcase advanced backend engineering concepts such as CQRS, SAGA orchestration, idempotency, event versioning, distributed tracing, and resilience patterns.
 
 The objective is to illustrate how to design, implement, and operate a production-grade distributed system based on asynchronous communication using Apache Kafka, ensuring eventual consistency, traceability, and observability across services.
 
 ---
 
 ## 🧠 Key Concepts Demonstrated
+| Category          | Concept                    | Description                                                                                                                                                                                         |
+| ----------------- | -------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Architecture**  | Hexagonal                  | Services follow the hexagonal design, decoupling core domain logic from infrastructure like Kafka, REST APIs, and databases for modularity, testability, and maintainability.    |
+| **Data Pattern**  | Event Sourcing             | Application state is captured as a sequence of domain events **published to Kafka**. Events are persisted in PostgreSQL for durability and can be replayed or reconstructed for full auditability.  |
+| **Data Pattern**  | CQRS (Command / Query)     | Separates commands (writes) from queries (reads). Commands update PostgreSQL events; queries are served from MongoDB projections, enabling independent scaling and optimized read/write operations. |
+| **Orchestration** | SAGA Pattern               | Centralized coordination of distributed workflows using the Booking Service Orchestrator, with compensating transactions to handle failures and ensure eventual consistency.                        |
+| **Consistency**   | Eventual consistency       | Each service maintains local state derived from domain events, ensuring eventual consistency across the system.                                                                                     |
+| **Reliability**   | Idempotent consumers       | Guarantees events are processed logically exactly once, even if received multiple times.                                                                                                            |
+| **Contracts**     | Schema Registry            | Central repository of Avro schemas for validation, versioning, and backward/forward compatibility of events.                                                                                        |
+| **Testing**       | Testcontainers             | End-to-end testing with ephemeral Kafka, PostgreSQL, and MongoDB instances to ensure reliable integration and system behavior.                                                                      |
+| **Resilience**    | Retry, DLQ, Outbox Pattern | Ensures reliable message delivery under transient failures, preventing lost or duplicate events.                                                                                                    |
+| **Observability** | Tracing & Metrics          | Distributed tracing and metrics collection using OpenTelemetry and Micrometer for monitoring, debugging, and performance analysis across services.                                                  |
 
-| Category          | Concept                    | Description                                                                           |
-| ----------------- |----------------------------| ------------------------------------------------------------------------------------- |
-| **Architecture**  | Event-Driven + Hexagonal   | Services communicate asynchronously through Kafka events.                             |
-| **Consistency**   | Eventual consistency       | Each service maintains local state derived from domain events.                        |
-| **Reliability**   | Idempotent consumers       | Ensures events are processed exactly once logically, even if received multiple times. |
-| **Contracts**     | Schema Registry            | Central contract repository using Avro schemas for validation and evolution.          |
-| **Testing**       | Testcontainers             | End-to-end testing with ephemeral Kafka, PostgreSQL, and services.                    |
-| **Resilience**    | Retry, DLQ, Outbox Pattern | Ensures message delivery under transient failures.                                    |
-| **Observability** | Tracing & Metrics          | OpenTelemetry and Micrometer integration for cross-service tracing.                   |
 
 ---
 
 ## 🧩 Project Structure
-
-| Directory                        | Description                                                                            |
-| -------------------------------- | -------------------------------------------------------------------------------------- |
-| `mengo-platform/mengo-bom`       | BOM to manage dependency versions across modules.                                      |
-| `mengo-platform/mengo-parent`    | Parent POM defining unified build and dependency management.                           |
-| `mengo-platform/mengo-starters/` | Custom Spring Boot starters for Kafka, PostgreSQL, metrics, and testing.               |
-| `schemas-registry/`              | Centralized Avro schemas for all domain events, used for validation and compatibility. |
-| `booking-service-api/`           | OpenAPI definition and Feign clients for synchronous communication.                    |
-| `booking-service/`               | Handles booking creation; publishes and consumes domain events.                        |
-| `payment-service/`               | Handles payment workflows; consumes booking events and emits payment outcomes.         |
-| `e2e-tests/`                     | End-to-end tests using Testcontainers and Docker Compose.                              |
-| `docs/`                          | Architecture documentation, ADRs, and UML diagrams.                                    |
+| Directory                        | Description                                                                                                   |
+|----------------------------------|---------------------------------------------------------------------------------------------------------------|
+| `mengo-platform/mengo-bom`       | BOM to manage dependency versions across modules.                                                             |
+| `mengo-platform/mengo-parent`    | Parent POM defining unified build and dependency management.                                                  |
+| `mengo-platform/mengo-starters/` | Custom Spring Boot starters for Kafka, PostgreSQL, metrics, and testing.                                      |
+| `schemas-registry/`              | Centralized Avro schemas for all domain events, used for validation and compatibility.                        |
+| `booking-service-orchestrator/`  | Implements SAGA orchestration; coordinates bookings, product reservations, and payments using CQRS and Kafka. |
+| `booking-service-api/`           | OpenAPI definition and Feign clients for synchronous communication.                                           |
+| `booking-service/`               | Handles booking creation; publishes and consumes domain events.                                               |
+| `payment-service/`               | Handles payment workflows; consumes booking events and emits payment outcomes.                                |
+| `e2e-tests/`                     | End-to-end tests using Testcontainers and Docker Compose.                                                     |
+| `docs/`                          | Architecture documentation, ADRs, and UML diagrams.                                                           |
 
 ---
 
@@ -57,6 +60,7 @@ The objective is to illustrate how to design, implement, and operate a productio
 - *Contract-first Schema Evolution:* Every event schema is versioned and validated at runtime.
 - *Observability-first:* Tracing, logging, and metrics are part of the architecture from day one.
 - *Resilience by Design:* Outbox pattern, retries, idempotent handlers, and DLQs ensure robustness.
+- *Centralized Orchestration:* The Booking Service Orchestrator coordinates distributed workflows using the SAGA pattern to ensure eventual consistency.
 
 ### High-Level Architecture
 ![Architecture Diagram](./docs/architecture.png)
@@ -65,37 +69,23 @@ The objective is to illustrate how to design, implement, and operate a productio
 
 ## 🔄 Event Flow
 
-1. **Booking Creation**
-   - Client calls `/api/bookings` via REST
-   - `BookingService` validates request, 
-   - Save booking status created to postgresql
-   - Publishes `BookingCreated` event to Kafka
+![Event Flow Diagram](./docs/SAGA-diagram.png)
 
-2. **Payment Processing**
-   - `PaymentService` consumes `BookingCreated`
-   - Save state pending to postgresql
-   - Initiates payment workflow
-   - Update state completed/failed to postgresql
-   - Publishes `PaymentCompleted` or `PaymentFailed`
-
-3. **Booking Confirmation**
-   - `BookingService` consumes payment events
-   - Updates booking status paid to postgresql
-   - Publishes `BookingConfirmed` or `BookingCancelled`
 
 ---
 
 ## 🧰 Tech Stack
 
-| Layer / Purpose               | Technology & Version                   | Description / Role                                                                                        |
-| ----------------------------- |----------------------------------------| --------------------------------------------------------------------------------------------------------- |
-| **Language & Framework**      | Java 21 / Kotlin 1.9.25 / Spring Boot 3.5.x | Core language and framework for microservices, dependency injection, REST, and application bootstrapping. |
-| **Messaging / Event Bus**     | Apache Kafka                           | Asynchronous backbone for event-driven communication between microservices.                               |
-| **Schema Management**         | Confluent Schema Registry              | Centralized Avro schemas for validation, evolution, and backward/forward compatibility.                   |
-| **Persistence**               | PostgreSQL                             | Relational database for each service to maintain local state.                                             |
-| **Testing / CI**              | Testcontainers                         | Ephemeral Kafka, PostgreSQL, and service environments for reliable integration & E2E testing.             |
-| **Containerization / DevOps** | Docker Compose                         | Local orchestration of microservices, databases, and Kafka for reproducible environments.                 |
-| **Observability / Metrics**   | OpenTelemetry / Micrometer             | Distributed tracing and metrics collection for monitoring, performance, and troubleshooting.              |
+| Layer / Purpose                | Technology & Version                        | Description / Role                                                                                                |
+|--------------------------------|---------------------------------------------|-------------------------------------------------------------------------------------------------------------------|
+| **Language & Framework**       | Java 21 / Kotlin 1.9.25 / Spring Boot 3.5.x | Core language and framework for microservices, dependency injection, REST, and application bootstrapping.         |
+| **Messaging / Event Bus**      | Apache Kafka                                | Asynchronous backbone for event-driven communication between microservices.                                       |
+| **Schema Management**          | Confluent Schema Registry                   | Centralized Avro schemas for validation, evolution, and backward/forward compatibility.                           |
+| **Persistence**                | PostgreSQL                                  | Relational database for persisting events, snapshots, and transactional state in each service.                    |
+| **Read Model / Projection DB** | MongoDB                                     | Stores read-model projections for efficient queries in CQRS, enabling fast and flexible read operations.          |
+| **Testing / CI**               | Testcontainers                              | Ephemeral Kafka, PostgreSQL, and MongoDB environments for unit, integration, and end-to-end testing.              |
+| **Containerization / DevOps**  | Docker Compose                              | Local orchestration of microservices, databases, and Kafka for reproducible development and testing environments. |
+| **Observability / Metrics**    | OpenTelemetry / Micrometer                  | Distributed tracing and metrics collection for monitoring, performance, and troubleshooting.                      |
 
 ---
 
@@ -120,6 +110,7 @@ mvn clean package
 cd booking-service && mvn spring-boot:run
 cd payment-service && mvn spring-boot:run
 cd product-service && mvn spring-boot:run
+cd booking-service-orchestration && mvn spring-boot:run
 ```
 
 ### Access points
@@ -131,8 +122,17 @@ cd product-service && mvn spring-boot:run
 curl --location 'localhost:8080/bookings' \
 --header 'Content-Type: application/json' \
 --data '{
-"userId": "1881b6c3-1786-4b89-b213-84ab680e03ff",
-"resourceId": "6ae4b636-de29-4982-abd0-e588b4078a9f"
+    "userId": "1881b6c3-1786-4b89-b213-84ab680e03ff",
+    "products": [
+        {
+            "productId": "11111111-1111-1111-1111-111111111111",
+            "quantity": 10
+        },
+        {
+            "productId": "22222222-2222-2222-2222-222222222222",
+            "quantity": 20
+        }
+    ]
 }'
 ```
 
@@ -162,6 +162,7 @@ mvn clean verify
 mvn clean package
 
 # 3. Build images
+docker build -t booking-service-orchestration:latest -f booking-service-orchestration/Dockerfile .
 docker build -t booking-service:latest -f booking-service/Dockerfile .
 docker build -t payment-service:latest -f payment-service/Dockerfile .
 docker build -t product-service:latest -f product-service/Dockerfile .
@@ -172,12 +173,13 @@ mvn -pl e2e-tests test
 ---
 
 ## 🧭 To do
-| Area              | Next Step                                                 |
-| ----------------- | --------------------------------------------------------- |
-| **Persistence**   | Implement CQRS (Command/Query Responsibility Segregation) |
-| **Resilience**    | Implement retries, DLQ, and idempotent message handling   |
-| **Observability** | Integrate Micrometer + Prometheus + OpenTelemetry tracing |
-| **CI/CD**         | Automate tests and build with GitHub Actions              |
+| Area              | Next Step                                                                      |
+| ----------------- | ------------------------------------------------------------------------------ |
+| **Persistence**   | Implement Queries and update projections (CQRS)                                |
+| **Resilience**    | Implement retries, DLQ, and idempotent message handling                        |
+| **Observability** | Integrate Micrometer + Prometheus + OpenTelemetry tracing                      |
+| **CI/CD**         | Automate tests and build with GitHub Actions                                   |
+| **Performance**   | Implement load and performance tests to evaluate system throughput and latency |
 
 ---
 

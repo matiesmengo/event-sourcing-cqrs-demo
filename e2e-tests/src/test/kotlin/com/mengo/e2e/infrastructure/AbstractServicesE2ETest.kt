@@ -7,6 +7,21 @@ import org.testcontainers.junit.jupiter.Container
 abstract class AbstractServicesE2ETest : AbstractInfrastructureE2ETest() {
     // TODO: migrate from "waitingFor" to health checks
     companion object {
+        @Container
+        val orchestratorService =
+            GenericContainer("booking-service-orchestrator:latest")
+                .withExposedPorts(8085)
+                .dependsOn(orchestratorPostgres, kafka, schemaRegistry)
+                .withNetwork(network)
+                .withEnv("SPRING_DATASOURCE_URL", "jdbc:postgresql://orchestrator-postgres:5432/orchestrator")
+                .withEnv("SPRING_DATASOURCE_USERNAME", "user")
+                .withEnv("SPRING_DATASOURCE_PASSWORD", "pass")
+                .withEnv("SPRING_KAFKA_BOOTSTRAP_SERVERS", "kafka:9092")
+                .withEnv("SCHEMA_REGISTRY_URL", "http://schema-registry:8081")
+                .withEnv("SPRING_KAFKA_CONSUMER_PROPERTIES_SCHEMA_REGISTRY_URL", "http://schema-registry:8081")
+                .withEnv("SPRING_KAFKA_PRODUCER_PROPERTIES_SCHEMA_REGISTRY_URL", "http://schema-registry:8081")
+                .waitingFor(Wait.forLogMessage(".*Started BookingOrchestratorApplication.*", 1))
+
         val bookingService =
             GenericContainer("booking-service:latest")
                 .withExposedPorts(8080)

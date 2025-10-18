@@ -14,7 +14,7 @@ sealed interface PaymentEvent {
 data class PaymentInitiatedEvent(
     override val paymentId: UUID = UUID.randomUUID(),
     override val bookingId: UUID,
-    val totalAmount: BigDecimal,
+    val totalPrice: BigDecimal,
     override val aggregateVersion: Int,
     override val createdAt: Instant = Instant.now(),
 ) : PaymentEvent

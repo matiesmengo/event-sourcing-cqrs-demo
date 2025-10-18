@@ -34,7 +34,7 @@ class PaymentKafkaPublisherTest {
             PaymentInitiatedEvent(
                 paymentId = PAYMENT_ID,
                 bookingId = BOOKING_ID,
-                totalAmount = 123.45.toBigDecimal(),
+                totalPrice = 123.45.toBigDecimal(),
                 aggregateVersion = 1,
             )
         val avroPayment = initiatedPayment.toAvro()

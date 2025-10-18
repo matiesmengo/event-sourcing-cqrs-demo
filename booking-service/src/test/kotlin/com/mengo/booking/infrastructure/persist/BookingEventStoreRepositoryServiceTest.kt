@@ -2,8 +2,8 @@ import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.databind.SerializationFeature
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule
 import com.fasterxml.jackson.module.kotlin.KotlinModule
+import com.mengo.booking.domain.model.BookingConfirmedEvent
 import com.mengo.booking.domain.model.BookingCreatedEvent
-import com.mengo.booking.domain.model.BookingPaymentConfirmedEvent
 import com.mengo.booking.fixtures.BookingConstants.BOOKING_ID
 import com.mengo.booking.fixtures.BookingTestData.buildBookingCreatedEvent
 import com.mengo.booking.fixtures.BookingTestData.buildBookingPaymentConfirmedEvent
@@ -114,7 +114,7 @@ class BookingEventStoreRepositoryServiceTest {
         // assert
         assertNotNull(result)
         assertEquals(confirmedEvent.aggregateVersion, result.aggregateVersion)
-        assertTrue(result is BookingPaymentConfirmedEvent)
+        assertTrue(result is BookingConfirmedEvent)
     }
 
     @Test

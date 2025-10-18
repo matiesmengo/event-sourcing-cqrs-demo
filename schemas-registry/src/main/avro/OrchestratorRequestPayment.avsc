@@ -1,0 +1,20 @@
+{
+  "namespace": "com.mengo.orchestrator.payload",
+  "type": "record",
+  "name": "OrchestratorRequestPaymentPayload",
+  "fields": [
+    {
+      "name": "bookingId",
+      "type": "string"
+    },
+    {
+      "name": "totalPrice",
+      "type": {
+        "type": "bytes",
+        "logicalType": "decimal",
+        "precision": 18,
+        "scale": 2
+      }
+    }
+  ]
+}

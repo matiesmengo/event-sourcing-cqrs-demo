@@ -1,0 +1,54 @@
+@startuml
+title Event Flow Diagram - Event-Source + SAGA Demo
+
+actor User
+participant "booking-service" as Booking
+participant "booking-service-orchestrator" as Saga
+participant "product-service" as Product
+participant "payment-service" as Payment
+
+== 1. Booking Creation ==
+User -> Booking : POST /bookings [P1, P2, P3]
+Booking -> Saga : (publish: booking.created)
+
+== 2. Start Product Reservations ==
+Saga -> Saga : create SagaState(expectedProducts=[P1,P2,P3])
+Saga -> Product : (publish: saga.request-stock) ×3 \n one per product
+
+== 3. Product Reservations ==
+Product -> Product : check availability
+alt all products available
+    Product -> Saga : (publish: product.reserved) ×3
+else some product unavailable
+    Product -> Saga : (publish: product.reservation-failed)
+end
+
+== 4. Saga Payment Process ==
+Saga -> Saga : update SagaState\n(track reserved products)
+alt all reserved
+    Saga -> Payment : (publish: saga.request-payment)
+else any failed
+    Saga -> Booking : (publish: saga.cancel-booking)
+    Saga -> Product : (publish: saga.release-stock)
+end
+
+== 5. Payment Process ==
+Payment -> Payment : process payment
+alt success
+    Payment -> Saga : (publish: payment.completed)
+else failed
+    Payment -> Saga : (publish: payment.failed)
+end
+
+== 6. Saga Finalization ==
+alt payment completed
+    Saga -> Booking : (publish: saga.confirm-booking)
+else payment failed
+    Saga -> Booking : (publish: saga.cancel-booking)
+    Saga -> Product : (publish: saga.release-stock)
+end
+
+== 7. Booking Finalization ==
+Booking -> Saga : publish booking.completed
+
+@enduml

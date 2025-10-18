@@ -1,7 +1,8 @@
 package com.mengo.product.infrastructure.events
 
-import com.mengo.product.domain.model.ProductReservedEvent
+import com.mengo.product.domain.model.BookingCommand
 import com.mengo.product.domain.service.ProductEventPublisher
+import com.mengo.product.infrastructure.events.KafkaTopics.KAFKA_PRODUCT_RESERVATION_FAILED
 import com.mengo.product.infrastructure.events.KafkaTopics.KAFKA_PRODUCT_RESERVED
 import com.mengo.product.infrastructure.events.mappers.toAvro
 import org.apache.avro.specific.SpecificRecord
@@ -12,8 +13,13 @@ import org.springframework.stereotype.Component
 class ProductKafkaPublisher(
     private val kafkaTemplate: KafkaTemplate<String, SpecificRecord>,
 ) : ProductEventPublisher {
-    override fun publishProductReserved(productReservedEvent: ProductReservedEvent) {
-        val avroPayment = productReservedEvent.toAvro()
+    override fun publishProductReserved(reserved: BookingCommand.Reserved) {
+        val avroPayment = reserved.toAvro()
         kafkaTemplate.send(KAFKA_PRODUCT_RESERVED, avroPayment.bookingId.toString(), avroPayment)
+    }
+
+    override fun publishProductReservedFailed(reservedFailed: BookingCommand.ReservedFailed) {
+        val avroPayment = reservedFailed.toAvro()
+        kafkaTemplate.send(KAFKA_PRODUCT_RESERVATION_FAILED, avroPayment.bookingId.toString(), avroPayment)
     }
 }

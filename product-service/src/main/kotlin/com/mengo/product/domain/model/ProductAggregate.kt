@@ -1,11 +1,13 @@
 package com.mengo.product.domain.model
 
+import java.math.BigDecimal
 import java.util.UUID
 
 data class ProductAggregate(
     val productId: UUID,
     val stockTotal: Int,
     val reserved: Int,
+    val price: BigDecimal,
     val lastEventVersion: Int,
 ) {
     companion object {
@@ -28,6 +30,7 @@ data class ProductAggregate(
                         productId = event.productId,
                         stockTotal = event.stockTotal,
                         reserved = 0,
+                        price = event.price,
                         lastEventVersion = event.aggregateVersion,
                     )
 

@@ -1,4 +1,4 @@
-# ADR 0004: Event Sourcing + CQRS
+# ADR 0005: Event Sourcing + CQRS
 
 ## Context:
 After experimenting with a standard Event-Driven Architecture (EDA) using Kafka, the project team wanted a more precise way to model domain state changes, improve auditability, and optimize read/write performance. While EDA allows asynchronous communication, it does not inherently provide a replayable state history or separation of concerns between reads and writes.
