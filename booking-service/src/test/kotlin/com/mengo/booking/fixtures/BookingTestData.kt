@@ -1,9 +1,9 @@
 package com.mengo.booking.fixtures
 
-import com.mengo.booking.domain.model.BookingConfirmedEvent
-import com.mengo.booking.domain.model.BookingCreatedEvent
-import com.mengo.booking.domain.model.BookingFailedEvent
 import com.mengo.booking.domain.model.BookingItem
+import com.mengo.booking.domain.model.eventstore.BookingConfirmedEvent
+import com.mengo.booking.domain.model.eventstore.BookingCreatedEvent
+import com.mengo.booking.domain.model.eventstore.BookingFailedEvent
 import com.mengo.booking.fixtures.BookingConstants.BOOKING_ID
 import com.mengo.booking.fixtures.BookingConstants.USER_ID
 import java.util.UUID

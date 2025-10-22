@@ -1,4 +1,4 @@
-package com.mengo.product.domain.model
+package com.mengo.product.domain.model.command
 
 import java.math.BigDecimal
 import java.util.UUID

@@ -17,26 +17,26 @@ class OrchestratorKafkaListener(
 ) {
     @KafkaListener(topics = [KAFKA_BOOKING_CREATED], groupId = "booking-saga-orchestrator")
     fun onBookingCreated(payload: BookingCreatedPayload) {
-        orchestratorServiceCommand.handleBookingCreated(payload.toDomain())
+        orchestratorServiceCommand.onBookingCreated(payload.toDomain())
     }
 
     @KafkaListener(topics = [KafkaTopics.KAFKA_PRODUCT_RESERVED], groupId = "booking-saga-orchestrator")
     fun onProductReserved(payload: ProductReservedPayload) {
-        orchestratorServiceCommand.handleProductReserved(payload.toDomain())
+        orchestratorServiceCommand.onProductReserved(payload.toDomain())
     }
 
     @KafkaListener(topics = [KafkaTopics.KAFKA_PRODUCT_RESERVATION_FAILED], groupId = "booking-saga-orchestrator")
     fun onProductReservationFailed(payload: ProductReservationFailedPayload) {
-        orchestratorServiceCommand.handleProductReservationFailed(payload.toDomain())
+        orchestratorServiceCommand.onProductReservationFailed(payload.toDomain())
     }
 
     @KafkaListener(topics = [KafkaTopics.KAFKA_PAYMENT_COMPLETED], groupId = "booking-saga-orchestrator")
     fun onPaymentCompleted(payload: PaymentCompletedPayload) {
-        orchestratorServiceCommand.handlePaymentCompleted(payload.toDomain())
+        orchestratorServiceCommand.onPaymentCompleted(payload.toDomain())
     }
 
     @KafkaListener(topics = [KafkaTopics.KAFKA_PAYMENT_FAILED], groupId = "booking-saga-orchestrator")
     fun onPaymentFailed(payload: PaymentFailedPayload) {
-        orchestratorServiceCommand.handlePaymentFailed(payload.toDomain())
+        orchestratorServiceCommand.onPaymentFailed(payload.toDomain())
     }
 }

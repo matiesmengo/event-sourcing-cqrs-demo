@@ -1,6 +1,6 @@
 package com.mengo.orchestrator.infrastructure.events
 
-import com.mengo.orchestrator.domain.model.events.SagaCommand
+import com.mengo.orchestrator.domain.model.command.SagaCommand
 import com.mengo.orchestrator.domain.service.OrchestratorEventPublisher
 import com.mengo.orchestrator.infrastructure.events.KafkaTopics.KAFKA_SAGA_CANCEL_BOOKING
 import com.mengo.orchestrator.infrastructure.events.KafkaTopics.KAFKA_SAGA_CONFIRM_BOOKING

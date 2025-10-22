@@ -1,16 +1,27 @@
 package com.mengo.booking.application
 
-import com.mengo.booking.domain.model.BookingConfirmedEvent
-import com.mengo.booking.domain.model.BookingCreatedEvent
-import com.mengo.booking.domain.model.BookingFailedEvent
 import com.mengo.booking.domain.model.BookingItem
+import com.mengo.booking.domain.model.command.BookingCommand
+import com.mengo.booking.domain.model.command.SagaCommand
+import com.mengo.booking.domain.model.eventstore.BookingAggregate
+import com.mengo.booking.domain.model.eventstore.BookingAggregateStatus
+import com.mengo.booking.domain.model.eventstore.BookingConfirmedEvent
+import com.mengo.booking.domain.model.eventstore.BookingCreatedEvent
+import com.mengo.booking.domain.model.eventstore.BookingEvent
+import com.mengo.booking.domain.model.eventstore.BookingFailedEvent
 import com.mengo.booking.domain.service.BookingEventPublisher
 import com.mengo.booking.domain.service.BookingEventStoreRepository
+import com.mengo.booking.fixtures.BookingConstants.BOOKING_ID
+import com.mengo.booking.fixtures.BookingConstants.USER_ID
+import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.assertThrows
 import org.mockito.kotlin.any
-import org.mockito.kotlin.argThat
+import org.mockito.kotlin.argumentCaptor
 import org.mockito.kotlin.mock
+import org.mockito.kotlin.never
 import org.mockito.kotlin.verify
+import org.mockito.kotlin.whenever
 import java.util.UUID
 import kotlin.test.assertEquals
 
@@ -20,83 +31,120 @@ class BookingServiceCommandTest {
 
     private val service = BookingServiceCommand(eventStoreRepository, eventPublisher)
 
-    private val bookingId = UUID.randomUUID()
-    private val userId = UUID.randomUUID()
+    val products = listOf(BookingItem(UUID.randomUUID(), 2))
 
     @Test
-    fun `createBooking should persist and publish BookingCreatedEvent`() {
+    fun `onCreateBooking should append and publish when booking does not exist`() {
         // given
-        val products = listOf(BookingItem(UUID.randomUUID(), 2))
-        val event =
-            BookingCreatedEvent(
-                bookingId = bookingId,
-                userId = userId,
-                products = products,
-                aggregateVersion = 1,
-            )
+        whenever(eventStoreRepository.load(BOOKING_ID)).thenReturn(null)
 
         // when
-        service.createBooking(event)
+        service.onCreateBooking(BookingCommand.CreateBooking(BOOKING_ID, USER_ID, products))
 
         // then
-        verify(eventStoreRepository).save(
-            argThat { e ->
-                val ev = e as BookingCreatedEvent
-                assertEquals(bookingId, ev.bookingId)
-                assertEquals(userId, ev.userId)
-                assertEquals(products, ev.products)
-                assertEquals(1, ev.aggregateVersion)
-                true
-            },
-        )
-        verify(eventPublisher).publishBookingCreated(any())
+        argumentCaptor<BookingEvent>().apply {
+            verify(eventStoreRepository).append(capture())
+            val event = firstValue as BookingCreatedEvent
+            assertEquals(BOOKING_ID, event.bookingId)
+            assertEquals(USER_ID, event.userId)
+            assertEquals(0, event.aggregateVersion)
+        }
+
+        argumentCaptor<SagaCommand.BookingCreated>().apply {
+            verify(eventPublisher).publishBookingCreated(capture())
+            val command = firstValue
+            assertEquals(BOOKING_ID, command.bookingId)
+            assertEquals(USER_ID, command.userId)
+        }
     }
 
     @Test
-    fun `onPaymentCompleted should persist and publish BookingPaymentConfirmedEvent`() {
+    fun `onCreateBooking should throw when booking already exists`() {
         // given
-        val event =
-            BookingConfirmedEvent(
-                bookingId = bookingId,
-                aggregateVersion = 2,
-            )
-
-        // when
-        service.onPaymentCompleted(event)
-
-        // then
-        verify(eventStoreRepository).save(
-            argThat { e ->
-                val ev = e as BookingConfirmedEvent
-                assertEquals(bookingId, ev.bookingId)
-                assertEquals(2, ev.aggregateVersion)
-                true
-            },
+        whenever(eventStoreRepository.load(BOOKING_ID)).thenReturn(
+            BookingAggregate(BOOKING_ID, USER_ID, products, BookingAggregateStatus.CREATED, 0),
         )
-        verify(eventPublisher).publishBookingCompleted(any())
+
+        // when + then
+        val ex =
+            assertThrows<IllegalStateException> {
+                service.onCreateBooking(BookingCommand.CreateBooking(BOOKING_ID, USER_ID, products))
+            }
+
+        assertTrue(ex.message!!.contains("already exists"))
+        verify(eventStoreRepository, never()).append(any())
+        verify(eventPublisher, never()).publishBookingCreated(any())
     }
 
     @Test
-    fun `onPaymentFailed should persist and publish BookingPaymentFailedEvent`() {
+    fun `onPaymentCompleted should append confirmed event and publish`() {
         // given
-        val event =
-            BookingFailedEvent(
-                bookingId = bookingId,
-                aggregateVersion = 2,
-            )
+        val aggregate = BookingAggregate(BOOKING_ID, USER_ID, products, BookingAggregateStatus.CREATED, 0)
+        whenever(eventStoreRepository.load(BOOKING_ID)).thenReturn(aggregate)
 
         // when
-        service.onPaymentFailed(event)
+        service.onPaymentCompleted(BookingCommand.BookingConfirmed(BOOKING_ID))
 
         // then
-        verify(eventStoreRepository).save(
-            argThat { e ->
-                val ev = e as BookingFailedEvent
-                assertEquals(bookingId, ev.bookingId)
-                assertEquals(2, ev.aggregateVersion)
-                true
-            },
-        )
-        verify(eventPublisher).publishBookingFailed(any())
+        argumentCaptor<BookingEvent>().apply {
+            verify(eventStoreRepository).append(capture())
+            val event = firstValue as BookingConfirmedEvent
+            assertEquals(BOOKING_ID, event.bookingId)
+            assertEquals(1, event.aggregateVersion)
+        }
+
+        verify(eventPublisher).publishBookingCompleted(SagaCommand.BookingConfirmed(BOOKING_ID))
+    }
+
+    @Test
+    fun `onPaymentCompleted should throw when booking not found`() {
+        // given
+        whenever(eventStoreRepository.load(BOOKING_ID)).thenReturn(null)
+
+        // when + then
+        val ex =
+            assertThrows<IllegalStateException> {
+                service.onPaymentCompleted(BookingCommand.BookingConfirmed(BOOKING_ID))
+            }
+
+        assertTrue(ex.message!!.contains("doesn't exist"))
+        verify(eventStoreRepository, never()).append(any())
+        verify(eventPublisher, never()).publishBookingCompleted(any())
+    }
+
+    @Test
+    fun `onPaymentFailed should append failed event and publish`() {
+        // given
+        val aggregate = BookingAggregate(BOOKING_ID, USER_ID, products, BookingAggregateStatus.CREATED, 0)
+        whenever(eventStoreRepository.load(BOOKING_ID)).thenReturn(aggregate)
+
+        // when
+        service.onPaymentFailed(BookingCommand.BookingFailed(BOOKING_ID))
+
+        // then
+        argumentCaptor<BookingEvent>().apply {
+            verify(eventStoreRepository).append(capture())
+            val event = firstValue as BookingFailedEvent
+            assertEquals(BOOKING_ID, event.bookingId)
+            assertEquals(1, event.aggregateVersion)
+        }
+
+        verify(eventPublisher).publishBookingFailed(SagaCommand.BookingFailed(BOOKING_ID))
+    }
+
+    @Test
+    fun `onPaymentFailed should throw when booking not found`() {
+        // given
+        whenever(eventStoreRepository.load(BOOKING_ID)).thenReturn(null)
+
+        // when + then
+        val ex =
+            assertThrows<IllegalStateException> {
+                service.onPaymentFailed(BookingCommand.BookingFailed(BOOKING_ID))
+            }
+
+        assertTrue(ex.message!!.contains("doesn't exist"))
+        verify(eventStoreRepository, never()).append(any())
+        verify(eventPublisher, never()).publishBookingFailed(any())
     }
 }

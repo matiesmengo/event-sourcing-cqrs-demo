@@ -1,27 +1,32 @@
 package com.mengo.orchestrator.infrastructure.persist
 
+import OrchestratorEvent
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.databind.SerializationFeature
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule
 import com.fasterxml.jackson.module.kotlin.KotlinModule
-import com.mengo.orchestrator.domain.model.events.OrchestratorEvent
-import com.mengo.orchestrator.fixtures.DomainTestData.buildCompensating
-import com.mengo.orchestrator.fixtures.DomainTestData.buildCompleted
-import com.mengo.orchestrator.fixtures.DomainTestData.buildCreated
-import com.mengo.orchestrator.fixtures.DomainTestData.buildWaitingPayment
-import com.mengo.orchestrator.fixtures.DomainTestData.buildWaitingStock
+import com.mengo.orchestrator.domain.model.Product
 import com.mengo.orchestrator.fixtures.OrchestratorConstants.BOOKING_ID
+import com.mengo.orchestrator.fixtures.OrchestratorConstants.PRODUCT_ID
 import com.mengo.orchestrator.infrastructure.persist.mapper.OrchestratorEventEntityMapper
-import org.junit.jupiter.api.Test
-import org.mockito.kotlin.argThat
+import org.junit.jupiter.api.Assertions.assertThrows
+import org.junit.jupiter.api.assertNull
+import org.mockito.kotlin.any
 import org.mockito.kotlin.mock
+import org.mockito.kotlin.never
 import org.mockito.kotlin.verify
 import org.mockito.kotlin.whenever
+import java.math.BigDecimal
+import java.time.Instant
+import java.util.UUID
+import kotlin.test.Test
 import kotlin.test.assertEquals
+import kotlin.test.assertNotNull
+import kotlin.test.assertTrue
 
 class OrchestratorEventStoreRepositoryServiceTest {
-    private val orchestratorRepository: OrchestratorEventStoreJpaRepository = mock()
-    private val orchestratorEventMapper =
+    private val jpaRepository: OrchestratorEventStoreJpaRepository = mock()
+    private val mapper =
         OrchestratorEventEntityMapper(
             ObjectMapper().apply {
                 registerModule(KotlinModule.Builder().build())
@@ -29,97 +34,89 @@ class OrchestratorEventStoreRepositoryServiceTest {
                 disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS)
             },
         )
-    private val repository = OrchestratorEventStoreRepositoryService(orchestratorRepository, orchestratorEventMapper)
+    private val repository = OrchestratorEventStoreRepositoryService(jpaRepository, mapper)
 
     @Test
-    fun `save should persist OrchestratorEvent`() {
+    fun `load should return null when no events exist`() {
         // given
-        val event = buildCreated()
-        whenever(orchestratorRepository.findTopByBookingIdOrderByAggregateVersionDesc(event.bookingId))
-            .thenReturn(null)
+        whenever(jpaRepository.findByBookingIdOrderByAggregateVersionAsc(BOOKING_ID))
+            .thenReturn(emptyList())
 
         // when
-        repository.save(event)
+        val result = repository.load(BOOKING_ID)
 
         // then
-        verify(orchestratorRepository).findTopByBookingIdOrderByAggregateVersionDesc(event.bookingId)
-        verify(orchestratorRepository).save(
-            argThat {
-                bookingId == event.bookingId && eventType == event::class.simpleName
-            },
-        )
+        assertNull(result)
+        verify(jpaRepository).findByBookingIdOrderByAggregateVersionAsc(BOOKING_ID)
     }
 
     @Test
-    fun `save should persist WaitingStock event`() {
-        val event = buildWaitingStock()
-        whenever(orchestratorRepository.findTopByBookingIdOrderByAggregateVersionDesc(event.bookingId))
+    fun `load should rehydrate OrchestratorAggregate from stored events`() {
+        // given
+        val product1 = Product(UUID.randomUUID(), 2, BigDecimal.TEN)
+        val product2 = Product(UUID.randomUUID(), 3, BigDecimal.ONE)
+
+        val createdEvent = OrchestratorEvent.Created(BOOKING_ID, setOf(product1, product2), 0)
+        val createdEntity = mapper.toEntity(createdEvent)
+
+        val reservedEvent = OrchestratorEvent.ProductReserved(BOOKING_ID, product1, 1)
+        val reservedEntity = mapper.toEntity(reservedEvent)
+
+        whenever(jpaRepository.findByBookingIdOrderByAggregateVersionAsc(BOOKING_ID))
+            .thenReturn(listOf(createdEntity, reservedEntity))
+
+        // when
+        val aggregate = repository.load(BOOKING_ID)
+
+        // then
+        assertNotNull(aggregate)
+        assertEquals(BOOKING_ID, aggregate.bookingId)
+        assertEquals(2, aggregate.expectedProducts.size)
+        assertEquals(1, aggregate.reservedProducts.size)
+        assertEquals(1, aggregate.lastEventVersion)
+    }
+
+    @Test
+    fun `append should persist event when version matches`() {
+        // given
+        val product = Product(PRODUCT_ID, 1, BigDecimal.ONE)
+        val event = OrchestratorEvent.Created(BOOKING_ID, setOf(product), 0)
+
+        whenever(jpaRepository.findFirstByBookingIdOrderByAggregateVersionDesc(BOOKING_ID))
             .thenReturn(null)
+        whenever(jpaRepository.save(any())).thenAnswer { it.arguments[0] }
 
-        repository.save(event)
+        // when
+        repository.append(event)
 
-        verify(orchestratorRepository).save(
-            argThat {
-                bookingId == event.bookingId && eventType == event::class.simpleName
-            },
-        )
+        // then
+        verify(jpaRepository).findFirstByBookingIdOrderByAggregateVersionDesc(BOOKING_ID)
+        verify(jpaRepository).save(any())
     }
 
     @Test
-    fun `save should persist WaitingPayment event`() {
-        val event = buildWaitingPayment()
-        whenever(orchestratorRepository.findTopByBookingIdOrderByAggregateVersionDesc(event.bookingId))
-            .thenReturn(null)
+    fun `append should throw on concurrency conflict`() {
+        // given
+        val existingEntity =
+            OrchestratorEventEntity(
+                eventId = UUID.randomUUID(),
+                bookingId = BOOKING_ID,
+                eventType = "BookingCreatedEvent",
+                eventData = "{}",
+                aggregateVersion = 1,
+                createdAt = Instant.now(),
+            )
+        val newEvent = OrchestratorEvent.PaymentCompleted(BOOKING_ID, 5)
 
-        repository.save(event)
+        whenever(jpaRepository.findFirstByBookingIdOrderByAggregateVersionDesc(BOOKING_ID))
+            .thenReturn(existingEntity)
 
-        verify(orchestratorRepository).save(
-            argThat {
-                bookingId == event.bookingId && eventType == event::class.simpleName
-            },
-        )
-    }
+        // when + then
+        val ex = assertThrows(IllegalStateException::class.java) { repository.append(newEvent) }
 
-    @Test
-    fun `save should persist Completed event`() {
-        val event = buildCompleted()
-        whenever(orchestratorRepository.findTopByBookingIdOrderByAggregateVersionDesc(event.bookingId))
-            .thenReturn(null)
-
-        repository.save(event)
-
-        verify(orchestratorRepository).save(
-            argThat {
-                bookingId == event.bookingId && eventType == event::class.simpleName
-            },
-        )
-    }
-
-    @Test
-    fun `save should persist Compensating event`() {
-        val event = buildCompensating()
-        whenever(orchestratorRepository.findTopByBookingIdOrderByAggregateVersionDesc(event.bookingId))
-            .thenReturn(null)
-
-        repository.save(event)
-
-        verify(orchestratorRepository).save(
-            argThat {
-                bookingId == event.bookingId && eventType == event::class.simpleName
-            },
-        )
-    }
-
-    @Test
-    fun `findByBookingId should return correct event type`() {
-        val createdEntity =
-            buildCreated().let { event ->
-                orchestratorEventMapper.toEntity(event, 1)
-            }
-        whenever(orchestratorRepository.findTopByBookingIdOrderByAggregateVersionDesc(BOOKING_ID))
-            .thenReturn(createdEntity)
-
-        val result = repository.findByBookingId(BOOKING_ID)
-        assertEquals(OrchestratorEvent.Created::class, result!!::class)
+        assertTrue(ex.message!!.contains("Concurrency conflict"))
+        verify(jpaRepository)
+            .findFirstByBookingIdOrderByAggregateVersionDesc(BOOKING_ID)
+        verify(jpaRepository, never()).save(any())
     }
 }

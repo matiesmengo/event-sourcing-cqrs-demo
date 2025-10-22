@@ -1,18 +1,22 @@
 package com.mengo.orchestrator.application
 
-import com.mengo.orchestrator.domain.model.BookingCreated
-import com.mengo.orchestrator.domain.model.PaymentCompleted
-import com.mengo.orchestrator.domain.model.PaymentFailed
+import OrchestratorEvent
 import com.mengo.orchestrator.domain.model.Product
-import com.mengo.orchestrator.domain.model.ProductReservationFailed
-import com.mengo.orchestrator.domain.model.ProductReserved
-import com.mengo.orchestrator.domain.model.events.OrchestratorEvent
-import com.mengo.orchestrator.domain.model.events.OrchestratorEvent.WaitingStock
-import com.mengo.orchestrator.domain.model.events.SagaCommand
+import com.mengo.orchestrator.domain.model.command.OrchestratorCommand
+import com.mengo.orchestrator.domain.model.command.SagaCommand
+import com.mengo.orchestrator.domain.model.events.OrchestratorAggregate
 import com.mengo.orchestrator.domain.service.OrchestratorEventPublisher
 import com.mengo.orchestrator.domain.service.OrchestratorEventStoreRepository
+import com.mengo.orchestrator.fixtures.OrchestratorConstants.BOOKING_ID
+import com.mengo.orchestrator.fixtures.OrchestratorConstants.PAYMENT_ID
+import com.mengo.orchestrator.fixtures.OrchestratorConstants.PRODUCT_ID
+import com.mengo.orchestrator.fixtures.OrchestratorConstants.PRODUCT_PRICE
+import com.mengo.orchestrator.fixtures.OrchestratorConstants.PRODUCT_QUANTITY
+import org.junit.jupiter.api.Assertions.assertThrows
 import org.mockito.kotlin.any
-import org.mockito.kotlin.argThat
+import org.mockito.kotlin.atLeastOnce
+import org.mockito.kotlin.check
+import org.mockito.kotlin.doReturn
 import org.mockito.kotlin.mock
 import org.mockito.kotlin.never
 import org.mockito.kotlin.times
@@ -21,219 +25,178 @@ import org.mockito.kotlin.whenever
 import java.math.BigDecimal
 import java.util.UUID
 import kotlin.test.Test
-import kotlin.test.assertContains
 import kotlin.test.assertEquals
 import kotlin.test.assertTrue
 
 class OrchestratorServiceCommandTest {
     private val eventStoreRepository: OrchestratorEventStoreRepository = mock()
     private val eventPublisher: OrchestratorEventPublisher = mock()
-
     private val service = OrchestratorServiceCommand(eventStoreRepository, eventPublisher)
 
-    private val bookingId = UUID.randomUUID()
-    private val paymentId = UUID.randomUUID()
-    private val product1 = Product(UUID.randomUUID(), 2, BigDecimal("10.50"))
-    private val product2 = Product(UUID.randomUUID(), 3, BigDecimal("33.22"))
+    val product1 = Product(UUID.randomUUID(), 1, BigDecimal("10.10"))
+    val product2 = Product(UUID.randomUUID(), 2, BigDecimal("5.05"))
+    val products = setOf(product1, product2)
 
-    // TODO: Test assertThrows<IllegalStateException>
     @Test
-    fun `handleBookingCreated publishes stock requests`() {
-        // given
-        val booking = BookingCreated(bookingId, setOf(product1))
+    fun `onBookingCreated should create booking and publish RequestStock events`() {
+        val products =
+            setOf(
+                Product(UUID.randomUUID(), 2, BigDecimal("12.5")),
+                Product(UUID.randomUUID(), 1, BigDecimal("8.0")),
+            )
+        val command = OrchestratorCommand.BookingCreated(BOOKING_ID, products)
 
-        // when
-        service.handleBookingCreated(booking)
+        whenever(eventStoreRepository.load(BOOKING_ID)) doReturn null
 
-        // then
-        verify(eventStoreRepository).save(
-            argThat { e ->
-                val ev = e as WaitingStock
-                assertEquals(bookingId, bookingId)
-                assertContains(ev.expectedProducts, product1)
-                assertTrue(ev.reservedProducts.isEmpty())
-                true
+        service.onBookingCreated(command)
+
+        verify(eventStoreRepository).append(
+            check {
+                assertTrue(it is OrchestratorEvent.Created)
+                assertEquals(BOOKING_ID, it.bookingId)
+                assertEquals(products, it.expectedProducts)
             },
         )
-        verify(eventPublisher).publishRequestStock(
-            SagaCommand.RequestStock(bookingId, product1.productId, product1.quantity),
-        )
+        verify(eventPublisher, times(2)).publishRequestStock(any())
     }
 
     @Test
-    fun `handleProductReserved should publish payment request when updated is WaitingPayment`() {
-        // given
-        val current =
-            WaitingStock(
-                bookingId = bookingId,
-                expectedProducts = setOf(product1, product2),
-                reservedProducts = mutableSetOf(product1),
+    fun `onBookingCreated should fail if booking already exists`() {
+        val command = OrchestratorCommand.BookingCreated(BOOKING_ID, emptySet())
+        val existing =
+            OrchestratorAggregate.rehydrate(
+                listOf(OrchestratorAggregate.createBookingEvent(BOOKING_ID, emptySet())),
             )
-        whenever(eventStoreRepository.findByBookingId(bookingId)).thenReturn(current)
-        val reserved = ProductReserved(bookingId, product2.productId, product2.quantity, product2.price!!)
+        whenever(eventStoreRepository.load(BOOKING_ID)) doReturn existing
 
-        // when
-        service.handleProductReserved(reserved)
+        val ex =
+            assertThrows(IllegalStateException::class.java) {
+                service.onBookingCreated(command)
+            }
 
-        // then
-        verify(eventStoreRepository).save(
-            argThat { e ->
-                val ev = e as OrchestratorEvent.WaitingPayment
-                assertEquals(bookingId, ev.bookingId)
-                assertContains(ev.reservedProducts, product2)
-                true
-            },
-        )
+        assertTrue(ex.message!!.contains("already exists"))
+        verify(eventStoreRepository, never()).append(any())
+        verify(eventPublisher, never()).publishRequestStock(any())
+    }
+
+    @Test
+    fun `onProductReserved should append event and publish payment when state is WAITING_PAYMENT`() {
+        val createdEvent = OrchestratorEvent.Created(BOOKING_ID, products, 0)
+        val productReserved = OrchestratorEvent.ProductReserved(BOOKING_ID, product1, 1)
+        val aggregate = OrchestratorAggregate.rehydrate(listOf(createdEvent, productReserved))
+
+        whenever(eventStoreRepository.load(BOOKING_ID)) doReturn aggregate
+
+        val command =
+            OrchestratorCommand.ProductReserved(BOOKING_ID, product2.productId, product2.quantity, product2.price)
+
+        service.onProductReserved(command)
+
+        verify(eventStoreRepository).append(any())
         verify(eventPublisher).publishRequestPayment(
-            argThat { cmd ->
-                assertEquals(bookingId, cmd.bookingId)
-                assertTrue(cmd.totalPrice.compareTo(product1.price?.add(product2.price)) == 0)
-                true
+            check<SagaCommand.RequestPayment> {
+                assertEquals(BOOKING_ID, it.bookingId)
+                assertEquals(BigDecimal("20.20"), it.totalPrice)
             },
         )
     }
 
     @Test
-    fun `handleProductReserved should NOT publish payment request when updated is not WaitingPayment`() {
-        // given
-        val current =
-            WaitingStock(
-                bookingId = bookingId,
-                expectedProducts = setOf(product1, product2),
-                reservedProducts = mutableSetOf(),
-            )
-        whenever(eventStoreRepository.findByBookingId(bookingId)).thenReturn(current)
-        val reserved = ProductReserved(bookingId, product1.productId, product1.quantity, product1.price!!)
+    fun `onProductReserved should publish release stock when CompensatedProduct`() {
+        val createdEvent = OrchestratorEvent.Created(BOOKING_ID, products, 0)
+        val productReservedFailed = OrchestratorEvent.ProductReservationFailed(BOOKING_ID, product1.productId, 1)
+        val aggregate = OrchestratorAggregate.rehydrate(listOf(createdEvent, productReservedFailed))
 
-        // when
-        service.handleProductReserved(reserved)
+        whenever(eventStoreRepository.load(BOOKING_ID)) doReturn aggregate
 
-        // then
-        verify(eventStoreRepository).save(
-            argThat { e ->
-                val ev = e as WaitingStock
-                assertEquals(bookingId, ev.bookingId)
-                assertContains(ev.reservedProducts, product1)
-                true
+        val command =
+            OrchestratorCommand.ProductReserved(BOOKING_ID, product2.productId, product2.quantity, product2.price)
+
+        service.onProductReserved(command)
+
+        verify(eventStoreRepository).append(any())
+        verify(eventPublisher).publishReleaseStock(
+            check<SagaCommand.ReleaseStock> {
+                assertEquals(BOOKING_ID, it.bookingId)
+                assertEquals(product2.productId, it.productId)
+                assertEquals(product2.quantity, it.quantity)
             },
         )
+    }
 
+    @Test
+    fun `onProductReserved should fail if booking not found`() {
+        val command = OrchestratorCommand.ProductReserved(BOOKING_ID, PRODUCT_ID, PRODUCT_QUANTITY, PRODUCT_PRICE)
+        whenever(eventStoreRepository.load(BOOKING_ID)) doReturn null
+
+        val ex = assertThrows(IllegalStateException::class.java) { service.onProductReserved(command) }
+
+        assertTrue(ex.message!!.contains("not found for booking"))
+        verify(eventStoreRepository, never()).append(any())
         verify(eventPublisher, never()).publishRequestPayment(any())
     }
 
     @Test
-    fun `handleProductReservationFailed should create Compensating event and publish release and cancel commands`() {
-        // given
-        val current =
-            WaitingStock(
-                bookingId = bookingId,
-                expectedProducts = setOf(product1, product2),
-                reservedProducts = mutableSetOf(),
-            )
-        whenever(eventStoreRepository.findByBookingId(bookingId)).thenReturn(current)
+    fun `onProductReservationFailed should compensate and cancel booking`() {
+        val createdEvent = OrchestratorEvent.Created(BOOKING_ID, products, 0)
+        val productReserved = OrchestratorEvent.ProductReserved(BOOKING_ID, product1, 1)
+        val aggregate = OrchestratorAggregate.rehydrate(listOf(createdEvent, productReserved))
+        whenever(eventStoreRepository.load(BOOKING_ID)) doReturn aggregate
 
-        val domain = ProductReservationFailed(bookingId, product1.productId)
+        val command = OrchestratorCommand.ProductReservationFailed(BOOKING_ID, product2.productId)
+        service.onProductReservationFailed(command)
 
-        // when
-        service.handleProductReservationFailed(domain)
-
-        // then
-        verify(eventStoreRepository).save(
-            argThat { ev ->
-                assertTrue(ev is OrchestratorEvent.Compensating)
-                assertEquals(bookingId, ev.bookingId)
-                assertEquals(current.expectedProducts, ev.expectedProducts)
-                true
-            },
-        )
-        verify(eventPublisher, times(2)).publishReleaseStock(
-            argThat { ev ->
-                assertEquals(bookingId, ev.bookingId)
-                assertTrue(ev.productId in setOf(product1.productId, product2.productId))
-                assertTrue(ev.quantity in setOf(product1.quantity, product2.quantity))
-                true
-            },
-        )
+        verify(eventStoreRepository, atLeastOnce()).append(any())
+        verify(eventPublisher).publishReleaseStock(any())
         verify(eventPublisher).publishCancelBooking(
-            argThat { ev ->
-                assertEquals(bookingId, ev.bookingId)
-                true
-            },
+            check { assertEquals(BOOKING_ID, it.bookingId) },
         )
     }
 
     @Test
-    fun `handlePaymentCompleted should complete payment and publish confirm booking`() {
-        // given
-        val current =
-            OrchestratorEvent.WaitingPayment(
-                bookingId = bookingId,
-                expectedProducts = setOf(product1, product2),
-                reservedProducts = setOf(product1, product2),
-            )
-        whenever(eventStoreRepository.findByBookingId(bookingId)).thenReturn(current)
+    fun `onPaymentCompleted should append and publish confirm booking`() {
+        val createdEvent = OrchestratorEvent.Created(BOOKING_ID, setOf(product1), 0)
+        val productReserved = OrchestratorEvent.ProductReserved(BOOKING_ID, product1, 1)
+        val aggregate = OrchestratorAggregate.rehydrate(listOf(createdEvent, productReserved))
+        whenever(eventStoreRepository.load(BOOKING_ID)) doReturn aggregate
 
-        val domain = PaymentCompleted(bookingId = bookingId, paymentId = paymentId, reference = "ref-1234")
+        val command = OrchestratorCommand.PaymentCompleted(BOOKING_ID, PAYMENT_ID, "ref")
+        service.onPaymentCompleted(command)
 
-        // when
-        service.handlePaymentCompleted(domain)
-
-        // then
-        verify(eventStoreRepository).save(
-            argThat { ev ->
-                assertTrue(ev is OrchestratorEvent.Completed)
-                assertEquals(bookingId, ev.bookingId)
-                true
+        verify(eventStoreRepository).append(
+            check<OrchestratorEvent.PaymentCompleted> {
+                assertEquals(BOOKING_ID, it.bookingId)
             },
         )
-
         verify(eventPublisher).publishConfirmBooking(
-            argThat { ev ->
-                assertEquals(bookingId, ev.bookingId)
-                true
-            },
+            check { assertEquals(BOOKING_ID, it.bookingId) },
         )
     }
 
     @Test
-    fun `should transition to compensating and publish release and cancel`() {
-        // given
-        val current =
-            OrchestratorEvent.WaitingPayment(
-                bookingId = bookingId,
-                expectedProducts = setOf(product1, product2),
-                reservedProducts = setOf(product1, product2),
-            )
-        whenever(eventStoreRepository.findByBookingId(bookingId)).thenReturn(current)
+    fun `onPaymentFailed should release stock, append fail event, and cancel booking`() {
+        val product = Product(UUID.randomUUID(), 3, BigDecimal("4.00"))
+        val created = OrchestratorAggregate.createBookingEvent(BOOKING_ID, setOf(product))
+        val reserved = OrchestratorEvent.ProductReserved(BOOKING_ID, product, 1)
+        val aggregate = OrchestratorAggregate.rehydrate(listOf(created, reserved))
+        whenever(eventStoreRepository.load(BOOKING_ID)) doReturn aggregate
 
-        val domain = PaymentFailed(bookingId = bookingId, paymentId = paymentId, reason = "error")
+        val command = OrchestratorCommand.PaymentFailed(BOOKING_ID, PAYMENT_ID, "reason")
+        service.onPaymentFailed(command)
 
-        // when
-        service.handlePaymentFailed(domain)
-
-        // then
-        verify(eventStoreRepository).save(
-            argThat { ev ->
-                assertTrue(ev is OrchestratorEvent.Compensating)
-                assertEquals(bookingId, ev.bookingId)
-                assertEquals(current.expectedProducts, ev.expectedProducts)
-                true
+        verify(eventPublisher).publishReleaseStock(
+            check<SagaCommand.ReleaseStock> {
+                assertEquals(product.productId, it.productId)
+                assertEquals(product.quantity, it.quantity)
             },
         )
-
-        verify(eventPublisher, times(2)).publishReleaseStock(
-            argThat { cmd ->
-                assertEquals(bookingId, cmd.bookingId)
-                assertTrue(cmd.productId in setOf(product1.productId, product2.productId))
-                true
+        verify(eventStoreRepository).append(
+            check<OrchestratorEvent.PaymentFailed> {
+                assertEquals(BOOKING_ID, it.bookingId)
             },
         )
-
         verify(eventPublisher).publishCancelBooking(
-            argThat { cmd ->
-                assertEquals(bookingId, cmd.bookingId)
-                true
-            },
+            check { assertEquals(BOOKING_ID, it.bookingId) },
         )
     }
 }

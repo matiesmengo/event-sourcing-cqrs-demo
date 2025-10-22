@@ -1,6 +1,6 @@
 package com.mengo.orchestrator.fixtures
 
-import com.mengo.orchestrator.domain.model.events.SagaCommand
+import com.mengo.orchestrator.domain.model.command.SagaCommand
 import com.mengo.orchestrator.fixtures.OrchestratorConstants.BOOKING_ID
 import com.mengo.orchestrator.fixtures.OrchestratorConstants.PRODUCT_ID
 import com.mengo.orchestrator.fixtures.OrchestratorConstants.PRODUCT_PRICE

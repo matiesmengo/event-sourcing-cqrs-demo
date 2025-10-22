@@ -1,4 +1,4 @@
-package com.mengo.product.domain.model
+package com.mengo.product.domain.model.eventstore
 
 import java.math.BigDecimal
 import java.time.Instant
@@ -6,14 +6,13 @@ import java.util.UUID
 
 sealed class ProductEvent {
     abstract val productId: UUID
-    abstract val price: BigDecimal
     abstract val aggregateVersion: Int
     abstract val createdAt: Instant
 }
 
 data class ProductCreatedEvent(
     override val productId: UUID,
-    override val price: BigDecimal,
+    val price: BigDecimal,
     val stockTotal: Int,
     override val aggregateVersion: Int,
     override val createdAt: Instant = Instant.now(),
@@ -21,7 +20,6 @@ data class ProductCreatedEvent(
 
 data class ProductReservedEvent(
     override val productId: UUID,
-    override val price: BigDecimal,
     val bookingId: UUID,
     val quantity: Int,
     override val aggregateVersion: Int,
@@ -30,7 +28,6 @@ data class ProductReservedEvent(
 
 data class ProductReleasedEvent(
     override val productId: UUID,
-    override val price: BigDecimal,
     val bookingId: UUID,
     val quantity: Int,
     override val aggregateVersion: Int,

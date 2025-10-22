@@ -1,6 +1,7 @@
 package com.mengo.product.infrastructure.persist.eventstore
 
-import com.mengo.product.domain.model.ProductEvent
+import com.mengo.product.domain.model.eventstore.ProductAggregate
+import com.mengo.product.domain.model.eventstore.ProductEvent
 import com.mengo.product.domain.service.ProductEventStoreRepository
 import com.mengo.product.infrastructure.persist.eventstore.mappers.ProductEventEntityMapper
 import org.springframework.stereotype.Repository
@@ -8,16 +9,28 @@ import java.util.UUID
 
 @Repository
 open class ProductEventStoreRepositoryService(
-    private val productEventStoreRepository: ProductEventStoreJpaRepository,
+    private val productRepository: ProductEventStoreJpaRepository,
     private val productMapper: ProductEventEntityMapper,
 ) : ProductEventStoreRepository {
-    override fun findByProductIdOrderByAggregateVersionAsc(productId: UUID): List<ProductEvent> {
-        val entities = productEventStoreRepository.findByProductIdOrderByAggregateVersionAsc(productId)
-        return entities.map { productMapper.toDomain(it) }
+    override fun load(productId: UUID): ProductAggregate? {
+        val entities = productRepository.findByProductIdOrderByAggregateVersionAsc(productId)
+        if (entities.isEmpty()) return null
+
+        val events = entities.map(productMapper::toDomain)
+        return ProductAggregate.rehydrate(events)
     }
 
-    override fun save(productEvent: ProductEvent) {
-        val entity = productMapper.toEntity(productEvent)
-        productEventStoreRepository.save(entity)
+    override fun append(event: ProductEvent) {
+        val currentVersion =
+            productRepository
+                .findFirstByProductIdOrderByAggregateVersionDesc(event.productId)
+                ?.aggregateVersion
+                ?: -1
+
+        require(event.aggregateVersion == currentVersion + 1) {
+            "Concurrency conflict: expected=${event.aggregateVersion}, actual=$currentVersion"
+        }
+
+        productRepository.save(productMapper.toEntity(event))
     }
 }

@@ -29,7 +29,6 @@ class PaymentEventStoreRepositoryServiceTest {
     @BeforeEach
     fun setUp() {
         jpaRepository = mock()
-        // TODO: refactor mapper
         mapper =
             PaymentEventEntityMapper(
                 ObjectMapper().apply {

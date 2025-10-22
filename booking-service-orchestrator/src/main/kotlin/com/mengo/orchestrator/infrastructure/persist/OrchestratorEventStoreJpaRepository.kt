@@ -4,5 +4,7 @@ import org.springframework.data.jpa.repository.JpaRepository
 import java.util.UUID
 
 interface OrchestratorEventStoreJpaRepository : JpaRepository<OrchestratorEventEntity, UUID> {
-    fun findTopByBookingIdOrderByAggregateVersionDesc(bookingId: UUID): OrchestratorEventEntity?
+    fun findFirstByBookingIdOrderByAggregateVersionDesc(bookingId: UUID): OrchestratorEventEntity?
+
+    fun findByBookingIdOrderByAggregateVersionAsc(bookingId: UUID): List<OrchestratorEventEntity>
 }

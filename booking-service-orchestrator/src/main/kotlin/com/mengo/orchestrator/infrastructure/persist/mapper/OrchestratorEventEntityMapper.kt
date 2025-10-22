@@ -1,7 +1,7 @@
 package com.mengo.orchestrator.infrastructure.persist.mapper
 
+import OrchestratorEvent
 import com.fasterxml.jackson.databind.ObjectMapper
-import com.mengo.orchestrator.domain.model.events.OrchestratorEvent
 import com.mengo.orchestrator.infrastructure.persist.OrchestratorEventEntity
 import org.springframework.stereotype.Component
 
@@ -9,15 +9,12 @@ import org.springframework.stereotype.Component
 class OrchestratorEventEntityMapper(
     private val objectMapper: ObjectMapper,
 ) {
-    fun toEntity(
-        event: OrchestratorEvent,
-        version: Int,
-    ): OrchestratorEventEntity =
+    fun toEntity(event: OrchestratorEvent): OrchestratorEventEntity =
         OrchestratorEventEntity(
             bookingId = event.bookingId,
             eventType = event::class.simpleName ?: "UnknownEvent",
             eventData = objectMapper.writeValueAsString(event),
-            aggregateVersion = version,
+            aggregateVersion = event.aggregateVersion,
         )
 
     fun toDomain(entity: OrchestratorEventEntity): OrchestratorEvent =
@@ -26,10 +23,11 @@ class OrchestratorEventEntityMapper(
     private fun resolveDomainClass(eventType: String): Class<out OrchestratorEvent> =
         when (eventType) {
             "Created" -> OrchestratorEvent.Created::class.java
-            "WaitingStock" -> OrchestratorEvent.WaitingStock::class.java
-            "WaitingPayment" -> OrchestratorEvent.WaitingPayment::class.java
-            "Completed" -> OrchestratorEvent.Completed::class.java
-            "Compensating" -> OrchestratorEvent.Compensating::class.java
+            "ProductReserved" -> OrchestratorEvent.ProductReserved::class.java
+            "ProductReservationFailed" -> OrchestratorEvent.ProductReservationFailed::class.java
+            "CompensatedProduct" -> OrchestratorEvent.CompensatedProduct::class.java
+            "PaymentCompleted" -> OrchestratorEvent.PaymentCompleted::class.java
+            "PaymentFailed" -> OrchestratorEvent.PaymentFailed::class.java
             else -> throw IllegalArgumentException("Unknown event type: $eventType")
         }
 }

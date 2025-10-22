@@ -6,5 +6,5 @@ import java.util.UUID
 data class Product(
     val productId: UUID,
     val quantity: Int,
-    val price: BigDecimal? = null,
+    val price: BigDecimal = BigDecimal.ZERO,
 )

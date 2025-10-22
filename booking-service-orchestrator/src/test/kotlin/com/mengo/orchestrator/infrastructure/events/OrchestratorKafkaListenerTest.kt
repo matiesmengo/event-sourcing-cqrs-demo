@@ -33,7 +33,7 @@ class OrchestratorKafkaListenerTest {
         listener.onBookingCreated(payload)
 
         // then
-        verify(serviceCommand).handleBookingCreated(
+        verify(serviceCommand).onBookingCreated(
             check {
                 assertEquals(BOOKING_ID, it.bookingId)
                 assertTrue(it.products.any { product -> product.productId == PRODUCT_ID })
@@ -51,7 +51,7 @@ class OrchestratorKafkaListenerTest {
         listener.onProductReserved(payload)
 
         // then
-        verify(serviceCommand).handleProductReserved(
+        verify(serviceCommand).onProductReserved(
             check {
                 assertEquals(BOOKING_ID, it.bookingId)
                 assertEquals(PRODUCT_ID, it.productId)
@@ -70,7 +70,7 @@ class OrchestratorKafkaListenerTest {
         listener.onProductReservationFailed(payload)
 
         // then
-        verify(serviceCommand).handleProductReservationFailed(
+        verify(serviceCommand).onProductReservationFailed(
             check {
                 assertEquals(BOOKING_ID, it.bookingId)
                 assertEquals(PRODUCT_ID, it.productId)
@@ -87,7 +87,7 @@ class OrchestratorKafkaListenerTest {
         listener.onPaymentCompleted(payload)
 
         // then
-        verify(serviceCommand).handlePaymentCompleted(
+        verify(serviceCommand).onPaymentCompleted(
             check {
                 assertEquals(BOOKING_ID, it.bookingId)
                 assertEquals(PAYMENT_ID, it.paymentId)
@@ -105,7 +105,7 @@ class OrchestratorKafkaListenerTest {
         listener.onPaymentFailed(payload)
 
         // then
-        verify(serviceCommand).handlePaymentFailed(
+        verify(serviceCommand).onPaymentFailed(
             check {
                 assertEquals(BOOKING_ID, it.bookingId)
                 assertEquals(PAYMENT_ID, it.paymentId)

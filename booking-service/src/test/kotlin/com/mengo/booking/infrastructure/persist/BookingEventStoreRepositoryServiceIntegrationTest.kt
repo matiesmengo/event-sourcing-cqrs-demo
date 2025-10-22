@@ -1,71 +1,92 @@
 package com.mengo.booking.infrastructure.persist
 
-import com.mengo.booking.domain.model.BookingConfirmedEvent
-import com.mengo.booking.domain.model.BookingCreatedEvent
-import com.mengo.booking.domain.model.BookingFailedEvent
-import com.mengo.booking.fixtures.BookingTestData.buildBookingCreatedEvent
-import com.mengo.booking.fixtures.BookingTestData.buildBookingPaymentConfirmedEvent
-import com.mengo.booking.fixtures.BookingTestData.buildBookingPaymentFailedEvent
+import com.mengo.booking.domain.model.BookingItem
+import com.mengo.booking.domain.model.eventstore.BookingAggregateStatus
+import com.mengo.booking.domain.model.eventstore.BookingConfirmedEvent
+import com.mengo.booking.domain.model.eventstore.BookingCreatedEvent
+import com.mengo.booking.fixtures.BookingConstants.BOOKING_ID
+import com.mengo.booking.fixtures.BookingConstants.USER_ID
+import com.mengo.booking.infrastructure.persist.mappers.BookingEventEntityMapper
 import com.mengo.postgres.test.PostgresTestContainerBase
+import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.dao.InvalidDataAccessApiUsageException
 import java.util.UUID
 import kotlin.test.assertEquals
+import kotlin.test.assertFailsWith
 import kotlin.test.assertNotNull
-import kotlin.test.assertTrue
+import kotlin.test.assertNull
 
-class BookingEventStoreRepositoryServiceIntegrationTest : PostgresTestContainerBase() {
+class BookingEventStoreRepositoryServiceIntegrationTest
     @Autowired
-    private lateinit var bookingEventStoreRepositoryService: BookingEventStoreRepositoryService
+    constructor(
+        private val jpaRepository: BookingEventStoreJpaRepository,
+        private val mapper: BookingEventEntityMapper,
+        private val repository: BookingEventStoreRepositoryService,
+    ) : PostgresTestContainerBase() {
+        @BeforeEach
+        fun cleanup() {
+            jpaRepository.deleteAll()
+        }
 
-    @Test
-    fun `should persist and retrieve BookingCreatedEvent`() {
-        // given
-        val bookingId = UUID.randomUUID()
-        val booking = buildBookingCreatedEvent(bookingId = bookingId)
+        @Test
+        fun `load should return null when no events exist`() {
+            val result = repository.load(BOOKING_ID)
+            assertNull(result)
+        }
 
-        // when
-        bookingEventStoreRepositoryService.save(booking)
-        val fetched = bookingEventStoreRepositoryService.findById(booking.bookingId)
+        @Test
+        fun `load should rehydrate BookingAggregate from stored events`() {
+            // given
+            val products = listOf<BookingItem>()
+            val createdEvent = BookingCreatedEvent(BOOKING_ID, USER_ID, products, 0)
+            val confirmedEvent = BookingConfirmedEvent(BOOKING_ID, 1)
 
-        // then
-        assertNotNull(fetched)
-        assertTrue(fetched is BookingCreatedEvent)
-        assertEquals(booking.bookingId, fetched.bookingId)
-        assertEquals(booking.aggregateVersion, fetched.aggregateVersion)
+            jpaRepository.saveAll(
+                listOf(
+                    mapper.toEntity(createdEvent),
+                    mapper.toEntity(confirmedEvent),
+                ),
+            )
+
+            // when
+            val aggregate = repository.load(BOOKING_ID)
+
+            // then
+            assertNotNull(aggregate)
+            assertEquals(BOOKING_ID, aggregate.bookingId)
+            assertEquals(USER_ID, aggregate.userId)
+            assertEquals(BookingAggregateStatus.CONFIRMED, aggregate.status)
+            assertEquals(1, aggregate.lastEventVersion)
+        }
+
+        @Test
+        fun `append should persist event when version is correct`() {
+            // given
+            val products = listOf<BookingItem>()
+            val createdEvent = BookingCreatedEvent(BOOKING_ID, USER_ID, products, 0)
+
+            // when
+            repository.append(createdEvent)
+
+            // then
+            val stored = jpaRepository.findByBookingIdOrderByAggregateVersionAsc(BOOKING_ID)
+            assertEquals(1, stored.size)
+            assertEquals(0, stored.first().aggregateVersion)
+        }
+
+        @Test
+        fun `append should throw on concurrency conflict`() {
+            val product = BookingItem(UUID.randomUUID(), 1)
+            val firstEvent = BookingCreatedEvent(BOOKING_ID, USER_ID, listOf(product), 0)
+            val secondEvent = BookingConfirmedEvent(BOOKING_ID, 5)
+
+            // when
+            jpaRepository.save(mapper.toEntity(firstEvent))
+
+            // when + then
+            val ex = assertFailsWith<InvalidDataAccessApiUsageException> { repository.append(secondEvent) }
+            assert(ex.message!!.contains("Concurrency conflict"))
+        }
     }
-
-    @Test
-    fun `should persist and retrieve BookingPaymentConfirmedEvent`() {
-        // given
-        val bookingId = UUID.randomUUID()
-        val booking = buildBookingPaymentConfirmedEvent(bookingId = bookingId)
-
-        // when
-        bookingEventStoreRepositoryService.save(booking)
-        val fetched = bookingEventStoreRepositoryService.findById(booking.bookingId)
-
-        // then
-        assertNotNull(fetched)
-        assertTrue(fetched is BookingConfirmedEvent)
-        assertEquals(booking.bookingId, fetched.bookingId)
-        assertEquals(booking.aggregateVersion, fetched.aggregateVersion)
-    }
-
-    @Test
-    fun `should persist and retrieve BookingPaymentFailedEvent`() {
-        // given
-        val bookingId = UUID.randomUUID()
-        val booking = buildBookingPaymentFailedEvent(bookingId = bookingId)
-
-        // when
-        bookingEventStoreRepositoryService.save(booking)
-        val fetched = bookingEventStoreRepositoryService.findById(booking.bookingId)
-
-        // then
-        assertNotNull(fetched)
-        assertTrue(fetched is BookingFailedEvent)
-        assertEquals(booking.bookingId, fetched.bookingId)
-        assertEquals(booking.aggregateVersion, fetched.aggregateVersion)
-    }
-}

@@ -1,6 +1,6 @@
 package com.mengo.product.fixtures
 
-import com.mengo.product.domain.model.BookingCommand
+import com.mengo.product.domain.model.command.BookingCommand
 import com.mengo.product.fixtures.ProductConstants.BOOKING_ID
 import com.mengo.product.fixtures.ProductConstants.PRODUCT_ID
 import com.mengo.product.fixtures.ProductConstants.PRODUCT_PRICE

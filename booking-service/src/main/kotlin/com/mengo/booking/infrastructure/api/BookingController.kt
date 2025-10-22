@@ -19,7 +19,7 @@ class BookingController(
 ) : BookingsApi {
     override fun createBooking(createBookingRequest: @Valid CreateBookingRequest): ResponseEntity<BookingResponse>? {
         val bookingDomain = createBookingRequest.toDomain()
-        bookingService.createBooking(bookingDomain)
+        bookingService.onCreateBooking(bookingDomain)
         return ok(bookingDomain.toApi())
     }
 

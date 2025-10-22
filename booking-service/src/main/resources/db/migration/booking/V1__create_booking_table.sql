@@ -1,5 +1,4 @@
 CREATE SCHEMA IF NOT EXISTS booking;
-
 CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
 
 CREATE TABLE booking_events (

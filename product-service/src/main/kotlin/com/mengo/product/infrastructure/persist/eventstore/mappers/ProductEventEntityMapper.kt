@@ -1,10 +1,10 @@
 package com.mengo.product.infrastructure.persist.eventstore.mappers
 
 import com.fasterxml.jackson.databind.ObjectMapper
-import com.mengo.product.domain.model.ProductCreatedEvent
-import com.mengo.product.domain.model.ProductEvent
-import com.mengo.product.domain.model.ProductReleasedEvent
-import com.mengo.product.domain.model.ProductReservedEvent
+import com.mengo.product.domain.model.eventstore.ProductCreatedEvent
+import com.mengo.product.domain.model.eventstore.ProductEvent
+import com.mengo.product.domain.model.eventstore.ProductReleasedEvent
+import com.mengo.product.domain.model.eventstore.ProductReservedEvent
 import com.mengo.product.infrastructure.persist.eventstore.ProductEventEntity
 import org.springframework.stereotype.Component
 

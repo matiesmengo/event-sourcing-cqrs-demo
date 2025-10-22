@@ -55,7 +55,7 @@ class BookingE2ETest : AbstractServicesE2ETest() {
         assertEquals("CREATED", response.status.toString(), "Booking should start in CREATED state")
 
         // then
-        await().atMost(Duration.ofSeconds(30)).untilAsserted {
+        await().atMost(Duration.ofSeconds(15)).untilAsserted {
             // BookingService events (BookingCreatedEvent, BookingPaymentConfirmedEvent)
             val bookingEvents = fetchEventsFromPostgres(bookingPostgres, "booking", "booking_events")
             val bookingTypes = bookingEvents.map { it.type }
@@ -65,7 +65,7 @@ class BookingE2ETest : AbstractServicesE2ETest() {
                 "Expected BookingCreatedEvent in booking.booking_events",
             )
             assertTrue(
-                bookingTypes.contains("BookingPaymentConfirmedEvent"),
+                bookingTypes.contains("BookingPaymentConfirmedEvent"), // TODO: change to BookingConfirmedEvent
                 "Expected BookingPaymentConfirmedEvent in booking.booking_events",
             )
             assertTrue(
@@ -103,22 +103,22 @@ class BookingE2ETest : AbstractServicesE2ETest() {
                 "Aggregate versions in payment.events must increase strictly",
             )
 
-            // BookingServiceOrchestrator events (PaymentInitiatedEvent, PaymentCompletedEvent)
+            // BookingServiceOrchestrator events (PaymentInitiatedEvent, ProductReserved, PaymentCompleted )
             val orchestratorEvents =
                 fetchEventsFromPostgres(orchestratorPostgres, "orchestrator", "orchestrator_events")
             val orchestratorTypes = orchestratorEvents.map { it.type }
 
             assertTrue(
-                orchestratorTypes.contains("WaitingStock"),
-                "Expected WaitingStock in orchestrator.orchestrator_events",
+                orchestratorTypes.contains("Created"),
+                "Expected Created in orchestrator.orchestrator_events",
             )
             assertTrue(
-                orchestratorTypes.contains("WaitingPayment"),
-                "Expected WaitingPayment in orchestrator.orchestrator_events",
+                orchestratorTypes.contains("ProductReserved"),
+                "Expected ProductReserved in orchestrator.orchestrator_events",
             )
             assertTrue(
-                orchestratorTypes.contains("Completed"),
-                "Expected Completed in orchestrator.orchestrator_events",
+                orchestratorTypes.contains("PaymentCompleted"),
+                "Expected PaymentCompleted in orchestrator.orchestrator_events",
             )
             assertTrue(
                 orchestratorEvents.zipWithNext().all { it.first.aggregateVersion < it.second.aggregateVersion },
@@ -126,7 +126,6 @@ class BookingE2ETest : AbstractServicesE2ETest() {
             )
         }
 
-        // booking.completed topic
         KafkaTestConsumer(kafka.bootstrapServers).consumeAndAssert("booking.completed") { msg ->
             assertNotNull(msg, "Expected a record in booking.completed topic")
             assertEquals(response.bookingId.toString(), msg.key())

@@ -1,6 +1,6 @@
 package com.mengo.product.infrastructure.events
 
-import com.mengo.product.domain.model.BookingCommand
+import com.mengo.product.domain.model.command.BookingCommand
 import com.mengo.product.domain.service.ProductEventPublisher
 import com.mengo.product.infrastructure.events.KafkaTopics.KAFKA_PRODUCT_RESERVATION_FAILED
 import com.mengo.product.infrastructure.events.KafkaTopics.KAFKA_PRODUCT_RESERVED

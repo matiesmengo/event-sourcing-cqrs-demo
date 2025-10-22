@@ -1,8 +1,8 @@
 package com.mengo.booking.infrastructure.events
 
-import com.mengo.booking.fixtures.BookingTestData.buildBookingCreatedEvent
-import com.mengo.booking.fixtures.BookingTestData.buildBookingPaymentConfirmedEvent
-import com.mengo.booking.fixtures.BookingTestData.buildBookingPaymentFailedEvent
+import com.mengo.booking.fixtures.CommandTestData.buildSagaCommandBookingConfirmed
+import com.mengo.booking.fixtures.CommandTestData.buildSagaCommandBookingCreated
+import com.mengo.booking.fixtures.CommandTestData.buildSagaCommandBookingFailed
 import com.mengo.booking.infrastructure.events.KafkaTopics.KAFKA_BOOKING_COMPLETED
 import com.mengo.booking.infrastructure.events.KafkaTopics.KAFKA_BOOKING_CREATED
 import com.mengo.booking.infrastructure.events.KafkaTopics.KAFKA_BOOKING_FAILED
@@ -24,7 +24,7 @@ class BookingKafkaPublisherIntegrationTest : KafkaTestContainerBase() {
     fun `should publish booking created event to Kafka`() {
         // given
         kafkaConsumer.subscribe(listOf(KAFKA_BOOKING_CREATED))
-        val booking = buildBookingCreatedEvent()
+        val booking = buildSagaCommandBookingCreated()
         val avroBooking = booking.toAvro()
 
         // when
@@ -42,7 +42,7 @@ class BookingKafkaPublisherIntegrationTest : KafkaTestContainerBase() {
     fun `should publish booking completed event to Kafka`() {
         // given
         kafkaConsumer.subscribe(listOf(KAFKA_BOOKING_COMPLETED))
-        val booking = buildBookingPaymentConfirmedEvent()
+        val booking = buildSagaCommandBookingConfirmed()
         val avroBooking = booking.toAvro()
 
         // when
@@ -60,7 +60,7 @@ class BookingKafkaPublisherIntegrationTest : KafkaTestContainerBase() {
     fun `should publish booking failed event to Kafka`() {
         // given
         kafkaConsumer.subscribe(listOf(KAFKA_BOOKING_FAILED))
-        val booking = buildBookingPaymentFailedEvent()
+        val booking = buildSagaCommandBookingFailed()
         val avroBooking = booking.toAvro()
 
         // when

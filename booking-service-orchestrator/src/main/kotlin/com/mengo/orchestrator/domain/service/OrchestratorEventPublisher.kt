@@ -1,6 +1,6 @@
 package com.mengo.orchestrator.domain.service
 
-import com.mengo.orchestrator.domain.model.events.SagaCommand
+import com.mengo.orchestrator.domain.model.command.SagaCommand
 
 interface OrchestratorEventPublisher {
     fun publishRequestStock(requestStock: SagaCommand.RequestStock)

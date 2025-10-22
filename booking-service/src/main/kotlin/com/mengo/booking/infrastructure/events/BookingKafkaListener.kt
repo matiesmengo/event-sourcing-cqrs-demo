@@ -15,13 +15,11 @@ class BookingKafkaListener(
 ) {
     @KafkaListener(topics = [KAFKA_SAGA_CONFIRM_BOOKING], groupId = "booking-service-group")
     fun consumePaymentCompletedEvent(payload: OrchestratorConfirmBookingPayload) {
-        val successPaymentDomain = payload.toDomain()
-        bookingService.onPaymentCompleted(successPaymentDomain)
+        bookingService.onPaymentCompleted(payload.toDomain())
     }
 
     @KafkaListener(topics = [KAFKA_SAGA_CANCEL_BOOKING], groupId = "booking-service-group")
     fun consumePaymentFailedEvent(payload: OrchestratorCancelBookingPayload) {
-        val failedPaymentDomain = payload.toDomain()
-        bookingService.onPaymentFailed(failedPaymentDomain)
+        bookingService.onPaymentFailed(payload.toDomain())
     }
 }

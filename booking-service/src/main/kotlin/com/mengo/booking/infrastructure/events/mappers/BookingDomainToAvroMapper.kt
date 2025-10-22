@@ -1,15 +1,13 @@
 package com.mengo.booking.infrastructure.events.mappers
 
-import com.mengo.booking.domain.model.BookingConfirmedEvent
-import com.mengo.booking.domain.model.BookingCreatedEvent
-import com.mengo.booking.domain.model.BookingFailedEvent
 import com.mengo.booking.domain.model.BookingItem
+import com.mengo.booking.domain.model.command.SagaCommand
 import com.mengo.booking.payload.BookingCancelledPayload
 import com.mengo.booking.payload.BookingConfirmedPayload
 import com.mengo.booking.payload.BookingCreatedPayload
 import com.mengo.booking.payload.BookingProduct
 
-fun BookingCreatedEvent.toAvro(): BookingCreatedPayload =
+fun SagaCommand.BookingCreated.toAvro(): BookingCreatedPayload =
     BookingCreatedPayload(
         bookingId.toString(),
         userId.toString(),
@@ -22,12 +20,12 @@ fun BookingItem.toAvro(): BookingProduct =
         quantity,
     )
 
-fun BookingConfirmedEvent.toAvro(): BookingConfirmedPayload =
+fun SagaCommand.BookingConfirmed.toAvro(): BookingConfirmedPayload =
     BookingConfirmedPayload(
         bookingId.toString(),
     )
 
-fun BookingFailedEvent.toAvro(): BookingCancelledPayload =
+fun SagaCommand.BookingFailed.toAvro(): BookingCancelledPayload =
     BookingCancelledPayload(
         bookingId.toString(),
         "reason",

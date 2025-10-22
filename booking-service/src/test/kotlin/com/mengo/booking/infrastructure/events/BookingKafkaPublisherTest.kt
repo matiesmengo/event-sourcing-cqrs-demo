@@ -1,9 +1,9 @@
 package com.mengo.booking.infrastructure.events
 
 import com.mengo.booking.fixtures.BookingConstants.BOOKING_ID
-import com.mengo.booking.fixtures.BookingTestData.buildBookingCreatedEvent
-import com.mengo.booking.fixtures.BookingTestData.buildBookingPaymentConfirmedEvent
-import com.mengo.booking.fixtures.BookingTestData.buildBookingPaymentFailedEvent
+import com.mengo.booking.fixtures.CommandTestData.buildSagaCommandBookingConfirmed
+import com.mengo.booking.fixtures.CommandTestData.buildSagaCommandBookingCreated
+import com.mengo.booking.fixtures.CommandTestData.buildSagaCommandBookingFailed
 import com.mengo.booking.infrastructure.events.KafkaTopics.KAFKA_BOOKING_COMPLETED
 import com.mengo.booking.infrastructure.events.KafkaTopics.KAFKA_BOOKING_CREATED
 import com.mengo.booking.infrastructure.events.KafkaTopics.KAFKA_BOOKING_FAILED
@@ -29,7 +29,7 @@ class BookingKafkaPublisherTest {
     @Test
     fun `should publish BookingCreated event`() {
         // given
-        val booking = buildBookingCreatedEvent()
+        val booking = buildSagaCommandBookingCreated()
         val avroBooking = booking.toAvro()
 
         // when
@@ -43,7 +43,7 @@ class BookingKafkaPublisherTest {
     @Test
     fun `should publish BookingConfirmedEvent event`() {
         // given
-        val booking = buildBookingPaymentConfirmedEvent()
+        val booking = buildSagaCommandBookingConfirmed()
         val avroBooking = booking.toAvro()
 
         // when
@@ -57,7 +57,7 @@ class BookingKafkaPublisherTest {
     @Test
     fun `should publish BookingFailedEvent event`() {
         // given
-        val booking = buildBookingPaymentFailedEvent()
+        val booking = buildSagaCommandBookingFailed()
         val avroBooking = booking.toAvro()
 
         // when

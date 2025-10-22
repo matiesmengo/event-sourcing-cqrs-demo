@@ -1,4 +1,4 @@
-package com.mengo.orchestrator.domain.model.events
+package com.mengo.orchestrator.domain.model.command
 
 import java.math.BigDecimal
 import java.util.UUID

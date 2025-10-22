@@ -1,7 +1,9 @@
 package com.mengo.product.domain.service
 
-import com.mengo.product.domain.model.BookingProduct
+import com.mengo.product.domain.model.command.SagaCommand
 
-fun interface ProductService {
-    fun onBookingCreated(product: BookingProduct)
+interface ProductService {
+    fun onReserveProduct(command: SagaCommand.ReserveProduct)
+
+    fun onReleaseProduct(command: SagaCommand.ReleaseProduct)
 }

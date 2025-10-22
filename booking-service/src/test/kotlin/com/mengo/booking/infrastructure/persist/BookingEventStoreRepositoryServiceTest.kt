@@ -2,20 +2,26 @@ import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.databind.SerializationFeature
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule
 import com.fasterxml.jackson.module.kotlin.KotlinModule
-import com.mengo.booking.domain.model.BookingConfirmedEvent
-import com.mengo.booking.domain.model.BookingCreatedEvent
+import com.mengo.booking.domain.model.BookingItem
+import com.mengo.booking.domain.model.eventstore.BookingAggregateStatus
+import com.mengo.booking.domain.model.eventstore.BookingConfirmedEvent
+import com.mengo.booking.domain.model.eventstore.BookingCreatedEvent
 import com.mengo.booking.fixtures.BookingConstants.BOOKING_ID
-import com.mengo.booking.fixtures.BookingTestData.buildBookingCreatedEvent
-import com.mengo.booking.fixtures.BookingTestData.buildBookingPaymentConfirmedEvent
-import com.mengo.booking.fixtures.BookingTestData.buildBookingPaymentFailedEvent
+import com.mengo.booking.fixtures.BookingConstants.USER_ID
+import com.mengo.booking.infrastructure.persist.BookingEventEntity
 import com.mengo.booking.infrastructure.persist.BookingEventStoreJpaRepository
 import com.mengo.booking.infrastructure.persist.BookingEventStoreRepositoryService
 import com.mengo.booking.infrastructure.persist.mappers.BookingEventEntityMapper
-import org.junit.jupiter.api.Test
-import org.mockito.kotlin.check
+import org.junit.jupiter.api.Assertions.assertThrows
+import org.mockito.kotlin.any
+import org.mockito.kotlin.doReturn
 import org.mockito.kotlin.mock
+import org.mockito.kotlin.never
 import org.mockito.kotlin.verify
 import org.mockito.kotlin.whenever
+import java.time.Instant
+import java.util.UUID
+import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertNotNull
 import kotlin.test.assertNull
@@ -34,109 +40,88 @@ class BookingEventStoreRepositoryServiceTest {
     private val repository = BookingEventStoreRepositoryService(bookingRepository, bookingEventMapper)
 
     @Test
-    fun `save should persist BookingCreatedEvent`() {
-        val event = buildBookingCreatedEvent()
+    fun `load should return null when no events exist`() {
+        // given
+        whenever(bookingRepository.findByBookingIdOrderByAggregateVersionAsc(BOOKING_ID)) doReturn emptyList()
 
-        repository.save(event)
+        // when
+        val result = repository.load(BOOKING_ID)
 
-        verify(bookingRepository).save(
-            check { entity ->
-                assert(entity.bookingId == event.bookingId)
-                assert(entity.aggregateVersion == 1)
-            },
-        )
-    }
-
-    @Test
-    fun `save should persist BookingPaymentConfirmedEvent`() {
-        val event = buildBookingPaymentConfirmedEvent()
-
-        repository.save(event)
-
-        verify(bookingRepository).save(
-            check { entity ->
-                assert(entity.bookingId == event.bookingId)
-                assert(entity.aggregateVersion == 2)
-            },
-        )
-    }
-
-    @Test
-    fun `save should persist BookingPaymentFailedEvent`() {
-        val event = buildBookingPaymentFailedEvent()
-
-        repository.save(event)
-
-        verify(bookingRepository).save(
-            check { entity ->
-                assert(entity.bookingId == event.bookingId)
-                assert(entity.aggregateVersion == 2)
-            },
-        )
-    }
-
-    @Test
-    fun `findById should return mapped domain when entity exists`() {
-        val event = buildBookingCreatedEvent()
-
-        val entity = bookingEventMapper.toEntity(event)
-        whenever(bookingRepository.findByBookingId(event.bookingId)).thenReturn(listOf(entity))
-
-        val result = repository.findById(event.bookingId)
-
-        verify(bookingRepository).findByBookingId(event.bookingId)
-        assertEquals(event.bookingId, result?.bookingId)
-        assertEquals(event.userId, (result as BookingCreatedEvent).userId)
-    }
-
-    @Test
-    fun `findById should return null when entity does not exist`() {
-        whenever(bookingRepository.findByBookingId(BOOKING_ID)).thenReturn(emptyList())
-
-        val result = repository.findById(BOOKING_ID)
-
-        verify(bookingRepository).findByBookingId(BOOKING_ID)
+        // then
         assertNull(result)
+        verify(bookingRepository).findByBookingIdOrderByAggregateVersionAsc(BOOKING_ID)
     }
 
     @Test
-    fun `findById should return latest BookingEvent when multiple events exist`() {
-        // arrange
-        val createdEvent = buildBookingCreatedEvent()
-        val confirmedEvent = buildBookingPaymentConfirmedEvent()
+    fun `load should rehydrate BookingAggregate from stored events`() {
+        // given
+        val products = listOf<BookingItem>()
 
-        val entities = listOf(bookingEventMapper.toEntity(createdEvent), bookingEventMapper.toEntity(confirmedEvent))
-        whenever(bookingRepository.findByBookingId(BOOKING_ID)).thenReturn(entities)
+        val createdEvent = BookingCreatedEvent(BOOKING_ID, USER_ID, products, 0)
+        val confirmedEvent = BookingConfirmedEvent(BOOKING_ID, 1)
 
-        // act
-        val result = repository.findById(BOOKING_ID)
+        val createdEntity = bookingEventMapper.toEntity(createdEvent)
+        val confirmedEntity = bookingEventMapper.toEntity(confirmedEvent)
 
-        // assert
-        assertNotNull(result)
-        assertEquals(confirmedEvent.aggregateVersion, result.aggregateVersion)
-        assertTrue(result is BookingConfirmedEvent)
+        whenever(bookingRepository.findByBookingIdOrderByAggregateVersionAsc(BOOKING_ID))
+            .thenReturn(listOf(createdEntity, confirmedEntity))
+
+        // when
+        val aggregate = repository.load(BOOKING_ID)
+
+        // then
+        assertNotNull(aggregate)
+        assertEquals(BOOKING_ID, aggregate.bookingId)
+        assertEquals(USER_ID, aggregate.userId)
+        assertEquals(BookingAggregateStatus.CONFIRMED, aggregate.status)
+        assertEquals(1, aggregate.lastEventVersion)
     }
 
     @Test
-    fun `findById should return BookingCreatedEvent when only one event exists`() {
-        val createdEvent = buildBookingCreatedEvent()
+    fun `append should persist event when version is correct`() {
+        // given
+        val products = listOf<BookingItem>()
+        val createdEvent = BookingCreatedEvent(BOOKING_ID, USER_ID, products, 0)
+        val createdEntity = bookingEventMapper.toEntity(createdEvent)
 
-        whenever(bookingRepository.findByBookingId(BOOKING_ID))
-            .thenReturn(listOf(bookingEventMapper.toEntity(createdEvent)))
+        whenever(bookingRepository.findFirstByBookingIdOrderByAggregateVersionDesc(BOOKING_ID))
+            .thenReturn(null)
+        whenever(bookingRepository.save(any())).thenReturn(createdEntity)
 
-        val result = repository.findById(BOOKING_ID)
+        // when
+        repository.append(createdEvent)
 
-        assertNotNull(result)
-        assertEquals(createdEvent.aggregateVersion, result?.aggregateVersion)
-        assertTrue(result is BookingCreatedEvent)
+        // then
+        verify(bookingRepository).findFirstByBookingIdOrderByAggregateVersionDesc(BOOKING_ID)
+        verify(bookingRepository).save(any())
     }
 
     @Test
-    fun `findById should return null when no events exist`() {
-        whenever(bookingRepository.findByBookingId(BOOKING_ID)).thenReturn(emptyList())
+    fun `append should throw on concurrency conflict`() {
+        // given
+        val existingEntity =
+            BookingEventEntity(
+                eventId = UUID.randomUUID(),
+                bookingId = BOOKING_ID,
+                eventType = "BookingCreatedEvent",
+                eventData = "{}",
+                aggregateVersion = 1,
+                createdAt = Instant.now(),
+            )
+        val newEvent = BookingConfirmedEvent(BOOKING_ID, 5)
 
-        val result = repository.findById(BOOKING_ID)
+        whenever(bookingRepository.findFirstByBookingIdOrderByAggregateVersionDesc(BOOKING_ID))
+            .thenReturn(existingEntity)
 
-        assertNull(result)
+        // when + then
+        val ex =
+            assertThrows(IllegalStateException::class.java) {
+                repository.append(newEvent)
+            }
+
+        assertTrue(ex.message!!.contains("Concurrency conflict"))
+        verify(bookingRepository)
+            .findFirstByBookingIdOrderByAggregateVersionDesc(BOOKING_ID)
+        verify(bookingRepository, never()).save(any())
     }
 }

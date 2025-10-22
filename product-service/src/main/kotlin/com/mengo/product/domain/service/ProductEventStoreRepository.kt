@@ -1,10 +1,11 @@
 package com.mengo.product.domain.service
 
-import com.mengo.product.domain.model.ProductEvent
+import com.mengo.product.domain.model.eventstore.ProductAggregate
+import com.mengo.product.domain.model.eventstore.ProductEvent
 import java.util.UUID
 
 interface ProductEventStoreRepository {
-    fun findByProductIdOrderByAggregateVersionAsc(productId: UUID): List<ProductEvent>
+    fun load(productId: UUID): ProductAggregate?
 
-    fun save(productEvent: ProductEvent)
+    fun append(event: ProductEvent)
 }

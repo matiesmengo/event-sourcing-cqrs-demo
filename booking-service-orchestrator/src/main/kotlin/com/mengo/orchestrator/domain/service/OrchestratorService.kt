@@ -1,19 +1,15 @@
 package com.mengo.orchestrator.domain.service
 
-import com.mengo.orchestrator.domain.model.BookingCreated
-import com.mengo.orchestrator.domain.model.PaymentCompleted
-import com.mengo.orchestrator.domain.model.PaymentFailed
-import com.mengo.orchestrator.domain.model.ProductReservationFailed
-import com.mengo.orchestrator.domain.model.ProductReserved
+import com.mengo.orchestrator.domain.model.command.OrchestratorCommand
 
 interface OrchestratorService {
-    fun handleBookingCreated(domain: BookingCreated)
+    fun onBookingCreated(command: OrchestratorCommand.BookingCreated)
 
-    fun handleProductReserved(domain: ProductReserved)
+    fun onProductReserved(command: OrchestratorCommand.ProductReserved)
 
-    fun handleProductReservationFailed(domain: ProductReservationFailed)
+    fun onProductReservationFailed(command: OrchestratorCommand.ProductReservationFailed)
 
-    fun handlePaymentCompleted(domain: PaymentCompleted)
+    fun onPaymentCompleted(command: OrchestratorCommand.PaymentCompleted)
 
-    fun handlePaymentFailed(domain: PaymentFailed)
+    fun onPaymentFailed(command: OrchestratorCommand.PaymentFailed)
 }

@@ -7,5 +7,5 @@ CREATE TABLE payment_events (
     event_type TEXT NOT NULL,
     event_data JSONB NOT NULL,
     aggregate_version INT NOT NULL,
-    created_at TIMESTAMP NOT NULL
+    created_at TIMESTAMP NOT NULL DEFAULT NOW()
 );

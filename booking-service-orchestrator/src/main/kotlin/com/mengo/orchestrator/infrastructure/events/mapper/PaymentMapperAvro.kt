@@ -1,8 +1,7 @@
 package com.mengo.orchestrator.infrastructure.events.mapper
 
-import com.mengo.orchestrator.domain.model.PaymentCompleted
-import com.mengo.orchestrator.domain.model.PaymentFailed
-import com.mengo.orchestrator.domain.model.events.SagaCommand
+import com.mengo.orchestrator.domain.model.command.OrchestratorCommand
+import com.mengo.orchestrator.domain.model.command.SagaCommand
 import com.mengo.orchestrator.payload.OrchestratorRequestPaymentPayload
 import com.mengo.payment.payload.PaymentCompletedPayload
 import com.mengo.payment.payload.PaymentFailedPayload
@@ -17,15 +16,15 @@ fun SagaCommand.RequestPayment.toAvro(): OrchestratorRequestPaymentPayload =
         totalPrice.toAvroDecimal(2),
     )
 
-fun PaymentCompletedPayload.toDomain(): PaymentCompleted =
-    PaymentCompleted(
+fun PaymentCompletedPayload.toDomain(): OrchestratorCommand.PaymentCompleted =
+    OrchestratorCommand.PaymentCompleted(
         bookingId = UUID.fromString(bookingId),
         paymentId = UUID.fromString(paymentId),
         reference = reference,
     )
 
-fun PaymentFailedPayload.toDomain(): PaymentFailed =
-    PaymentFailed(
+fun PaymentFailedPayload.toDomain(): OrchestratorCommand.PaymentFailed =
+    OrchestratorCommand.PaymentFailed(
         bookingId = UUID.fromString(bookingId),
         paymentId = UUID.fromString(paymentId),
         reason = reason,

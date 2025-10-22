@@ -1,13 +1,11 @@
 package com.mengo.booking.domain.service
 
-import com.mengo.booking.domain.model.BookingConfirmedEvent
-import com.mengo.booking.domain.model.BookingCreatedEvent
-import com.mengo.booking.domain.model.BookingFailedEvent
+import com.mengo.booking.domain.model.command.BookingCommand
 
 interface BookingService {
-    fun createBooking(createBooking: BookingCreatedEvent)
+    fun onCreateBooking(command: BookingCommand.CreateBooking)
 
-    fun onPaymentCompleted(completedBooking: BookingConfirmedEvent)
+    fun onPaymentCompleted(command: BookingCommand.BookingConfirmed)
 
-    fun onPaymentFailed(failedBooking: BookingFailedEvent)
+    fun onPaymentFailed(command: BookingCommand.BookingFailed)
 }

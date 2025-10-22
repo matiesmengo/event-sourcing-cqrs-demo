@@ -1,13 +1,11 @@
 package com.mengo.booking.domain.service
 
-import com.mengo.booking.domain.model.BookingConfirmedEvent
-import com.mengo.booking.domain.model.BookingCreatedEvent
-import com.mengo.booking.domain.model.BookingFailedEvent
+import com.mengo.booking.domain.model.command.SagaCommand
 
 interface BookingEventPublisher {
-    fun publishBookingCreated(bookingCreated: BookingCreatedEvent)
+    fun publishBookingCreated(bookingCreated: SagaCommand.BookingCreated)
 
-    fun publishBookingCompleted(completedBooking: BookingConfirmedEvent)
+    fun publishBookingCompleted(completedBooking: SagaCommand.BookingConfirmed)
 
-    fun publishBookingFailed(failedBooking: BookingFailedEvent)
+    fun publishBookingFailed(failedBooking: SagaCommand.BookingFailed)
 }

@@ -1,8 +1,7 @@
 package com.mengo.orchestrator.infrastructure.events.mapper
 
-import com.mengo.orchestrator.domain.model.ProductReservationFailed
-import com.mengo.orchestrator.domain.model.ProductReserved
-import com.mengo.orchestrator.domain.model.events.SagaCommand
+import com.mengo.orchestrator.domain.model.command.OrchestratorCommand
+import com.mengo.orchestrator.domain.model.command.SagaCommand
 import com.mengo.orchestrator.payload.OrchestratorReleaseStockPayload
 import com.mengo.orchestrator.payload.OrchestratorRequestStockPayload
 import com.mengo.product.payload.ProductReservationFailedPayload
@@ -26,16 +25,16 @@ fun SagaCommand.ReleaseStock.toAvro(): OrchestratorReleaseStockPayload =
         quantity,
     )
 
-fun ProductReservedPayload.toDomain(): ProductReserved =
-    ProductReserved(
+fun ProductReservedPayload.toDomain(): OrchestratorCommand.ProductReserved =
+    OrchestratorCommand.ProductReserved(
         bookingId = UUID.fromString(bookingId),
         productId = UUID.fromString(productId),
         quantity = quantity,
         price = price.toBigDecimal(),
     )
 
-fun ProductReservationFailedPayload.toDomain(): ProductReservationFailed =
-    ProductReservationFailed(
+fun ProductReservationFailedPayload.toDomain(): OrchestratorCommand.ProductReservationFailed =
+    OrchestratorCommand.ProductReservationFailed(
         bookingId = UUID.fromString(bookingId),
         productId = UUID.fromString(productId),
     )

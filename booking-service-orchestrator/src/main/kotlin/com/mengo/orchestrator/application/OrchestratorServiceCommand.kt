@@ -1,13 +1,11 @@
 package com.mengo.orchestrator.application
 
-import com.mengo.orchestrator.domain.model.BookingCreated
-import com.mengo.orchestrator.domain.model.PaymentCompleted
-import com.mengo.orchestrator.domain.model.PaymentFailed
+import OrchestratorEvent
 import com.mengo.orchestrator.domain.model.Product
-import com.mengo.orchestrator.domain.model.ProductReservationFailed
-import com.mengo.orchestrator.domain.model.ProductReserved
-import com.mengo.orchestrator.domain.model.events.OrchestratorEvent
-import com.mengo.orchestrator.domain.model.events.SagaCommand
+import com.mengo.orchestrator.domain.model.command.OrchestratorCommand
+import com.mengo.orchestrator.domain.model.command.SagaCommand
+import com.mengo.orchestrator.domain.model.events.OrchestratorAggregate
+import com.mengo.orchestrator.domain.model.events.OrchestratorState
 import com.mengo.orchestrator.domain.service.OrchestratorEventPublisher
 import com.mengo.orchestrator.domain.service.OrchestratorEventStoreRepository
 import com.mengo.orchestrator.domain.service.OrchestratorService
@@ -21,18 +19,22 @@ open class OrchestratorServiceCommand(
     private val eventPublisher: OrchestratorEventPublisher,
 ) : OrchestratorService {
     @Transactional
-    override fun handleBookingCreated(domain: BookingCreated) {
-        // Created → WaitingStock
-        val orchestratorEvent =
-            OrchestratorEvent
-                .Created(bookingId = domain.bookingId, expectedProducts = domain.products)
-                .startStockReservation()
+    override fun onBookingCreated(command: OrchestratorCommand.BookingCreated) {
+        if (eventStoreRepository.load(command.bookingId) != null) {
+            error("onBookingCreated this booking already exists")
+        }
 
-        eventStoreRepository.save(orchestratorEvent)
-        orchestratorEvent.expectedProducts.forEach { product ->
+        eventStoreRepository.append(
+            OrchestratorAggregate.createBookingEvent(
+                bookingId = command.bookingId,
+                expectedProducts = command.products,
+            ),
+        )
+
+        command.products.forEach { product ->
             eventPublisher.publishRequestStock(
                 SagaCommand.RequestStock(
-                    bookingId = orchestratorEvent.bookingId,
+                    bookingId = command.bookingId,
                     productId = product.productId,
                     quantity = product.quantity,
                 ),
@@ -41,98 +43,81 @@ open class OrchestratorServiceCommand(
     }
 
     @Transactional
-    override fun handleProductReserved(domain: ProductReserved) {
-        // Retrieve status
-        val current =
-            eventStoreRepository.findByBookingId(domain.bookingId)
-                ?: throw IllegalStateException("Saga not found for booking ${domain.bookingId}")
-        if (current !is OrchestratorEvent.WaitingStock) {
-            throw IllegalStateException("Invalid saga state: expected WAITING_STOCK, got ${current::class.simpleName}")
-        }
+    override fun onProductReserved(command: OrchestratorCommand.ProductReserved) {
+        val aggregate =
+            eventStoreRepository.load(command.bookingId)
+                ?: error("onProductReserved not found for booking ${command.bookingId} ")
 
-        // Reserve a product
-        val updated = current.markProductReserved(Product(domain.productId, domain.quantity, domain.price))
-        eventStoreRepository.save(updated)
+        val event = aggregate.reserveProduct(Product(command.productId, command.quantity, command.price))
+        eventStoreRepository.append(event)
+        val aggregateUpdated = aggregate.applyEventSafely(event)
 
-        // WaitingStock → WaitingPayment. In the case of all products are reserved successfully
-        if (updated is OrchestratorEvent.WaitingPayment) {
+        if (event is OrchestratorEvent.ProductReserved && aggregateUpdated.state == OrchestratorState.WAITING_PAYMENT) {
             eventPublisher.publishRequestPayment(
                 SagaCommand.RequestPayment(
-                    bookingId = updated.bookingId,
+                    bookingId = command.bookingId,
                     totalPrice =
-                        updated.reservedProducts
-                            .map { it.price ?: BigDecimal.ZERO }
-                            .fold(BigDecimal.ZERO) { acc, amount -> acc + amount },
+                        aggregateUpdated.expectedProducts.sumOf {
+                            it.price.multiply(BigDecimal(it.quantity)) ?: BigDecimal.ZERO
+                        },
                 ),
+            )
+        } else if (event is OrchestratorEvent.CompensatedProduct) {
+            eventPublisher.publishReleaseStock(
+                SagaCommand.ReleaseStock(command.bookingId, command.productId, command.quantity),
             )
         }
     }
 
     @Transactional
-    override fun handleProductReservationFailed(domain: ProductReservationFailed) {
-        // Retrieve status
-        val current =
-            eventStoreRepository.findByBookingId(domain.bookingId)
-                ?: throw IllegalStateException("Saga not found for booking ${domain.bookingId}")
+    override fun onProductReservationFailed(command: OrchestratorCommand.ProductReservationFailed) {
+        val aggregate =
+            eventStoreRepository.load(command.bookingId)
+                ?: error("onProductReservationFailed not found for booking ${command.bookingId} ")
 
-        // WaitingStock → Compensating
-        val compensating =
-            OrchestratorEvent.Compensating(
-                bookingId = current.bookingId,
-                expectedProducts = current.expectedProducts,
+        val failEvent = aggregate.failProductReservation(command.productId)
+        eventStoreRepository.append(failEvent)
+        val aggregateUpdated = aggregate.applyEventSafely(failEvent)
+
+        aggregateUpdated.reservedProducts.forEach { product ->
+            val compensatedEvent =
+                OrchestratorEvent.CompensatedProduct(command.bookingId, product, aggregateUpdated.lastEventVersion + 1)
+            eventStoreRepository.append(compensatedEvent)
+            eventPublisher.publishReleaseStock(
+                SagaCommand.ReleaseStock(command.bookingId, product.productId, product.quantity),
             )
-        eventStoreRepository.save(compensating)
+        }
 
-        // Compensating all products reserved
-        compensating.expectedProducts.forEach { product ->
+        eventPublisher.publishCancelBooking(SagaCommand.CancelBooking(command.bookingId))
+    }
+
+    @Transactional
+    override fun onPaymentCompleted(command: OrchestratorCommand.PaymentCompleted) {
+        val currentAggregate =
+            eventStoreRepository.load(command.bookingId)
+                ?: error("onPaymentCompleted not found for booking ${command.bookingId} ")
+
+        eventStoreRepository.append(currentAggregate.completePayment())
+        eventPublisher.publishConfirmBooking(SagaCommand.ConfirmBooking(command.bookingId))
+    }
+
+    @Transactional
+    override fun onPaymentFailed(command: OrchestratorCommand.PaymentFailed) {
+        val currentAggregate =
+            eventStoreRepository.load(command.bookingId)
+                ?: error("handlePaymentFailed not found for booking ${command.bookingId} ")
+
+        currentAggregate.reservedProducts.forEach { product ->
             eventPublisher.publishReleaseStock(
                 SagaCommand.ReleaseStock(
-                    bookingId = compensating.bookingId,
+                    bookingId = command.bookingId,
                     productId = product.productId,
                     quantity = product.quantity,
                 ),
             )
         }
-        // Cancel booking
-        eventPublisher.publishCancelBooking(SagaCommand.CancelBooking(bookingId = compensating.bookingId))
-    }
 
-    @Transactional
-    override fun handlePaymentCompleted(domain: PaymentCompleted) {
-        val current =
-            eventStoreRepository.findByBookingId(domain.bookingId)
-                ?: throw IllegalStateException("Saga not found for booking ${domain.bookingId}")
-        if (current !is OrchestratorEvent.WaitingPayment) {
-            throw IllegalStateException("Invalid saga state: expected WAITING_PAYMENT, got ${current::class.simpleName}")
-        }
-
-        val completed = current.completePayment()
-        eventStoreRepository.save(completed)
-
-        eventPublisher.publishConfirmBooking(
-            SagaCommand.ConfirmBooking(bookingId = completed.bookingId),
-        )
-    }
-
-    @Transactional
-    override fun handlePaymentFailed(domain: PaymentFailed) {
-        val current =
-            eventStoreRepository.findByBookingId(domain.bookingId)
-                ?: throw IllegalStateException("Saga not found for booking ${domain.bookingId}")
-
-        val compensating =
-            OrchestratorEvent.Compensating(bookingId = current.bookingId, expectedProducts = current.expectedProducts)
-        eventStoreRepository.save(compensating)
-
-        compensating.expectedProducts.forEach { product ->
-            eventPublisher.publishReleaseStock(
-                SagaCommand.ReleaseStock(
-                    bookingId = compensating.bookingId,
-                    productId = product.productId,
-                    quantity = product.quantity,
-                ),
-            )
-        }
-        eventPublisher.publishCancelBooking(SagaCommand.CancelBooking(bookingId = compensating.bookingId))
+        eventStoreRepository.append(currentAggregate.failPayment())
+        eventPublisher.publishCancelBooking(SagaCommand.CancelBooking(command.bookingId))
     }
 }

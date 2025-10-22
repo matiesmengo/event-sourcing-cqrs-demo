@@ -1,6 +1,6 @@
 package com.mengo.product.infrastructure.events.mappers
 
-import com.mengo.product.domain.model.BookingCommand
+import com.mengo.product.domain.model.command.BookingCommand
 import com.mengo.product.payload.ProductReservationFailedPayload
 import com.mengo.product.payload.ProductReservedPayload
 import java.math.BigDecimal

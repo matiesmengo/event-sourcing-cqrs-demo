@@ -1,6 +1,5 @@
 CREATE EXTENSION IF NOT EXISTS "pgcrypto";
 
--- Inserim esdeveniments inicials de producte
 INSERT INTO product.product_events (
     event_id,
     aggregate_id,

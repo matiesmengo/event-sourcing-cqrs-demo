@@ -1,10 +1,11 @@
 package com.mengo.booking.domain.service
 
-import com.mengo.booking.domain.model.BookingEvent
+import com.mengo.booking.domain.model.eventstore.BookingAggregate
+import com.mengo.booking.domain.model.eventstore.BookingEvent
 import java.util.UUID
 
 interface BookingEventStoreRepository {
-    fun save(bookingEvent: BookingEvent)
+    fun load(bookingId: UUID): BookingAggregate?
 
-    fun findById(bookingId: UUID): BookingEvent?
+    fun append(event: BookingEvent)
 }

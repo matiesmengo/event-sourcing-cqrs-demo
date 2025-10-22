@@ -30,7 +30,7 @@ class OrchestratorKafkaListenerIntegrationTest : KafkaTestContainerBase() {
         kafkaTemplate.send(KAFKA_BOOKING_CREATED, payload.bookingId, payload)
 
         Awaitility.await().atMost(Duration.ofSeconds(15)).untilAsserted {
-            verify(serviceCommand).handleBookingCreated(any())
+            verify(serviceCommand).onBookingCreated(any())
         }
     }
 
@@ -41,7 +41,7 @@ class OrchestratorKafkaListenerIntegrationTest : KafkaTestContainerBase() {
         kafkaTemplate.send(KAFKA_PRODUCT_RESERVED, payload.bookingId, payload)
 
         Awaitility.await().atMost(Duration.ofSeconds(15)).untilAsserted {
-            verify(serviceCommand).handleProductReserved(any())
+            verify(serviceCommand).onProductReserved(any())
         }
     }
 
@@ -52,7 +52,7 @@ class OrchestratorKafkaListenerIntegrationTest : KafkaTestContainerBase() {
         kafkaTemplate.send(KAFKA_PRODUCT_RESERVATION_FAILED, payload.bookingId, payload)
 
         Awaitility.await().atMost(Duration.ofSeconds(15)).untilAsserted {
-            verify(serviceCommand).handleProductReservationFailed(any())
+            verify(serviceCommand).onProductReservationFailed(any())
         }
     }
 
@@ -63,7 +63,7 @@ class OrchestratorKafkaListenerIntegrationTest : KafkaTestContainerBase() {
         kafkaTemplate.send(KAFKA_PAYMENT_COMPLETED, payload.bookingId, payload)
 
         Awaitility.await().atMost(Duration.ofSeconds(15)).untilAsserted {
-            verify(serviceCommand).handlePaymentCompleted(any())
+            verify(serviceCommand).onPaymentCompleted(any())
         }
     }
 
@@ -74,7 +74,7 @@ class OrchestratorKafkaListenerIntegrationTest : KafkaTestContainerBase() {
         kafkaTemplate.send(KAFKA_PAYMENT_FAILED, payload.bookingId, payload)
 
         Awaitility.await().atMost(Duration.ofSeconds(15)).untilAsserted {
-            verify(serviceCommand).handlePaymentFailed(any())
+            verify(serviceCommand).onPaymentFailed(any())
         }
     }
 }
