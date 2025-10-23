@@ -1,5 +1,6 @@
 {
-  "namespace": "com.mengo.orchestrator.payload",
+  "namespace": "com.mengo.payload.orchestrator",
+
   "type": "record",
   "name": "OrchestratorRequestStockPayload",
   "fields": [

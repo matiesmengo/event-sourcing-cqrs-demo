@@ -1,12 +1,12 @@
 package com.mengo.booking.infrastructure.events
 
+import com.mengo.architecture.KafkaTopics.KAFKA_BOOKING_COMPLETED
+import com.mengo.architecture.KafkaTopics.KAFKA_BOOKING_CREATED
+import com.mengo.architecture.KafkaTopics.KAFKA_BOOKING_FAILED
 import com.mengo.booking.fixtures.BookingConstants.BOOKING_ID
 import com.mengo.booking.fixtures.CommandTestData.buildSagaCommandBookingConfirmed
 import com.mengo.booking.fixtures.CommandTestData.buildSagaCommandBookingCreated
 import com.mengo.booking.fixtures.CommandTestData.buildSagaCommandBookingFailed
-import com.mengo.booking.infrastructure.events.KafkaTopics.KAFKA_BOOKING_COMPLETED
-import com.mengo.booking.infrastructure.events.KafkaTopics.KAFKA_BOOKING_CREATED
-import com.mengo.booking.infrastructure.events.KafkaTopics.KAFKA_BOOKING_FAILED
 import com.mengo.booking.infrastructure.events.mappers.toAvro
 import org.apache.avro.specific.SpecificRecord
 import org.junit.jupiter.api.BeforeEach

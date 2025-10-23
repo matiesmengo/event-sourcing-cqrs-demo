@@ -1,5 +1,6 @@
 {
-  "namespace": "com.mengo.payment.payload",
+  "namespace": "com.mengo.payload.payment",
+
   "type": "record",
   "name": "PaymentInitiatedPayload",
   "fields": [
@@ -16,7 +17,7 @@
       "type": {
         "type": "bytes",
         "logicalType": "decimal",
-        "precision": 18,
+        "precision": 12,
         "scale": 2
       }
     }

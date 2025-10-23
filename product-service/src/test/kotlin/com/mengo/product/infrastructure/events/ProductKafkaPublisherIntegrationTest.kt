@@ -1,13 +1,13 @@
 package com.mengo.product.infrastructure.events
 
+import com.mengo.architecture.KafkaTopics.KAFKA_PRODUCT_RESERVATION_FAILED
+import com.mengo.architecture.KafkaTopics.KAFKA_PRODUCT_RESERVED
 import com.mengo.kafka.test.KafkaTestContainerBase
+import com.mengo.payload.product.ProductReservationFailedPayload
+import com.mengo.payload.product.ProductReservedPayload
 import com.mengo.product.fixtures.CommandTestData.buildBookingCommandReserved
 import com.mengo.product.fixtures.CommandTestData.buildBookingCommandReservedFailed
-import com.mengo.product.infrastructure.events.KafkaTopics.KAFKA_PRODUCT_RESERVATION_FAILED
-import com.mengo.product.infrastructure.events.KafkaTopics.KAFKA_PRODUCT_RESERVED
 import com.mengo.product.infrastructure.events.mappers.toAvro
-import com.mengo.product.payload.ProductReservationFailedPayload
-import com.mengo.product.payload.ProductReservedPayload
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
 import java.time.Duration

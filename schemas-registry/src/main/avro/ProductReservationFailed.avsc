@@ -1,5 +1,6 @@
 {
-  "namespace": "com.mengo.product.payload",
+  "namespace": "com.mengo.payload.product",
+
   "type": "record",
   "name": "ProductReservationFailedPayload",
   "fields": [

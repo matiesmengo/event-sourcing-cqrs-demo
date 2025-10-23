@@ -2,10 +2,10 @@ package com.mengo.booking.infrastructure.events.mappers
 
 import com.mengo.booking.domain.model.BookingItem
 import com.mengo.booking.domain.model.command.SagaCommand
-import com.mengo.booking.payload.BookingCancelledPayload
-import com.mengo.booking.payload.BookingConfirmedPayload
-import com.mengo.booking.payload.BookingCreatedPayload
-import com.mengo.booking.payload.BookingProduct
+import com.mengo.payload.booking.BookingCancelledPayload
+import com.mengo.payload.booking.BookingConfirmedPayload
+import com.mengo.payload.booking.BookingCreatedPayload
+import com.mengo.payload.booking.BookingProduct
 
 fun SagaCommand.BookingCreated.toAvro(): BookingCreatedPayload =
     BookingCreatedPayload(

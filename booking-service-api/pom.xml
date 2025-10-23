@@ -69,9 +69,9 @@
                             <generatorName>spring</generatorName>
                             <inputSpec>${project.basedir}/src/main/resources/openapi/booking-service.yml</inputSpec>
                             <output>${project.build.directory}/generated-sources/openapi</output>
-                            <apiPackage>com.mengo.booking.api</apiPackage>
-                            <modelPackage>com.mengo.booking.model</modelPackage>
-                            <invokerPackage>com.mengo.booking.invoker</invokerPackage>
+                            <apiPackage>com.mengo.api.booking</apiPackage>
+                            <modelPackage>com.mengo.api.booking.model</modelPackage>
+                            <invokerPackage>com.mengo.api.booking.invoker</invokerPackage>
                             <configOptions>
                                 <interfaceOnly>true</interfaceOnly>
                                 <useSpringBoot3>true</useSpringBoot3>

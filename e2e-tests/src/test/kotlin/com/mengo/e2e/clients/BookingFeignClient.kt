@@ -1,7 +1,7 @@
 package com.mengo.e2e.clients
 
-import com.mengo.booking.model.BookingResponse
-import com.mengo.booking.model.CreateBookingRequest
+import com.mengo.api.booking.model.BookingResponse
+import com.mengo.api.booking.model.CreateBookingRequest
 import org.springframework.cloud.openfeign.FeignClient
 import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.RequestBody

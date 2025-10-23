@@ -1,7 +1,7 @@
 package com.mengo.e2e
 
-import com.mengo.booking.model.BookingProduct
-import com.mengo.booking.model.CreateBookingRequest
+import com.mengo.api.booking.model.BookingProduct
+import com.mengo.api.booking.model.CreateBookingRequest
 import com.mengo.e2e.clients.BookingFeignClient
 import com.mengo.e2e.infrastructure.AbstractServicesE2ETest
 import com.mengo.e2e.infrastructure.EventStoreFetch.fetchEventsFromPostgres
@@ -65,8 +65,8 @@ class BookingE2ETest : AbstractServicesE2ETest() {
                 "Expected BookingCreatedEvent in booking.booking_events",
             )
             assertTrue(
-                bookingTypes.contains("BookingPaymentConfirmedEvent"), // TODO: change to BookingConfirmedEvent
-                "Expected BookingPaymentConfirmedEvent in booking.booking_events",
+                bookingTypes.contains("BookingConfirmedEvent"),
+                "Expected BookingConfirmedEvent in booking.booking_events",
             )
             assertTrue(
                 bookingEvents.zipWithNext().all { it.first.aggregateVersion < it.second.aggregateVersion },

@@ -1,7 +1,7 @@
 package com.mengo.orchestrator.domain.service
 
-import OrchestratorEvent
 import com.mengo.orchestrator.domain.model.events.OrchestratorAggregate
+import com.mengo.orchestrator.domain.model.events.OrchestratorEvent
 import java.util.UUID
 
 interface OrchestratorEventStoreRepository {

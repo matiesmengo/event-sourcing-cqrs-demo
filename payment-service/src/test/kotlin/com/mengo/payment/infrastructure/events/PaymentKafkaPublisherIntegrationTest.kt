@@ -1,18 +1,18 @@
 package com.mengo.payment.infrastructure.events
 
+import com.mengo.architecture.KafkaTopics.KAFKA_PAYMENT_COMPLETED
+import com.mengo.architecture.KafkaTopics.KAFKA_PAYMENT_FAILED
+import com.mengo.architecture.KafkaTopics.KAFKA_PAYMENT_INITIATED
 import com.mengo.kafka.test.KafkaTestContainerBase
+import com.mengo.payload.payment.PaymentCompletedPayload
+import com.mengo.payload.payment.PaymentFailedPayload
+import com.mengo.payload.payment.PaymentInitiatedPayload
 import com.mengo.payment.domain.model.PaymentCompletedEvent
 import com.mengo.payment.domain.model.PaymentFailedEvent
 import com.mengo.payment.domain.model.PaymentInitiatedEvent
 import com.mengo.payment.fixtures.PaymentConstants.BOOKING_ID
 import com.mengo.payment.fixtures.PaymentConstants.PAYMENT_ID
-import com.mengo.payment.infrastructure.events.KafkaTopics.KAFKA_PAYMENT_COMPLETED
-import com.mengo.payment.infrastructure.events.KafkaTopics.KAFKA_PAYMENT_FAILED
-import com.mengo.payment.infrastructure.events.KafkaTopics.KAFKA_PAYMENT_INITIATED
 import com.mengo.payment.infrastructure.events.mappers.toAvro
-import com.mengo.payment.payload.PaymentCompletedPayload
-import com.mengo.payment.payload.PaymentFailedPayload
-import com.mengo.payment.payload.PaymentInitiatedPayload
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
 import java.time.Duration

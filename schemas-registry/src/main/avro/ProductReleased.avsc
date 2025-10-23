@@ -1,5 +1,6 @@
 {
-  "namespace": "com.mengo.product.payload",
+  "namespace": "com.mengo.payload.product",
+
   "type": "record",
   "name": "ProductReleasedPayload",
   "fields": [
@@ -20,7 +21,7 @@
       "type": {
         "type": "bytes",
         "logicalType": "decimal",
-        "precision": 18,
+        "precision": 12,
         "scale": 2
       }
     }

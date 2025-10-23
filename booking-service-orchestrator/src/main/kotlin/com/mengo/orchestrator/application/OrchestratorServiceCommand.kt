@@ -1,10 +1,10 @@
 package com.mengo.orchestrator.application
 
-import OrchestratorEvent
 import com.mengo.orchestrator.domain.model.Product
 import com.mengo.orchestrator.domain.model.command.OrchestratorCommand
 import com.mengo.orchestrator.domain.model.command.SagaCommand
 import com.mengo.orchestrator.domain.model.events.OrchestratorAggregate
+import com.mengo.orchestrator.domain.model.events.OrchestratorEvent
 import com.mengo.orchestrator.domain.model.events.OrchestratorState
 import com.mengo.orchestrator.domain.service.OrchestratorEventPublisher
 import com.mengo.orchestrator.domain.service.OrchestratorEventStoreRepository

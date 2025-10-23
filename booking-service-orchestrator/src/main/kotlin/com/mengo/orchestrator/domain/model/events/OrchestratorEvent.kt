@@ -1,3 +1,5 @@
+package com.mengo.orchestrator.domain.model.events
+
 import com.mengo.orchestrator.domain.model.Product
 import java.util.UUID
 

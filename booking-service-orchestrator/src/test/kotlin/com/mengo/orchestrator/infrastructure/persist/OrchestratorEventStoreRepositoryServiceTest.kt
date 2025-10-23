@@ -1,11 +1,11 @@
 package com.mengo.orchestrator.infrastructure.persist
 
-import OrchestratorEvent
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.databind.SerializationFeature
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule
 import com.fasterxml.jackson.module.kotlin.KotlinModule
 import com.mengo.orchestrator.domain.model.Product
+import com.mengo.orchestrator.domain.model.events.OrchestratorEvent
 import com.mengo.orchestrator.fixtures.OrchestratorConstants.BOOKING_ID
 import com.mengo.orchestrator.fixtures.OrchestratorConstants.PRODUCT_ID
 import com.mengo.orchestrator.infrastructure.persist.mapper.OrchestratorEventEntityMapper

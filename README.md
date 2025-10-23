@@ -114,10 +114,10 @@ docker-compose up -d
 mvn clean package
 
 # 3. Launch run time services
-cd booking-service && mvn spring-boot:run
-cd payment-service && mvn spring-boot:run
-cd product-service && mvn spring-boot:run
-cd booking-service-orchestration && mvn spring-boot:run
+cd booking-service | mvn spring-boot:run
+cd payment-service | mvn spring-boot:run
+cd product-service | mvn spring-boot:run
+cd booking-service-orchestration | mvn spring-boot:run
 ```
 
 ### Access points
@@ -169,7 +169,7 @@ mvn clean verify
 mvn clean package
 
 # 3. Build images
-docker build -t orchestration-service:latest -f booking-service-orchestration/Dockerfile .
+docker build -t booking-service-orchestrator:latest -f booking-service-orchestrator/Dockerfile .
 docker build -t booking-service:latest -f booking-service/Dockerfile .
 docker build -t payment-service:latest -f payment-service/Dockerfile .
 docker build -t product-service:latest -f product-service/Dockerfile .

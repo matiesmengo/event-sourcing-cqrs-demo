@@ -1,12 +1,12 @@
 package com.mengo.payment.infrastructure.events
 
+import com.mengo.architecture.KafkaTopics.KAFKA_PAYMENT_COMPLETED
+import com.mengo.architecture.KafkaTopics.KAFKA_PAYMENT_FAILED
+import com.mengo.architecture.KafkaTopics.KAFKA_PAYMENT_INITIATED
 import com.mengo.payment.domain.model.PaymentCompletedEvent
 import com.mengo.payment.domain.model.PaymentFailedEvent
 import com.mengo.payment.domain.model.PaymentInitiatedEvent
 import com.mengo.payment.domain.service.PaymentEventPublisher
-import com.mengo.payment.infrastructure.events.KafkaTopics.KAFKA_PAYMENT_COMPLETED
-import com.mengo.payment.infrastructure.events.KafkaTopics.KAFKA_PAYMENT_FAILED
-import com.mengo.payment.infrastructure.events.KafkaTopics.KAFKA_PAYMENT_INITIATED
 import com.mengo.payment.infrastructure.events.mappers.toAvro
 import org.apache.avro.specific.SpecificRecord
 import org.springframework.kafka.core.KafkaTemplate

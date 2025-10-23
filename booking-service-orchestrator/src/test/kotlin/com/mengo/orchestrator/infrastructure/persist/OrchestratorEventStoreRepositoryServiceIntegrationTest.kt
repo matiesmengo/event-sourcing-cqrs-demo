@@ -1,7 +1,7 @@
 package com.mengo.orchestrator.infrastructure.persist
 
-import OrchestratorEvent
 import com.mengo.orchestrator.domain.model.Product
+import com.mengo.orchestrator.domain.model.events.OrchestratorEvent
 import com.mengo.orchestrator.fixtures.OrchestratorConstants.BOOKING_ID
 import com.mengo.orchestrator.infrastructure.persist.mapper.OrchestratorEventEntityMapper
 import com.mengo.postgres.test.PostgresTestContainerBase

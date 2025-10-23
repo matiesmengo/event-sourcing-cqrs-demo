@@ -1,16 +1,16 @@
 package com.mengo.booking.infrastructure.events
 
+import com.mengo.architecture.KafkaTopics.KAFKA_BOOKING_COMPLETED
+import com.mengo.architecture.KafkaTopics.KAFKA_BOOKING_CREATED
+import com.mengo.architecture.KafkaTopics.KAFKA_BOOKING_FAILED
 import com.mengo.booking.fixtures.CommandTestData.buildSagaCommandBookingConfirmed
 import com.mengo.booking.fixtures.CommandTestData.buildSagaCommandBookingCreated
 import com.mengo.booking.fixtures.CommandTestData.buildSagaCommandBookingFailed
-import com.mengo.booking.infrastructure.events.KafkaTopics.KAFKA_BOOKING_COMPLETED
-import com.mengo.booking.infrastructure.events.KafkaTopics.KAFKA_BOOKING_CREATED
-import com.mengo.booking.infrastructure.events.KafkaTopics.KAFKA_BOOKING_FAILED
 import com.mengo.booking.infrastructure.events.mappers.toAvro
-import com.mengo.booking.payload.BookingCancelledPayload
-import com.mengo.booking.payload.BookingConfirmedPayload
-import com.mengo.booking.payload.BookingCreatedPayload
 import com.mengo.kafka.test.KafkaTestContainerBase
+import com.mengo.payload.booking.BookingCancelledPayload
+import com.mengo.payload.booking.BookingConfirmedPayload
+import com.mengo.payload.booking.BookingCreatedPayload
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
 import java.time.Duration

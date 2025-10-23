@@ -1,7 +1,7 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0"
          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
-
+    <modelVersion>4.0.0</modelVersion>
     <parent>
         <groupId>com.mengo.platform</groupId>
         <artifactId>mengo-parent</artifactId>
@@ -9,7 +9,6 @@
         <relativePath>../../mengo-parent/pom.xml</relativePath>
     </parent>
 
-    <modelVersion>4.0.0</modelVersion>
     <artifactId>postgresql-starter-test</artifactId>
     <packaging>jar</packaging>
     <name>postgresql starter test</name>

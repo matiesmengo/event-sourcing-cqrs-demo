@@ -1,5 +1,6 @@
 {
-  "namespace": "com.mengo.booking.payload",
+  "namespace": "com.mengo.payload.booking",
+
   "type": "record",
   "name": "BookingCancelledPayload",
   "fields": [

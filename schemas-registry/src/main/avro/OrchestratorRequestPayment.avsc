@@ -1,5 +1,6 @@
 {
-  "namespace": "com.mengo.orchestrator.payload",
+  "namespace": "com.mengo.payload.orchestrator",
+
   "type": "record",
   "name": "OrchestratorRequestPaymentPayload",
   "fields": [
@@ -12,7 +13,7 @@
       "type": {
         "type": "bytes",
         "logicalType": "decimal",
-        "precision": 18,
+        "precision": 12,
         "scale": 2
       }
     }

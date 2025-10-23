@@ -1,7 +1,7 @@
 package com.mengo.orchestrator.infrastructure.persist
 
-import OrchestratorEvent
 import com.mengo.orchestrator.domain.model.events.OrchestratorAggregate
+import com.mengo.orchestrator.domain.model.events.OrchestratorEvent
 import com.mengo.orchestrator.domain.service.OrchestratorEventStoreRepository
 import com.mengo.orchestrator.infrastructure.persist.mapper.OrchestratorEventEntityMapper
 import org.springframework.stereotype.Repository

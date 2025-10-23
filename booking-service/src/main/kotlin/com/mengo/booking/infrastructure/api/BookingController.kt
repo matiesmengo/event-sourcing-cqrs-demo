@@ -1,12 +1,12 @@
 package com.mengo.booking.infrastructure.api
 
-import com.mengo.booking.api.BookingsApi
+import com.mengo.api.booking.BookingsApi
+import com.mengo.api.booking.model.BookingResponse
+import com.mengo.api.booking.model.BookingRetrievedResponse
+import com.mengo.api.booking.model.CreateBookingRequest
 import com.mengo.booking.domain.service.BookingService
 import com.mengo.booking.infrastructure.api.mappers.toApi
 import com.mengo.booking.infrastructure.api.mappers.toDomain
-import com.mengo.booking.model.BookingResponse
-import com.mengo.booking.model.BookingRetrievedResponse
-import com.mengo.booking.model.CreateBookingRequest
 import jakarta.validation.Valid
 import org.springframework.http.ResponseEntity
 import org.springframework.http.ResponseEntity.ok

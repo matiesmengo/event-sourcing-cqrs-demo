@@ -1,5 +1,6 @@
 {
-  "namespace": "com.mengo.payment.payload",
+  "namespace": "com.mengo.payload.payment",
+
   "type": "record",
   "name": "PaymentCompletedPayload",
   "fields": [

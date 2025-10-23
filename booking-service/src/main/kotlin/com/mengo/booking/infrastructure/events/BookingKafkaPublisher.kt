@@ -1,10 +1,10 @@
 package com.mengo.booking.infrastructure.events
 
+import com.mengo.architecture.KafkaTopics.KAFKA_BOOKING_COMPLETED
+import com.mengo.architecture.KafkaTopics.KAFKA_BOOKING_CREATED
+import com.mengo.architecture.KafkaTopics.KAFKA_BOOKING_FAILED
 import com.mengo.booking.domain.model.command.SagaCommand
 import com.mengo.booking.domain.service.BookingEventPublisher
-import com.mengo.booking.infrastructure.events.KafkaTopics.KAFKA_BOOKING_COMPLETED
-import com.mengo.booking.infrastructure.events.KafkaTopics.KAFKA_BOOKING_CREATED
-import com.mengo.booking.infrastructure.events.KafkaTopics.KAFKA_BOOKING_FAILED
 import com.mengo.booking.infrastructure.events.mappers.toAvro
 import org.apache.avro.specific.SpecificRecord
 import org.springframework.kafka.core.KafkaTemplate

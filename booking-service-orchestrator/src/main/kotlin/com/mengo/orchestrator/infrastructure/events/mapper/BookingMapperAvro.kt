@@ -1,12 +1,12 @@
 package com.mengo.orchestrator.infrastructure.events.mapper
 
-import com.mengo.booking.payload.BookingCreatedPayload
-import com.mengo.booking.payload.BookingProduct
+import com.mengo.payload.booking.BookingCreatedPayload
+import com.mengo.payload.booking.BookingProduct
 import com.mengo.orchestrator.domain.model.Product
 import com.mengo.orchestrator.domain.model.command.OrchestratorCommand
 import com.mengo.orchestrator.domain.model.command.SagaCommand
-import com.mengo.orchestrator.payload.OrchestratorCancelBookingPayload
-import com.mengo.orchestrator.payload.OrchestratorConfirmBookingPayload
+import com.mengo.payload.orchestrator.OrchestratorCancelBookingPayload
+import com.mengo.payload.orchestrator.OrchestratorConfirmBookingPayload
 import java.util.UUID
 
 fun SagaCommand.ConfirmBooking.toAvro(): OrchestratorConfirmBookingPayload =

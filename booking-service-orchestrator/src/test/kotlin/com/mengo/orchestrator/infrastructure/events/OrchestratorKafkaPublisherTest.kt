@@ -1,16 +1,16 @@
 package com.mengo.orchestrator.infrastructure.events
 
+import com.mengo.architecture.KafkaTopics.KAFKA_SAGA_CANCEL_BOOKING
+import com.mengo.architecture.KafkaTopics.KAFKA_SAGA_CONFIRM_BOOKING
+import com.mengo.architecture.KafkaTopics.KAFKA_SAGA_RELEASE_STOCK
+import com.mengo.architecture.KafkaTopics.KAFKA_SAGA_REQUEST_PAYMENT
+import com.mengo.architecture.KafkaTopics.KAFKA_SAGA_REQUEST_STOCK
 import com.mengo.orchestrator.fixtures.CommandTestData.buildSagaCommandCancelBooking
 import com.mengo.orchestrator.fixtures.CommandTestData.buildSagaCommandConfirmBooking
 import com.mengo.orchestrator.fixtures.CommandTestData.buildSagaCommandReleaseStock
 import com.mengo.orchestrator.fixtures.CommandTestData.buildSagaCommandRequestPayment
 import com.mengo.orchestrator.fixtures.CommandTestData.buildSagaCommandRequestStock
 import com.mengo.orchestrator.fixtures.OrchestratorConstants.BOOKING_ID
-import com.mengo.orchestrator.infrastructure.events.KafkaTopics.KAFKA_SAGA_CANCEL_BOOKING
-import com.mengo.orchestrator.infrastructure.events.KafkaTopics.KAFKA_SAGA_CONFIRM_BOOKING
-import com.mengo.orchestrator.infrastructure.events.KafkaTopics.KAFKA_SAGA_RELEASE_STOCK
-import com.mengo.orchestrator.infrastructure.events.KafkaTopics.KAFKA_SAGA_REQUEST_PAYMENT
-import com.mengo.orchestrator.infrastructure.events.KafkaTopics.KAFKA_SAGA_REQUEST_STOCK
 import com.mengo.orchestrator.infrastructure.events.mapper.toAvro
 import org.apache.avro.specific.SpecificRecord
 import org.junit.jupiter.api.BeforeEach

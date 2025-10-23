@@ -1,10 +1,10 @@
 package com.mengo.booking.infrastructure.api.mappers
 
+import com.mengo.api.booking.model.BookingProduct
+import com.mengo.api.booking.model.BookingResponse
+import com.mengo.api.booking.model.CreateBookingRequest
 import com.mengo.booking.domain.model.BookingItem
 import com.mengo.booking.domain.model.command.BookingCommand
-import com.mengo.booking.model.BookingProduct
-import com.mengo.booking.model.BookingResponse
-import com.mengo.booking.model.CreateBookingRequest
 import java.util.UUID
 
 fun CreateBookingRequest.toDomain(): BookingCommand.CreateBooking =

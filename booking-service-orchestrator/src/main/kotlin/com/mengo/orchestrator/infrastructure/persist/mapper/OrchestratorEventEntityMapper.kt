@@ -1,7 +1,7 @@
 package com.mengo.orchestrator.infrastructure.persist.mapper
 
-import OrchestratorEvent
 import com.fasterxml.jackson.databind.ObjectMapper
+import com.mengo.orchestrator.domain.model.events.OrchestratorEvent
 import com.mengo.orchestrator.infrastructure.persist.OrchestratorEventEntity
 import org.springframework.stereotype.Component
 

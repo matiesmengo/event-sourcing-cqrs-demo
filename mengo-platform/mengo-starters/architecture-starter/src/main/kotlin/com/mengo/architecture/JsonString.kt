@@ -1,4 +1,4 @@
-package com.mengo.booking.fixtures
+package com.mengo.architecture
 
 import org.intellij.lang.annotations.Language
 

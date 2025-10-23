@@ -44,6 +44,9 @@
                             <sourceDirectory>${project.basedir}/src/main/avro</sourceDirectory>
                             <outputDirectory>${project.build.directory}/generated-sources/avro</outputDirectory>
                             <stringType>String</stringType>
+                            <enableDecimalLogicalType>true</enableDecimalLogicalType>
+                            <fieldVisibility>private</fieldVisibility>
+                            <dateTimeLogicalTypeImplementation>JSR310</dateTimeLogicalTypeImplementation>
                         </configuration>
                     </execution>
                 </executions>

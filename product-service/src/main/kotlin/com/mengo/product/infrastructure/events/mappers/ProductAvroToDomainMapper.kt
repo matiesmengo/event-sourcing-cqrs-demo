@@ -1,7 +1,7 @@
 package com.mengo.product.infrastructure.events.mappers
 
-import com.mengo.orchestrator.payload.OrchestratorReleaseStockPayload
-import com.mengo.orchestrator.payload.OrchestratorRequestStockPayload
+import com.mengo.payload.orchestrator.OrchestratorReleaseStockPayload
+import com.mengo.payload.orchestrator.OrchestratorRequestStockPayload
 import com.mengo.product.domain.model.command.SagaCommand
 import java.util.UUID
 
