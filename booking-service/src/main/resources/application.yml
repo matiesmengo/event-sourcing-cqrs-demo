@@ -2,6 +2,8 @@ server:
   port: 8080
 
 spring:
+  application:
+    name: booking-service
   datasource:
     url: jdbc:postgresql://localhost:5432/demoEventDrivenDB
     username: demo
@@ -41,9 +43,15 @@ spring:
         specific.avro.reader: true
 
 logging:
+  file:
+    name: ./observability/temp/booking-service.log
+  charset: UTF-8
   level:
-    org.hibernate.SQL: DEBUG
-    org.hibernate.type.descriptor.sql: TRACE
+    org.hibernate.SQL: WARN
+    org.hibernate.type.descriptor.sql: WARN
+    io.opentelemetry: WARN
+    io.micrometer.tracing: WARN
+    io.micrometer.tracing.exporter: WARN
 
 springdoc:
   api-docs:
@@ -51,3 +59,25 @@ springdoc:
   swagger-ui:
     path: /swagger-ui.html
     enable: true
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: "*"
+  otlp:
+    tracing:
+      endpoint: http://localhost:4318/v1/traces
+  tracing:
+    enabled: true
+    service-name: ${spring.application.name}
+    sampling:
+      probability: 1.0
+  metrics:
+    export:
+      otlp:
+        enabled: false
+  observations:
+    application:
+      name: ${spring.application.name}
+

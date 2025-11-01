@@ -2,6 +2,8 @@ server:
   port: 8085
 
 spring:
+  application:
+    name: booking-service-orchestrator
   datasource:
     url: jdbc:postgresql://localhost:5432/demoEventDrivenDB
     username: demo
@@ -41,6 +43,30 @@ spring:
         specific.avro.reader: true
 
 logging:
+  file:
+    name: ./observability/temp/orchestrator-service.log
+  charset: UTF-8
   level:
     org.hibernate.SQL: DEBUG
     org.hibernate.type.descriptor.sql: TRACE
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: "*"
+  otlp:
+    tracing:
+      endpoint: http://localhost:4318/v1/traces
+  tracing:
+    enabled: true
+    service-name: ${spring.application.name}
+    sampling:
+      probability: 1.0
+  metrics:
+    export:
+      otlp:
+        enabled: false
+  observations:
+    application:
+      name: ${spring.application.name}

@@ -1,0 +1,12 @@
+{
+  "uid": "home-dashboard",
+  "title": "Home dashboard — // TODO: ",
+  "schemaVersion": 38,
+  "refresh": "10s",
+  "panels": [],
+  "time": {
+    "from": "now-15m",
+    "to": "now"
+  },
+  "timezone": "browser"
+}

@@ -14,8 +14,8 @@ services:
     depends_on:
       - zookeeper
     ports:
-      - "9092:9092"   # connexió des del host (Spring Boot)
-      - "29092:29092" # connexió interna Docker (Schema Registry)
+      - "9092:9092"   # Spring Boot
+      - "29092:29092" # Schema Registry
     environment:
       KAFKA_BROKER_ID: 1
       KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
@@ -37,13 +37,14 @@ services:
       SCHEMA_REGISTRY_LISTENERS: http://0.0.0.0:8081
       SCHEMA_REGISTRY_KAFKASTORE_BOOTSTRAP_SERVERS: PLAINTEXT://kafka:29092
 
+  # Postgres (event store)
   postgres:
     image: postgres:16
     container_name: postgres
     environment:
       POSTGRES_USER: demo
       POSTGRES_PASSWORD: demo
-      POSTGRES_DB: demoEventDrivenDB
+      POSTGRES_DB: demoEventDrivenDB #change db name
     ports:
       - "5432:5432"
     volumes:
@@ -53,6 +54,89 @@ services:
       interval: 10s
       timeout: 5s
       retries: 5
+
+  # Jaeger (traces)
+  jaeger:
+    image: jaegertracing/all-in-one:1.74.0
+    container_name: jaeger
+    environment:
+      - COLLECTOR_OTLP_ENABLED=true
+      - METRICS_STORAGE_TYPE=prometheus
+    ports:
+      - '16686:16686' # Web UI
+      - '4317:4317' # gRPC OpenTelemetry Protocol
+      - '4318:4318' # HTTP OpenTelemetry Protocol
+      - '6831:6831/udp' # Thrift/UDP/Agent
+      - '6832:6832/udp' # Thrift/UDP/Agent
+    networks:
+      - observability
+
+  # Prometheus (metrics)
+  prometheus:
+    image: prom/prometheus:v3.7.2
+    container_name: prometheus
+    ports:
+      - "9090:9090"
+    volumes:
+      - ./observability/prometheus/prometheus.yml:/etc/prometheus/prometheus.yml
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    depends_on:
+      - kafka
+    networks:
+      - observability
+
+  # Grafana (dashboards)
+  grafana:
+    image: grafana/grafana:12.2
+    container_name: grafana
+    ports:
+      - "3000:3000"
+    environment:
+      - GF_SECURITY_ADMIN_USER=admin
+      - GF_SECURITY_ADMIN_PASSWORD=admin
+      - GF_AUTH_ANONYMOUS_ENABLED=true
+      - GF_DASHBOARDS_DEFAULT_HOME_DASHBOARD_PATH=/var/lib/grafana/dashboards/home-dashboard.json
+    volumes:
+      - ./observability/grafana/provisioning/dashboards:/etc/grafana/provisioning/dashboards
+      - ./observability/grafana/provisioning/datasources:/etc/grafana/provisioning/datasources
+      - ./observability/grafana/dashboards:/var/lib/grafana/dashboards
+    depends_on:
+      - prometheus
+      - jaeger
+      - loki
+    networks:
+      - observability
+
+  # Loki (logs)
+  loki:
+    image: grafana/loki:3.3.4
+    container_name: loki
+    command: ["-config.file=/etc/loki/loki-config.yaml"]
+    ports:
+      - "3100:3100"
+    volumes:
+      - ./observability/loki/config/loki-config.yaml:/etc/loki/loki-config.yaml
+      - ./observability/loki/chunks:/loki/chunks
+    networks:
+      - observability
+
+  # Promtail (local logs)
+  promtail:
+    image: grafana/promtail:3.3.4
+    container_name: promtail
+    volumes:
+      - ./observability/promtail/promtail-config.yaml:/etc/promtail/promtail-config.yaml
+      - ./observability/temp:/host/logs
+    command: -config.file=/etc/promtail/promtail-config.yaml
+    depends_on:
+      - loki
+    networks:
+      - observability
+
+networks:
+  observability:
+    driver: bridge
 
 volumes:
   pgdata:
