@@ -23,8 +23,8 @@ open class ProductServiceCommand(
         if (aggregate.availableStock < command.quantity) {
             eventPublisher.publishProductReservedFailed(
                 BookingCommand.ReservedFailed(
-                    bookingId = command.productId,
-                    productId = command.bookingId,
+                    bookingId = command.bookingId,
+                    productId = command.productId,
                 ),
             )
         } else {

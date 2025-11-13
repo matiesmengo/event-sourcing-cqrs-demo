@@ -1,12 +1,31 @@
 {
   "uid": "home-dashboard",
-  "title": "Home dashboard — // TODO: ",
+  "title": "Home dashboard",
+  "tags": [
+    "home",
+    "overview"
+  ],
+  "timezone": "browser",
+  "refresh": "5m",
+  "panels": [
+    {
+      "type": "text",
+      "id": 1,
+      "title": "Observability Dashboards",
+      "gridPos": {
+        "x": 0,
+        "y": 0,
+        "w": 24,
+        "h": 10
+      },
+      "options": {
+        "content": "This Grafana instance centralizes logs, metrics, and tracing data from all microservices.\n\n### Dashboards:\n- **[Loki - Centralized Logs](http://localhost:3000/d/loki-centralized-logs)**: Logs from all microservices, filter by service, log level, etc.\n- **[JVM Monitoring](http://localhost:3000/d/jvm-monitoring)**: Micrometer metrics for Spring/Java microservices (heap, GC, threads, CPU, memory).\n- **[Kafka Monitoring](http://localhost:3000/d/kafka-monitoring)**: Kafka topics, consumers, producer metrics, lag, throughput.\n- **[SAGA Orchestrator](http://localhost:3000/d/saga-orchestrator)**: Track SAGA state transitions, successful requests, compensations, and errors.\n\n### External tools:\n- **[Prometheus](http://localhost:9090/)**: Raw metrics collection and queries for all services.\n- **[Jaeger](http://localhost:16686/)**: Distributed tracing for microservice transactions and SAGA spans.\n\nUse this dashboard as the starting point to navigate the observability ecosystem for this project.",
+        "mode": "markdown",
+        "showHeader": false,
+        "heightMode": "auto"
+      }
+    }
+  ],
   "schemaVersion": 38,
-  "refresh": "10s",
-  "panels": [],
-  "time": {
-    "from": "now-15m",
-    "to": "now"
-  },
-  "timezone": "browser"
+  "version": 1
 }

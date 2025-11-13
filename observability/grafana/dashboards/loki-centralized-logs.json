@@ -1,0 +1,71 @@
+{
+  "uid": "loki-centralized-logs",
+  "title": "Loki - Centralized Logs",
+  "tags": ["logs", "services"],
+  "timezone": "browser",
+  "refresh": "5s",
+  "time": {
+    "from": "now-15m",
+    "to": "now"
+  },
+  "panels": [
+    {
+      "type": "logs",
+      "title": "Logs",
+      "gridPos": { "x": 0, "y": 0, "w": 24, "h": 25 },
+      "id": 1,
+      "datasource": "loki",
+      "targets": [
+        {
+          "expr": "{job=\"services\", service=~\"$service\", level=~\"$level\", logger=~\"$logger\"}",
+          "refId": "A"
+        }
+      ],
+      "options": {
+        "showLabels": true,
+        "showTime": true,
+        "wrapLogMessage": true
+      }
+    }
+  ],
+  "templating": {
+    "list": [
+      {
+        "name": "service",
+        "label": "Microservices",
+        "type": "query",
+        "datasource": "loki",
+        "query": "label_values({job=\"services\"}, service)",
+        "multi": true,
+        "includeAll": true,
+        "allValue": ".*",
+        "refresh": 1
+      },
+      {
+        "name": "level",
+        "label": "Log level",
+        "type": "query",
+        "datasource": "loki",
+        "query": "label_values({job=\"services\"}, level)",
+        "multi": true,
+        "includeAll": true,
+        "allValue": ".*",
+        "refresh": 1
+      },
+      {
+        "name": "logger",
+        "label": "Logger",
+        "type": "query",
+        "datasource": "loki",
+        "query": "label_values({job=\"services\"}, logger)",
+        "multi": true,
+        "includeAll": true,
+        "allValue": ".*",
+        "refresh": 1
+      }
+    ]
+  },
+  "editable": true,
+  "schemaVersion": 36,
+  "version": 1
+}

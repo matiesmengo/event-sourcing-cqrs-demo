@@ -11,6 +11,7 @@ import com.mengo.orchestrator.fixtures.CommandTestData.buildSagaCommandReleaseSt
 import com.mengo.orchestrator.fixtures.CommandTestData.buildSagaCommandRequestPayment
 import com.mengo.orchestrator.fixtures.CommandTestData.buildSagaCommandRequestStock
 import com.mengo.orchestrator.fixtures.OrchestratorConstants.BOOKING_ID
+import com.mengo.orchestrator.infrastructure.SagaMetrics
 import com.mengo.orchestrator.infrastructure.events.mapper.toAvro
 import org.apache.avro.specific.SpecificRecord
 import org.junit.jupiter.api.BeforeEach
@@ -22,12 +23,14 @@ import org.springframework.kafka.core.KafkaTemplate
 
 class OrchestratorKafkaPublisherTest {
     private lateinit var kafkaTemplate: KafkaTemplate<String, SpecificRecord>
+    private lateinit var sagaMetrics: SagaMetrics
     private lateinit var publisher: OrchestratorKafkaPublisher
 
     @BeforeEach
     fun setUp() {
         kafkaTemplate = mock()
-        publisher = OrchestratorKafkaPublisher(kafkaTemplate)
+        sagaMetrics = mock()
+        publisher = OrchestratorKafkaPublisher(kafkaTemplate, sagaMetrics)
     }
 
     @Test

@@ -40,6 +40,7 @@
     </dependencyManagement>
 
     <properties>
+        <kotlin.version>1.9.25</kotlin.version>
         <avro-maven-plugin.version>1.11.4</avro-maven-plugin.version>
         <openapi.generator.version>7.0.1</openapi.generator.version>
         <build-helper-maven-plugin.version>3.4.0</build-helper-maven-plugin.version>
@@ -52,7 +53,7 @@
                 <plugin>
                     <groupId>org.jetbrains.kotlin</groupId>
                     <artifactId>kotlin-maven-plugin</artifactId>
-                    <version>${kotlin.version.version}</version>
+                    <version>${kotlin.version}</version>
                 </plugin>
 
                 <!-- Spring Boot Maven plugin -->

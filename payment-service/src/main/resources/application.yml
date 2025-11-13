@@ -15,7 +15,7 @@ spring:
   jpa:
     hibernate:
       ddl-auto: validate
-    show-sql: true
+    show-sql: false
     properties:
       hibernate:
         default_schema: payment
@@ -34,6 +34,9 @@ spring:
       properties:
         schema.registry.url: http://localhost:8081
         auto.register.schemas: true
+        otel.instrumentation.kafka.enabled: true
+        metrics.recording.level: INFO
+        metrics.sample.window.ms: 5000
     consumer:
       group-id: payment-service-group
       key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
@@ -41,14 +44,14 @@ spring:
       properties:
         schema.registry.url: http://localhost:8081
         specific.avro.reader: true
+        otel.instrumentation.kafka.enabled: true
+        metrics.recording.level: INFO
+        metrics.sample.window.ms: 5000
 
 logging:
   file:
     name: ./observability/temp/payment-service.log
   charset: UTF-8
-  level:
-    org.hibernate.SQL: DEBUG
-    org.hibernate.type.descriptor.sql: TRACE
 
 management:
   endpoints:
@@ -64,9 +67,17 @@ management:
     sampling:
       probability: 1.0
   metrics:
+    enable:
+      kafka: true
     export:
+      prometheus:
+        enabled: true
       otlp:
         enabled: false
   observations:
     application:
       name: ${spring.application.name}
+
+observability:
+  serviceName: ${spring.application.name}
+  environment: dev
