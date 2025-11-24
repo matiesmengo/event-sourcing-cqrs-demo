@@ -31,7 +31,7 @@ class BookingE2ETest : AbstractServicesE2ETest() {
     }
 
     @Test
-    fun `booking to payment flow E2E`() {
+    fun `booking completed E2E`() {
         // given
         val bookingClient = createBookingClient()
         val productId = UUID.fromString("22222222-2222-2222-2222-222222222222")

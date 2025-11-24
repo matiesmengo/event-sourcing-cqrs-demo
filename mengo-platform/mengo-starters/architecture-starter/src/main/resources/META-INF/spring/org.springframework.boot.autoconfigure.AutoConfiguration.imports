@@ -1,2 +1,3 @@
 com.mengo.architecture.config.ObservabilityConfiguration
 com.mengo.architecture.config.LoggerConfiguration
+com.mengo.architecture.config.WebMvcConfiguration

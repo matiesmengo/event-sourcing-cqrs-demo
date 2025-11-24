@@ -17,10 +17,12 @@ spring:
       key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
       value-deserializer: io.confluent.kafka.serializers.KafkaAvroDeserializer
       properties:
+        interceptor.classes: com.mengo.architecture.metadata.MetadataConsumerInterceptor
         schema.registry.url: mock://test
         specific.avro.reader: true
     producer:
       key-serializer: org.apache.kafka.common.serialization.StringSerializer
       value-serializer: io.confluent.kafka.serializers.KafkaAvroSerializer
       properties:
+        interceptor.classes: com.mengo.architecture.metadata.MetadataProducerInterceptor
         schema.registry.url: mock://test
