@@ -1,9 +1,9 @@
-package com.mengo.orchestrator.infrastructure.persist
+package com.mengo.orchestrator.infrastructure.persist.eventStore
 
 import com.mengo.orchestrator.domain.model.Product
 import com.mengo.orchestrator.domain.model.events.OrchestratorEvent
 import com.mengo.orchestrator.fixtures.OrchestratorConstants.BOOKING_ID
-import com.mengo.orchestrator.infrastructure.persist.mapper.OrchestratorEventEntityMapper
+import com.mengo.orchestrator.infrastructure.persist.eventStore.mapper.OrchestratorEventEntityMapper
 import com.mengo.postgres.test.PostgresTestContainerBase
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test

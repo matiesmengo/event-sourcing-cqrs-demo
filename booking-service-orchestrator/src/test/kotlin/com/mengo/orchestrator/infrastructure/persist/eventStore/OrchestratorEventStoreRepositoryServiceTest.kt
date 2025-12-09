@@ -1,4 +1,4 @@
-package com.mengo.orchestrator.infrastructure.persist
+package com.mengo.orchestrator.infrastructure.persist.eventStore
 
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.databind.SerializationFeature
@@ -8,7 +8,7 @@ import com.mengo.orchestrator.domain.model.Product
 import com.mengo.orchestrator.domain.model.events.OrchestratorEvent
 import com.mengo.orchestrator.fixtures.OrchestratorConstants.BOOKING_ID
 import com.mengo.orchestrator.fixtures.OrchestratorConstants.PRODUCT_ID
-import com.mengo.orchestrator.infrastructure.persist.mapper.OrchestratorEventEntityMapper
+import com.mengo.orchestrator.infrastructure.persist.eventStore.mapper.OrchestratorEventEntityMapper
 import org.junit.jupiter.api.Assertions.assertThrows
 import org.junit.jupiter.api.assertNull
 import org.mockito.kotlin.any

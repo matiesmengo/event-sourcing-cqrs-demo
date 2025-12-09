@@ -1,9 +1,9 @@
-package com.mengo.orchestrator.infrastructure.persist
+package com.mengo.orchestrator.infrastructure.persist.eventStore
 
 import com.mengo.orchestrator.domain.model.events.OrchestratorAggregate
 import com.mengo.orchestrator.domain.model.events.OrchestratorEvent
 import com.mengo.orchestrator.domain.service.OrchestratorEventStoreRepository
-import com.mengo.orchestrator.infrastructure.persist.mapper.OrchestratorEventEntityMapper
+import com.mengo.orchestrator.infrastructure.persist.eventStore.mapper.OrchestratorEventEntityMapper
 import org.springframework.stereotype.Repository
 import java.util.UUID
 

@@ -35,8 +35,8 @@ class MetadataConsumerInterceptor : ConsumerInterceptor<String, Any> {
     private fun extractMetadata(headers: Headers): Metadata {
         fun getString(key: String): String? = headers.lastHeader(key)?.value()?.toString(StandardCharsets.UTF_8)
 
-        val correlation = getString("correlation-id") ?: UUID.randomUUID().toString()
-        val causation = getString("causation-id") ?: UUID.randomUUID().toString()
+        val correlationId = getString("correlation-id") ?: error("Correlation id is lost")
+        val causationId = getString("message-id")
         val traceParent = getString("traceparent")
         val attributesJson = getString("meta-attributes")
         val attributes: Map<String, String> =
@@ -52,9 +52,10 @@ class MetadataConsumerInterceptor : ConsumerInterceptor<String, Any> {
                     emptyMap()
                 }
             }
+
         return Metadata(
-            correlationId = correlation,
-            causationId = causation,
+            correlationId = UUID.fromString(correlationId),
+            causationId = UUID.fromString(causationId),
             attributes = attributes,
             traceParent = traceParent,
         )

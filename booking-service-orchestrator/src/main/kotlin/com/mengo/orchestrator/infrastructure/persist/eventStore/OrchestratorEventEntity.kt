@@ -1,4 +1,4 @@
-package com.mengo.orchestrator.infrastructure.persist
+package com.mengo.orchestrator.infrastructure.persist.eventStore
 
 import jakarta.persistence.Column
 import jakarta.persistence.Entity

@@ -8,6 +8,8 @@ object OrchestratorConstants {
     val USER_ID: UUID = UUID.randomUUID()
     val PRODUCT_ID: UUID = UUID.randomUUID()
     val PAYMENT_ID: UUID = UUID.randomUUID()
+    val CORRELATION_ID: UUID = UUID.randomUUID()
+    val CAUSATION_ID: UUID = UUID.randomUUID()
 
     val PRODUCT_QUANTITY = (5..50).random()
     val PRODUCT_PRICE: BigDecimal = BigDecimal("${(10..999).random()}.${(0..99).random()}").setScale(2)

@@ -17,9 +17,9 @@ class MetadataHttpInterceptor : HandlerInterceptor {
         request.getHeader("x-forced-payment-outcome")?.let { attrs["forced-payment-outcome"] = it }
 
         val correlationId = request.getHeader("correlation-id") ?: UUID.randomUUID().toString()
-        val causationId = request.getHeader("causation-id") ?: UUID.randomUUID().toString()
+        val traceParent = request.getHeader("traceparent")
 
-        val metadata = Metadata(correlationId = correlationId, causationId = causationId, attributes = attrs)
+        val metadata = Metadata(correlationId = UUID.fromString(correlationId), attributes = attrs, traceParent = traceParent)
         MetadataContextHolder.set(metadata)
         return true
     }
