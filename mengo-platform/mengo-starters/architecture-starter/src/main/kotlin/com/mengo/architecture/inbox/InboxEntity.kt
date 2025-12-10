@@ -1,4 +1,4 @@
-package com.mengo.orchestrator.infrastructure.persist.inbox
+package com.mengo.architecture.inbox
 
 import jakarta.persistence.Column
 import jakarta.persistence.Entity

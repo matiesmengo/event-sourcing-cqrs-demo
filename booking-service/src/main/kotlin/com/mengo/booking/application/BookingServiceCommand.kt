@@ -6,8 +6,9 @@ import com.mengo.booking.domain.model.eventstore.BookingAggregate
 import com.mengo.booking.domain.service.BookingEventPublisher
 import com.mengo.booking.domain.service.BookingEventStoreRepository
 import com.mengo.booking.domain.service.BookingService
-import jakarta.transaction.Transactional
 import org.springframework.stereotype.Service
+import org.springframework.transaction.annotation.Propagation
+import org.springframework.transaction.annotation.Transactional
 
 @Service
 open class BookingServiceCommand(
@@ -16,6 +17,7 @@ open class BookingServiceCommand(
 ) : BookingService {
     // TODO: update projection after publish each topic
     // TODO: handle custom errors
+    // TODO: Transactional required for rest clients?
 
     @Transactional
     override fun onCreateBooking(command: BookingCommand.CreateBooking) {
@@ -38,7 +40,7 @@ open class BookingServiceCommand(
         )
     }
 
-    @Transactional
+    @Transactional(propagation = Propagation.REQUIRED)
     override fun onPaymentCompleted(command: BookingCommand.BookingConfirmed) {
         val aggregate = eventStoreRepository.load(command.bookingId) ?: error("This booking doesn't exist")
 
@@ -46,7 +48,7 @@ open class BookingServiceCommand(
         eventPublisher.publishBookingCompleted(SagaCommand.BookingConfirmed(command.bookingId))
     }
 
-    @Transactional
+    @Transactional(propagation = Propagation.REQUIRED)
     override fun onPaymentFailed(command: BookingCommand.BookingFailed) {
         val aggregate = eventStoreRepository.load(command.bookingId) ?: error("This booking doesn't exist")
 

@@ -2,24 +2,33 @@ package com.mengo.product.infrastructure.events
 
 import com.mengo.architecture.KafkaTopics.KAFKA_PRODUCT_RESERVATION_FAILED
 import com.mengo.architecture.KafkaTopics.KAFKA_PRODUCT_RESERVED
+import com.mengo.architecture.outbox.OutboxRepository
 import com.mengo.product.domain.model.command.BookingCommand
 import com.mengo.product.domain.service.ProductEventPublisher
 import com.mengo.product.infrastructure.events.mappers.toAvro
-import org.apache.avro.specific.SpecificRecord
-import org.springframework.kafka.core.KafkaTemplate
 import org.springframework.stereotype.Component
 
 @Component
-class ProductKafkaPublisher(
-    private val kafkaTemplate: KafkaTemplate<String, SpecificRecord>,
+open class ProductKafkaPublisher(
+    private val outboxRepository: OutboxRepository,
 ) : ProductEventPublisher {
     override fun publishProductReserved(reserved: BookingCommand.Reserved) {
         val avroPayment = reserved.toAvro()
-        kafkaTemplate.send(KAFKA_PRODUCT_RESERVED, avroPayment.bookingId.toString(), avroPayment)
+
+        outboxRepository.persistOutboxEvent(
+            topic = KAFKA_PRODUCT_RESERVED,
+            key = avroPayment.bookingId.toString(),
+            payloadJson = avroPayment,
+        )
     }
 
     override fun publishProductReservedFailed(reservedFailed: BookingCommand.ReservedFailed) {
         val avroPayment = reservedFailed.toAvro()
-        kafkaTemplate.send(KAFKA_PRODUCT_RESERVATION_FAILED, avroPayment.bookingId.toString(), avroPayment)
+
+        outboxRepository.persistOutboxEvent(
+            topic = KAFKA_PRODUCT_RESERVATION_FAILED,
+            key = avroPayment.bookingId.toString(),
+            payloadJson = avroPayment,
+        )
     }
 }

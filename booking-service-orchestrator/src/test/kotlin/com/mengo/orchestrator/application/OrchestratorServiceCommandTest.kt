@@ -5,11 +5,9 @@ import com.mengo.orchestrator.domain.model.command.OrchestratorCommand
 import com.mengo.orchestrator.domain.model.command.SagaCommand
 import com.mengo.orchestrator.domain.model.events.OrchestratorAggregate
 import com.mengo.orchestrator.domain.model.events.OrchestratorEvent
-import com.mengo.orchestrator.domain.service.InboxRepository
 import com.mengo.orchestrator.domain.service.OrchestratorEventPublisher
 import com.mengo.orchestrator.domain.service.OrchestratorEventStoreRepository
 import com.mengo.orchestrator.fixtures.OrchestratorConstants.BOOKING_ID
-import com.mengo.orchestrator.fixtures.OrchestratorConstants.CAUSATION_ID
 import com.mengo.orchestrator.fixtures.OrchestratorConstants.PAYMENT_ID
 import com.mengo.orchestrator.fixtures.OrchestratorConstants.PRODUCT_ID
 import com.mengo.orchestrator.fixtures.OrchestratorConstants.PRODUCT_PRICE
@@ -32,9 +30,8 @@ import kotlin.test.assertTrue
 
 class OrchestratorServiceCommandTest {
     private val eventStoreRepository: OrchestratorEventStoreRepository = mock()
-    private val inboxRepository: InboxRepository = mock()
     private val eventPublisher: OrchestratorEventPublisher = mock()
-    private val service = OrchestratorServiceCommand(eventStoreRepository, inboxRepository, eventPublisher)
+    private val service = OrchestratorServiceCommand(eventStoreRepository, eventPublisher)
 
     val product1 = Product(UUID.randomUUID(), 1, BigDecimal("10.10"))
     val product2 = Product(UUID.randomUUID(), 2, BigDecimal("5.05"))

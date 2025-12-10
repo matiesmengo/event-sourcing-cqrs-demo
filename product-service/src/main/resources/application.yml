@@ -4,10 +4,6 @@ server:
 spring:
   application:
     name: product-service
-  data:
-    mongodb:
-      uri: mongodb://localhost:27017/productdb
-      database: productdb
   datasource:
     url: jdbc:postgresql://localhost:5432/demoEventDrivenDB
     username: demo
@@ -38,7 +34,6 @@ spring:
       key-serializer: org.apache.kafka.common.serialization.StringSerializer
       value-serializer: io.confluent.kafka.serializers.KafkaAvroSerializer
       properties:
-        interceptor.classes: com.mengo.architecture.metadata.MetadataProducerInterceptor
         schema.registry.url: http://localhost:8081
         auto.register.schemas: true
         otel.instrumentation.kafka.enabled: true

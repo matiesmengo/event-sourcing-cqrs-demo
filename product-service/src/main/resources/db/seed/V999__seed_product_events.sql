@@ -1,6 +1,6 @@
 CREATE EXTENSION IF NOT EXISTS "pgcrypto";
 
-INSERT INTO product.product_events (
+INSERT INTO product_events (
     event_id,
     aggregate_id,
     event_type,

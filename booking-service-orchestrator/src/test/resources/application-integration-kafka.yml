@@ -24,5 +24,4 @@ spring:
       key-serializer: org.apache.kafka.common.serialization.StringSerializer
       value-serializer: io.confluent.kafka.serializers.KafkaAvroSerializer
       properties:
-        interceptor.classes: com.mengo.architecture.metadata.MetadataProducerInterceptor
         schema.registry.url: mock://test

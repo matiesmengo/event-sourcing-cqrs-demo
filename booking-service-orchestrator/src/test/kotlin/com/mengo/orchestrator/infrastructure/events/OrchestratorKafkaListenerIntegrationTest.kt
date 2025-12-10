@@ -5,7 +5,7 @@ import com.mengo.architecture.KafkaTopics.KAFKA_PAYMENT_COMPLETED
 import com.mengo.architecture.KafkaTopics.KAFKA_PAYMENT_FAILED
 import com.mengo.architecture.KafkaTopics.KAFKA_PRODUCT_RESERVATION_FAILED
 import com.mengo.architecture.KafkaTopics.KAFKA_PRODUCT_RESERVED
-import com.mengo.kafka.test.KafkaTestContainerBase
+import com.mengo.architecture.test.ContainerBase
 import com.mengo.orchestrator.application.OrchestratorServiceCommand
 import com.mengo.orchestrator.fixtures.OrchestratorConstants.BOOKING_ID
 import com.mengo.orchestrator.fixtures.OrchestratorConstants.PAYMENT_ID
@@ -22,24 +22,37 @@ import com.mengo.orchestrator.fixtures.PayloadTestData.buildProductReservedPaylo
 import org.awaitility.Awaitility
 import org.junit.jupiter.api.Test
 import org.mockito.kotlin.check
+import org.mockito.kotlin.times
 import org.mockito.kotlin.verify
 import org.springframework.test.context.bean.override.mockito.MockitoBean
 import java.time.Duration
+import java.util.UUID
 import kotlin.test.assertEquals
 import kotlin.test.assertTrue
 
-class OrchestratorKafkaListenerIntegrationTest : KafkaTestContainerBase() {
+class OrchestratorKafkaListenerIntegrationTest : ContainerBase() {
     @MockitoBean
     lateinit var serviceCommand: OrchestratorServiceCommand
 
     @Test
-    fun `should consume BookingCreatedPayload from onBookingCreated and call paymentService`() {
+    fun `should consume BookingCreatedPayload from onBookingCreated and call OrchestratorServiceCommand`() {
         val payload = buildBookingCreatedPayload()
+        val messageId = UUID.randomUUID()
 
-        kafkaTemplate.send(KAFKA_BOOKING_CREATED, payload.bookingId, payload)
+        repeat(5) {
+            kafkaTemplate.send(
+                buildProducerRecord(
+                    topic = KAFKA_BOOKING_CREATED,
+                    key = payload.bookingId,
+                    payload = payload,
+                    messageId = messageId,
+                ),
+            )
+        }
+        kafkaTemplate.flush()
 
         Awaitility.await().atMost(Duration.ofSeconds(15)).untilAsserted {
-            verify(serviceCommand).onBookingCreated(
+            verify(serviceCommand, times(1)).onBookingCreated(
                 check {
                     assertEquals(BOOKING_ID, it.bookingId)
                     assertTrue(it.products.any { product -> product.productId == PRODUCT_ID })
@@ -50,13 +63,24 @@ class OrchestratorKafkaListenerIntegrationTest : KafkaTestContainerBase() {
     }
 
     @Test
-    fun `should consume ProductReservedPayload from onProductReserved and call paymentService`() {
+    fun `should consume ProductReservedPayload from onProductReserved and call OrchestratorServiceCommand`() {
         val payload = buildProductReservedPayload()
+        val messageId = UUID.randomUUID()
 
-        kafkaTemplate.send(KAFKA_PRODUCT_RESERVED, payload.bookingId, payload)
+        repeat(5) {
+            kafkaTemplate.send(
+                buildProducerRecord(
+                    topic = KAFKA_PRODUCT_RESERVED,
+                    key = payload.bookingId,
+                    payload = payload,
+                    messageId = messageId,
+                ),
+            )
+        }
+        kafkaTemplate.flush()
 
         Awaitility.await().atMost(Duration.ofSeconds(15)).untilAsserted {
-            verify(serviceCommand).onProductReserved(
+            verify(serviceCommand, times(1)).onProductReserved(
                 check {
                     assertEquals(BOOKING_ID, it.bookingId)
                     assertEquals(PRODUCT_ID, it.productId)
@@ -68,13 +92,24 @@ class OrchestratorKafkaListenerIntegrationTest : KafkaTestContainerBase() {
     }
 
     @Test
-    fun `should consume ProductReservationFailedPayload from onProductReservationFailed and call paymentService`() {
+    fun `should consume ProductReservationFailedPayload from onProductReservationFailed and call OrchestratorServiceCommand`() {
         val payload = buildProductReservationFailedPayload()
+        val messageId = UUID.randomUUID()
 
-        kafkaTemplate.send(KAFKA_PRODUCT_RESERVATION_FAILED, payload.bookingId, payload)
+        repeat(5) {
+            kafkaTemplate.send(
+                buildProducerRecord(
+                    topic = KAFKA_PRODUCT_RESERVATION_FAILED,
+                    key = payload.bookingId,
+                    payload = payload,
+                    messageId = messageId,
+                ),
+            )
+        }
+        kafkaTemplate.flush()
 
         Awaitility.await().atMost(Duration.ofSeconds(15)).untilAsserted {
-            verify(serviceCommand).onProductReservationFailed(
+            verify(serviceCommand, times(1)).onProductReservationFailed(
                 check {
                     assertEquals(BOOKING_ID, it.bookingId)
                     assertEquals(PRODUCT_ID, it.productId)
@@ -84,13 +119,24 @@ class OrchestratorKafkaListenerIntegrationTest : KafkaTestContainerBase() {
     }
 
     @Test
-    fun `should consume PaymentCompletedPayload from onPaymentCompleted and call paymentService`() {
+    fun `should consume PaymentCompletedPayload from onPaymentCompleted and call OrchestratorServiceCommand`() {
         val payload = buildPaymentCompletedPayload()
+        val messageId = UUID.randomUUID()
 
-        kafkaTemplate.send(KAFKA_PAYMENT_COMPLETED, payload.bookingId, payload)
+        repeat(5) {
+            kafkaTemplate.send(
+                buildProducerRecord(
+                    topic = KAFKA_PAYMENT_COMPLETED,
+                    key = payload.bookingId,
+                    payload = payload,
+                    messageId = messageId,
+                ),
+            )
+        }
+        kafkaTemplate.flush()
 
         Awaitility.await().atMost(Duration.ofSeconds(15)).untilAsserted {
-            verify(serviceCommand).onPaymentCompleted(
+            verify(serviceCommand, times(1)).onPaymentCompleted(
                 check {
                     assertEquals(BOOKING_ID, it.bookingId)
                     assertEquals(PAYMENT_ID, it.paymentId)
@@ -101,13 +147,24 @@ class OrchestratorKafkaListenerIntegrationTest : KafkaTestContainerBase() {
     }
 
     @Test
-    fun `should consume PaymentFailedPayload from onPaymentFailed and call paymentService`() {
+    fun `should consume PaymentFailedPayload from onPaymentFailed and call OrchestratorServiceCommand`() {
         val payload = buildPaymentFailedPayload()
+        val messageId = UUID.randomUUID()
 
-        kafkaTemplate.send(KAFKA_PAYMENT_FAILED, payload.bookingId, payload)
+        repeat(5) {
+            kafkaTemplate.send(
+                buildProducerRecord(
+                    topic = KAFKA_PAYMENT_FAILED,
+                    key = payload.bookingId,
+                    payload = payload,
+                    messageId = messageId,
+                ),
+            )
+        }
+        kafkaTemplate.flush()
 
         Awaitility.await().atMost(Duration.ofSeconds(15)).untilAsserted {
-            verify(serviceCommand).onPaymentFailed(
+            verify(serviceCommand, times(1)).onPaymentFailed(
                 check {
                     assertEquals(BOOKING_ID, it.bookingId)
                     assertEquals(PAYMENT_ID, it.paymentId)

@@ -1,35 +1,26 @@
 package com.mengo.orchestrator.application
 
-import com.mengo.architecture.KafkaTopics.KAFKA_SAGA_REQUEST_STOCK
 import com.mengo.orchestrator.domain.model.Product
 import com.mengo.orchestrator.domain.model.command.OrchestratorCommand
 import com.mengo.orchestrator.domain.model.command.SagaCommand
 import com.mengo.orchestrator.domain.model.events.OrchestratorAggregate
 import com.mengo.orchestrator.domain.model.events.OrchestratorEvent
 import com.mengo.orchestrator.domain.model.events.OrchestratorState
-import com.mengo.orchestrator.domain.service.InboxRepository
 import com.mengo.orchestrator.domain.service.OrchestratorEventPublisher
 import com.mengo.orchestrator.domain.service.OrchestratorEventStoreRepository
 import com.mengo.orchestrator.domain.service.OrchestratorService
-import com.mengo.orchestrator.domain.service.OutboxRepository
-import com.mengo.payload.orchestrator.OrchestratorRequestStockPayload
-import jakarta.transaction.Transactional
 import org.springframework.stereotype.Service
+import org.springframework.transaction.annotation.Propagation
+import org.springframework.transaction.annotation.Transactional
 import java.math.BigDecimal
 
 @Service
 open class OrchestratorServiceCommand(
     private val eventStoreRepository: OrchestratorEventStoreRepository,
-    private val inboxRepository: InboxRepository,
-    private val outboxRepository: OutboxRepository,
     private val eventPublisher: OrchestratorEventPublisher,
 ) : OrchestratorService {
-    @Transactional
+    @Transactional(propagation = Propagation.REQUIRED)
     override fun onBookingCreated(command: OrchestratorCommand.BookingCreated) {
-        if (!inboxRepository.validateIdempotencyEvent()) {
-            return
-        }
-
         if (eventStoreRepository.load(command.bookingId) != null) {
             error("onBookingCreated this booking already exists")
         }
@@ -42,21 +33,17 @@ open class OrchestratorServiceCommand(
         )
 
         command.products.forEach { product ->
-            outboxRepository.persistOutboxEvent(
-                topic = KAFKA_SAGA_REQUEST_STOCK,
-                payloadType = OrchestratorRequestStockPayload::class.java,
-                key = command.bookingId.toString(),
-                message =
-                    SagaCommand.RequestStock(
-                        bookingId = command.bookingId,
-                        productId = product.productId,
-                        quantity = product.quantity,
-                    ),
+            eventPublisher.publishRequestStock(
+                SagaCommand.RequestStock(
+                    bookingId = command.bookingId,
+                    productId = product.productId,
+                    quantity = product.quantity,
+                ),
             )
         }
     }
 
-    @Transactional
+    @Transactional(propagation = Propagation.REQUIRED)
     override fun onProductReserved(command: OrchestratorCommand.ProductReserved) {
         val aggregate =
             eventStoreRepository.load(command.bookingId)
@@ -83,7 +70,7 @@ open class OrchestratorServiceCommand(
         }
     }
 
-    @Transactional
+    @Transactional(propagation = Propagation.REQUIRED)
     override fun onProductReservationFailed(command: OrchestratorCommand.ProductReservationFailed) {
         val aggregate =
             eventStoreRepository.load(command.bookingId)
@@ -105,7 +92,7 @@ open class OrchestratorServiceCommand(
         eventPublisher.publishCancelBooking(SagaCommand.CancelBooking(command.bookingId))
     }
 
-    @Transactional
+    @Transactional(propagation = Propagation.REQUIRED)
     override fun onPaymentCompleted(command: OrchestratorCommand.PaymentCompleted) {
         val currentAggregate =
             eventStoreRepository.load(command.bookingId)
@@ -115,7 +102,7 @@ open class OrchestratorServiceCommand(
         eventPublisher.publishConfirmBooking(SagaCommand.ConfirmBooking(command.bookingId))
     }
 
-    @Transactional
+    @Transactional(propagation = Propagation.REQUIRED)
     override fun onPaymentFailed(command: OrchestratorCommand.PaymentFailed) {
         val currentAggregate =
             eventStoreRepository.load(command.bookingId)

@@ -16,6 +16,24 @@
     <description>Module for architecture tests and conventions for all microservices</description>
 
     <dependencies>
+        <!-- TODO: check this dependencies -->
+        <dependency>
+            <groupId>com.mengo.platform</groupId>
+            <artifactId>kafka-starter</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.mengo.platform</groupId>
+            <artifactId>kafka-starter-test</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.mengo.platform</groupId>
+            <artifactId>postgresql-starter</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.mengo.platform</groupId>
+            <artifactId>postgresql-starter-test</artifactId>
+        </dependency>
+
         <!-- ArchUnit -->
         <dependency>
             <groupId>com.tngtech.archunit</groupId>

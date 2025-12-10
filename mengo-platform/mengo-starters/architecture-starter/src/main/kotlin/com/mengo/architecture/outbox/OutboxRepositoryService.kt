@@ -1,13 +1,11 @@
-package com.mengo.orchestrator.infrastructure.persist.outbox
+package com.mengo.architecture.outbox
 
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.mengo.architecture.metadata.Metadata
 import com.mengo.architecture.metadata.MetadataContextHolder
-import com.mengo.orchestrator.domain.model.command.SagaCommand
-import com.mengo.orchestrator.domain.service.OutboxRepository
-import com.mengo.orchestrator.infrastructure.events.mapper.toAvro
-import jakarta.transaction.Transactional
+import org.apache.avro.specific.SpecificRecord
 import org.springframework.stereotype.Repository
+import org.springframework.transaction.annotation.Transactional
 import java.util.UUID
 
 @Repository
@@ -18,28 +16,27 @@ open class OutboxRepositoryService(
     @Transactional
     override fun persistOutboxEvent(
         topic: String,
-        payloadType: Class<*>,
         key: String?,
-        message: SagaCommand,
+        payloadJson: SpecificRecord,
     ) {
         val metadata =
             MetadataContextHolder.get()
                 ?: error("MetadataContextHolder lost during Outbox persist")
 
-        val payloadJson = message.toAvro().toString()
         val headersJson = objectMapper.writeValueAsString(metadata.toHeaderMap())
 
         repository.save(
             OutboxEntity(
                 topic = topic,
                 key = key,
-                payloadType = payloadType.name,
-                payload = payloadJson,
+                payloadType = payloadJson::class.java.name,
+                payload = payloadJson.toString(),
                 headers = headersJson,
             ),
         )
     }
 
+    // TODO: Move to Metadata directory
     private fun Metadata.toHeaderMap(): Map<String, String> =
         buildMap {
             put("message-id", UUID.randomUUID().toString())

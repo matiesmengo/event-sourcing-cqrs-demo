@@ -10,6 +10,7 @@ import com.mengo.payment.domain.service.PaymentProcessor
 import com.mengo.payment.domain.service.PaymentProcessorResult
 import com.mengo.payment.domain.service.PaymentService
 import org.springframework.stereotype.Service
+import org.springframework.transaction.annotation.Propagation
 import org.springframework.transaction.annotation.Transactional
 
 @Service
@@ -20,7 +21,7 @@ open class PaymentServiceCommand(
 ) : PaymentService {
     // TODO: command class
 
-    @Transactional
+    @Transactional(propagation = Propagation.REQUIRED)
     override fun onRequestPayment(bookingPayment: BookingPayment) {
         val createdEvent =
             PaymentInitiatedEvent(

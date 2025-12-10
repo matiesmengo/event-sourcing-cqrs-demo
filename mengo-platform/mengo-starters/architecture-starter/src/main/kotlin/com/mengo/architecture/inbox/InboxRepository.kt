@@ -1,4 +1,4 @@
-package com.mengo.orchestrator.domain.service
+package com.mengo.architecture.inbox
 
 fun interface InboxRepository {
     fun validateIdempotencyEvent(): Boolean

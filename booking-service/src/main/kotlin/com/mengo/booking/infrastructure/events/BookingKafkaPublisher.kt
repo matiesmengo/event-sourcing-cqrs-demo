@@ -3,26 +3,51 @@ package com.mengo.booking.infrastructure.events
 import com.mengo.architecture.KafkaTopics.KAFKA_BOOKING_COMPLETED
 import com.mengo.architecture.KafkaTopics.KAFKA_BOOKING_CREATED
 import com.mengo.architecture.KafkaTopics.KAFKA_BOOKING_FAILED
+import com.mengo.architecture.outbox.OutboxRepository
 import com.mengo.booking.domain.model.command.SagaCommand
 import com.mengo.booking.domain.service.BookingEventPublisher
 import com.mengo.booking.infrastructure.events.mappers.toAvro
-import org.apache.avro.specific.SpecificRecord
-import org.springframework.kafka.core.KafkaTemplate
+import com.mengo.payload.booking.BookingCancelledPayload
+import com.mengo.payload.booking.BookingConfirmedPayload
+import com.mengo.payload.booking.BookingCreatedPayload
 import org.springframework.stereotype.Service
+import org.springframework.transaction.annotation.Propagation
+import org.springframework.transaction.annotation.Transactional
 
 @Service
-class BookingKafkaPublisher(
-    private val kafkaTemplate: KafkaTemplate<String, SpecificRecord>,
+open class BookingKafkaPublisher(
+    private val outboxRepository: OutboxRepository,
 ) : BookingEventPublisher {
+    @Transactional(propagation = Propagation.REQUIRED)
     override fun publishBookingCreated(bookingCreated: SagaCommand.BookingCreated) {
-        kafkaTemplate.send(KAFKA_BOOKING_CREATED, bookingCreated.bookingId.toString(), bookingCreated.toAvro())
+        val avroPayload: BookingCreatedPayload = bookingCreated.toAvro()
+
+        outboxRepository.persistOutboxEvent(
+            topic = KAFKA_BOOKING_CREATED,
+            key = avroPayload.bookingId.toString(),
+            payloadJson = avroPayload,
+        )
     }
 
+    @Transactional(propagation = Propagation.REQUIRED)
     override fun publishBookingCompleted(completedBooking: SagaCommand.BookingConfirmed) {
-        kafkaTemplate.send(KAFKA_BOOKING_COMPLETED, completedBooking.bookingId.toString(), completedBooking.toAvro())
+        val avroPayload: BookingConfirmedPayload = completedBooking.toAvro()
+
+        outboxRepository.persistOutboxEvent(
+            topic = KAFKA_BOOKING_COMPLETED,
+            key = avroPayload.bookingId.toString(),
+            payloadJson = avroPayload,
+        )
     }
 
+    @Transactional(propagation = Propagation.REQUIRED)
     override fun publishBookingFailed(failedBooking: SagaCommand.BookingFailed) {
-        kafkaTemplate.send(KAFKA_BOOKING_FAILED, failedBooking.bookingId.toString(), failedBooking.toAvro())
+        val avroPayload: BookingCancelledPayload = failedBooking.toAvro()
+
+        outboxRepository.persistOutboxEvent(
+            topic = KAFKA_BOOKING_FAILED,
+            key = avroPayload.bookingId.toString(),
+            payloadJson = avroPayload,
+        )
     }
 }

@@ -1,9 +1,7 @@
-package com.mengo.orchestrator.infrastructure.events
+package com.mengo.architecture.outbox
 
 import com.fasterxml.jackson.core.type.TypeReference
 import com.fasterxml.jackson.databind.ObjectMapper
-import com.mengo.orchestrator.infrastructure.persist.outbox.OutboxJpaRepository
-import com.mengo.orchestrator.infrastructure.persist.outbox.OutboxStatus
 import org.apache.kafka.clients.producer.ProducerRecord
 import org.slf4j.LoggerFactory
 import org.springframework.kafka.core.KafkaTemplate
@@ -20,6 +18,8 @@ class OutboxDispatcher(
 ) {
     private val logger = LoggerFactory.getLogger(OutboxDispatcher::class.java)
 
+    // TODO: Test
+    // TODO: Transactional
     @Scheduled(fixedDelay = 500)
     fun dispatch() {
         val batch = repository.findTop100ByStatusOrderByCreatedAtAsc(OutboxStatus.PENDING)
@@ -44,7 +44,6 @@ class OutboxDispatcher(
                         payloadObj,
                     ).apply {
                         headersMap.forEach { (k, v) ->
-                            // Propagació de metadades (Trace ID, Correlation ID, etc.)
                             headers().add(k, v.toByteArray(StandardCharsets.UTF_8))
                         }
                     }

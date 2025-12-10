@@ -6,6 +6,7 @@ import com.mengo.product.domain.service.ProductEventPublisher
 import com.mengo.product.domain.service.ProductEventStoreRepository
 import com.mengo.product.domain.service.ProductService
 import org.springframework.stereotype.Service
+import org.springframework.transaction.annotation.Propagation
 import org.springframework.transaction.annotation.Transactional
 
 @Service
@@ -16,7 +17,7 @@ open class ProductServiceCommand(
     // TODO: create projection Mongo DB after every eventStore change
     // TODO: create snapshot or Event pruning
 
-    @Transactional
+    @Transactional(propagation = Propagation.REQUIRED)
     override fun onReserveProduct(command: SagaCommand.ReserveProduct) {
         val aggregate = eventStoreRepository.load(command.productId) ?: error("This product doesn't exist")
 
@@ -47,7 +48,7 @@ open class ProductServiceCommand(
         }
     }
 
-    @Transactional
+    @Transactional(propagation = Propagation.REQUIRED)
     override fun onReleaseProduct(command: SagaCommand.ReleaseProduct) {
         val aggregate = eventStoreRepository.load(command.productId) ?: error("This product doesn't exist")
 

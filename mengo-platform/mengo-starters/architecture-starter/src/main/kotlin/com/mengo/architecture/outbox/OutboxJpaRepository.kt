@@ -1,4 +1,4 @@
-package com.mengo.orchestrator.infrastructure.persist.outbox
+package com.mengo.architecture.outbox
 
 import org.springframework.data.jpa.repository.JpaRepository
 import org.springframework.stereotype.Repository

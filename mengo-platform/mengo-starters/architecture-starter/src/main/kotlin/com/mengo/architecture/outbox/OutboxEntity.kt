@@ -1,4 +1,4 @@
-package com.mengo.orchestrator.infrastructure.persist.outbox
+package com.mengo.architecture.outbox
 
 import jakarta.persistence.Column
 import jakarta.persistence.Entity
