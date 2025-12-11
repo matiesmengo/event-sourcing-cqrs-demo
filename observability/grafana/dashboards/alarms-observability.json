@@ -1,0 +1,114 @@
+{
+  "apiVersion": 1,
+  "title": "Alarms Dead Letter Queue",
+  "uid": "alarm-dlq-observability",
+  "editable": true,
+  "graphTooltip": 1,
+  "panels": [
+    {
+      "title": "Messages failed (DLQ) / Second",
+      "type": "timeseries",
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 0,
+        "y": 0
+      },
+      "id": 1,
+      "datasource": "prometheus",
+      "targets": [
+        {
+          "datasource": "prometheus",
+          "expr": "sum(rate(outbox_messages_failed_total[5m])) by (component)",
+          "legendFormat": "Messages failed - {{component}}",
+          "refId": "A"
+        }
+      ],
+      "options": {
+        "tooltip": {
+          "mode": "single"
+        },
+        "legend": {
+          "displayMode": "list",
+          "placement": "bottom"
+        }
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short",
+          "custom": {
+            "drawStyle": "line",
+            "lineInterpolation": "linear",
+            "lineWidth": 2
+          }
+        }
+      }
+    },
+    {
+      "title": "Total DLQ",
+      "type": "stat",
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 12,
+        "y": 0
+      },
+      "id": 2,
+      "datasource": "prometheus",
+      "targets": [
+        {
+          "datasource": "prometheus",
+          "expr": "sum(outbox_messages_failed_total)",
+          "legendFormat": "Total DLQ",
+          "refId": "A"
+        }
+      ],
+      "options": {
+        "colorMode": "background",
+        "graphMode": "none",
+        "justifyMode": "auto",
+        "orientation": "auto"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short",
+          "min": 0,
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "yellow",
+                "value": 10
+              },
+              {
+                "color": "red",
+                "value": 50
+              }
+            ]
+          },
+          "color": {
+            "mode": "thresholds"
+          },
+          "mappings": []
+        }
+      }
+    }
+  ],
+  "refresh": "15s",
+  "schemaVersion": 36,
+  "style": "dark",
+  "tags": [
+    "outbox",
+    "dlq",
+    "spring"
+  ],
+  "time": {
+    "from": "now-6h",
+    "to": "now"
+  },
+  "timezone": ""
+}

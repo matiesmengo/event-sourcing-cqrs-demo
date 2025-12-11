@@ -5,8 +5,6 @@ import com.fasterxml.jackson.databind.ObjectMapper
 import com.mengo.architecture.metadata.Metadata
 import com.mengo.architecture.metadata.MetadataContextHolder
 import com.mengo.architecture.test.ContainerBase
-import org.apache.avro.Schema
-import org.apache.avro.specific.SpecificRecord
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
 import org.springframework.beans.factory.annotation.Autowired
@@ -78,19 +76,3 @@ class OutboxRepositoryServiceIntegrationTest
             assertEquals(0, countAfterFailure)
         }
     }
-
-data class TestSpecificRecord(
-    val id: String,
-) : SpecificRecord {
-    override fun toString(): String = """{"id": "$id"}"""
-
-    override fun getSchema(): Schema = Schema.create(Schema.Type.STRING)
-
-    override fun get(i: Int): Any? = error("Not needed for Outbox test")
-
-    override fun put(
-        i: Int,
-        v: Any?,
-    ) {
-    }
-}
