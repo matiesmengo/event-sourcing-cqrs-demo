@@ -12,6 +12,7 @@ import com.mengo.product.infrastructure.persist.eventstore.mappers.ProductEventE
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertNotNull
 import org.junit.jupiter.api.Assertions.assertThrows
+import org.junit.jupiter.api.Test
 import org.mockito.kotlin.any
 import org.mockito.kotlin.doReturn
 import org.mockito.kotlin.mock
@@ -22,7 +23,6 @@ import org.mockito.kotlin.whenever
 import java.math.BigDecimal
 import java.time.Instant
 import java.util.UUID
-import kotlin.test.Test
 import kotlin.test.assertNull
 import kotlin.test.assertTrue
 
@@ -108,7 +108,7 @@ class ProductEventStoreRepositoryServiceTest {
             .thenReturn(existingEntity)
 
         // when & then
-        val ex = assertThrows(IllegalStateException::class.java) { repository.append(newEvent) }
+        val ex = assertThrows(IllegalArgumentException::class.java) { repository.append(newEvent) }
 
         assertTrue(ex.message!!.contains("Concurrency conflict"))
         verify(jpaRepository, times(1))

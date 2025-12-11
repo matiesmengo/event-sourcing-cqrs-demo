@@ -4,102 +4,122 @@ import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.databind.SerializationFeature
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule
 import com.fasterxml.jackson.module.kotlin.KotlinModule
-import com.mengo.payment.domain.model.PaymentCompletedEvent
-import com.mengo.payment.domain.model.PaymentFailedEvent
-import com.mengo.payment.domain.model.PaymentInitiatedEvent
+import com.mengo.payment.domain.model.events.PaymentEvent
+import com.mengo.payment.domain.model.events.PaymentState
+import com.mengo.payment.fixtures.PaymentConstants.BOOKING_ID
+import com.mengo.payment.fixtures.PaymentConstants.PAYMENT_ID
+import com.mengo.payment.fixtures.PaymentConstants.PAYMENT_REFERENCE
+import com.mengo.payment.fixtures.PaymentConstants.TOTAL_PRICE
+import com.mengo.payment.infrastructure.persist.eventstore.PaymentEventEntity
 import com.mengo.payment.infrastructure.persist.eventstore.PaymentEventStoreJpaRepository
 import com.mengo.payment.infrastructure.persist.eventstore.PaymentEventStoreRepositoryService
 import com.mengo.payment.infrastructure.persist.eventstore.mapers.PaymentEventEntityMapper
-import org.junit.jupiter.api.BeforeEach
+import org.junit.jupiter.api.Assertions.assertThrows
 import org.junit.jupiter.api.Test
-import org.mockito.kotlin.check
+import org.mockito.kotlin.any
+import org.mockito.kotlin.doReturn
 import org.mockito.kotlin.mock
+import org.mockito.kotlin.never
 import org.mockito.kotlin.verify
-import org.springframework.beans.factory.annotation.Autowired
-import java.math.BigDecimal
+import org.mockito.kotlin.whenever
+import java.time.Instant
 import java.util.UUID
+import kotlin.test.assertEquals
+import kotlin.test.assertNotNull
+import kotlin.test.assertNull
+import kotlin.test.assertTrue
 
 class PaymentEventStoreRepositoryServiceTest {
-    private lateinit var jpaRepository: PaymentEventStoreJpaRepository
-
-    @Autowired
-    private lateinit var mapper: PaymentEventEntityMapper
-    private lateinit var repository: PaymentEventStoreRepositoryService
-
-    @BeforeEach
-    fun setUp() {
-        jpaRepository = mock()
-        mapper =
-            PaymentEventEntityMapper(
-                ObjectMapper().apply {
-                    registerModule(KotlinModule.Builder().build())
-                    registerModule(JavaTimeModule())
-                    disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS)
-                },
-            )
-        repository = PaymentEventStoreRepositoryService(jpaRepository, mapper)
-    }
+    private val paymentRepository: PaymentEventStoreJpaRepository = mock()
+    private val paymentEventMapper =
+        PaymentEventEntityMapper(
+            ObjectMapper().apply {
+                registerModule(KotlinModule.Builder().build())
+                registerModule(JavaTimeModule())
+                disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS)
+            },
+        )
+    private val repository = PaymentEventStoreRepositoryService(paymentRepository, paymentEventMapper)
 
     @Test
-    fun `save should persist PaymentInitiatedEvent`() {
+    fun `load should return null when no events exist`() {
         // given
-        val event =
-            PaymentInitiatedEvent(
-                paymentId = UUID.randomUUID(),
-                bookingId = UUID.randomUUID(),
-                totalPrice = BigDecimal("123.45"),
-                aggregateVersion = 1,
-            )
+        whenever(paymentRepository.findByPaymentIdOrderByAggregateVersionAsc(PAYMENT_ID)) doReturn emptyList()
 
         // when
-        repository.save(event)
+        val result = repository.load(PAYMENT_ID)
 
         // then
-        verify(jpaRepository).save(
-            check { entity ->
-                assert(entity.paymentId == event.paymentId)
-                assert(entity.aggregateVersion == 1)
-            },
-        )
+        assertNull(result)
+        verify(paymentRepository).findByPaymentIdOrderByAggregateVersionAsc(PAYMENT_ID)
     }
 
     @Test
-    fun `save should persist PaymentCompletedEvent`() {
-        val event =
-            PaymentCompletedEvent(
-                paymentId = UUID.randomUUID(),
-                bookingId = UUID.randomUUID(),
-                reference = "ref-123",
-                aggregateVersion = 2,
-            )
+    fun `load should rehydrate BookingAggregate from stored events`() {
+        // given
+        val createdEvent = PaymentEvent.Initiated(PAYMENT_ID, BOOKING_ID, TOTAL_PRICE, 0)
+        val confirmedEvent = PaymentEvent.Completed(PAYMENT_ID, BOOKING_ID, PAYMENT_REFERENCE, 1)
 
-        repository.save(event)
+        val createdEntity = paymentEventMapper.toEntity(createdEvent)
+        val confirmedEntity = paymentEventMapper.toEntity(confirmedEvent)
 
-        verify(jpaRepository).save(
-            check { entity ->
-                assert(entity.paymentId == event.paymentId)
-                assert(entity.aggregateVersion == 2)
-            },
-        )
+        whenever(paymentRepository.findByPaymentIdOrderByAggregateVersionAsc(BOOKING_ID))
+            .thenReturn(listOf(createdEntity, confirmedEntity))
+
+        // when
+        val aggregate = repository.load(BOOKING_ID)
+
+        // then
+        assertNotNull(aggregate)
+        assertEquals(PAYMENT_ID, aggregate.paymentId)
+        assertEquals(BOOKING_ID, aggregate.bookingId)
+        assertEquals(PaymentState.COMPLETED, aggregate.status)
+        assertEquals(1, aggregate.lastEventVersion)
     }
 
     @Test
-    fun `save should persist PaymentFailedEvent`() {
-        val event =
-            PaymentFailedEvent(
-                paymentId = UUID.randomUUID(),
-                bookingId = UUID.randomUUID(),
-                reason = "insufficient funds",
-                aggregateVersion = 2,
+    fun `append should persist event when version is correct`() {
+        // given
+        val createdEvent = PaymentEvent.Initiated(PAYMENT_ID, BOOKING_ID, TOTAL_PRICE, 0)
+        val createdEntity = paymentEventMapper.toEntity(createdEvent)
+
+        whenever(paymentRepository.findFirstByPaymentIdOrderByAggregateVersionDesc(PAYMENT_ID))
+            .thenReturn(null)
+        whenever(paymentRepository.save(any())).thenReturn(createdEntity)
+
+        // when
+        repository.append(createdEvent)
+
+        // then
+        verify(paymentRepository).findFirstByPaymentIdOrderByAggregateVersionDesc(PAYMENT_ID)
+        verify(paymentRepository).save(any())
+    }
+
+    @Test
+    fun `append should throw on concurrency conflict`() {
+        // given
+        val existingEntity =
+            PaymentEventEntity(
+                eventId = UUID.randomUUID(),
+                paymentId = PAYMENT_ID,
+                eventType = "Completed",
+                eventData = "{}",
+                aggregateVersion = 1,
+                createdAt = Instant.now(),
             )
+        val newEvent = PaymentEvent.Completed(PAYMENT_ID, BOOKING_ID, PAYMENT_REFERENCE, 5)
 
-        repository.save(event)
+        whenever(paymentRepository.findFirstByPaymentIdOrderByAggregateVersionDesc(PAYMENT_ID))
+            .thenReturn(existingEntity)
 
-        verify(jpaRepository).save(
-            check { entity ->
-                assert(entity.paymentId == event.paymentId)
-                assert(entity.aggregateVersion == 2)
-            },
-        )
+        // when + then
+        val ex =
+            assertThrows(IllegalArgumentException::class.java) {
+                repository.append(newEvent)
+            }
+
+        assertTrue(ex.message!!.contains("Concurrency conflict"))
+        verify(paymentRepository).findFirstByPaymentIdOrderByAggregateVersionDesc(PAYMENT_ID)
+        verify(paymentRepository, never()).save(any())
     }
 }

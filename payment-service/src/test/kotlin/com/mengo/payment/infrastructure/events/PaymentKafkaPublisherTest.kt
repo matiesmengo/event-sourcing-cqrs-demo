@@ -4,9 +4,8 @@ import com.mengo.architecture.KafkaTopics.KAFKA_PAYMENT_COMPLETED
 import com.mengo.architecture.KafkaTopics.KAFKA_PAYMENT_FAILED
 import com.mengo.architecture.KafkaTopics.KAFKA_PAYMENT_INITIATED
 import com.mengo.architecture.outbox.OutboxRepository
-import com.mengo.payment.domain.model.PaymentCompletedEvent
-import com.mengo.payment.domain.model.PaymentFailedEvent
-import com.mengo.payment.domain.model.PaymentInitiatedEvent
+import com.mengo.payment.domain.model.command.PaymentCommand
+import com.mengo.payment.domain.model.command.SagaCommand
 import com.mengo.payment.fixtures.PaymentConstants.BOOKING_ID
 import com.mengo.payment.fixtures.PaymentConstants.PAYMENT_ID
 import com.mengo.payment.infrastructure.events.mappers.toAvro
@@ -30,11 +29,10 @@ class PaymentKafkaPublisherTest {
     fun `should publish Payment Initiated event`() {
         // given
         val initiatedPayment =
-            PaymentInitiatedEvent(
+            PaymentCommand.PaymentInitiated(
                 paymentId = PAYMENT_ID,
                 bookingId = BOOKING_ID,
                 totalPrice = 123.45.toBigDecimal(),
-                aggregateVersion = 1,
             )
         val avroPayment = initiatedPayment.toAvro()
 
@@ -50,11 +48,10 @@ class PaymentKafkaPublisherTest {
     fun `should publish Payment Completed event`() {
         // given
         val completedPayment =
-            PaymentCompletedEvent(
+            SagaCommand.PaymentCompleted(
                 paymentId = PAYMENT_ID,
                 bookingId = BOOKING_ID,
                 reference = "ref-123",
-                aggregateVersion = 2,
             )
         val avroPayment = completedPayment.toAvro()
 
@@ -70,11 +67,10 @@ class PaymentKafkaPublisherTest {
     fun `should publish Payment Failed event`() {
         // given
         val failedPayment =
-            PaymentFailedEvent(
+            SagaCommand.PaymentFailed(
                 paymentId = PAYMENT_ID,
                 bookingId = BOOKING_ID,
                 reason = "reason failed payment",
-                aggregateVersion = 2,
             )
         val avroPayment = failedPayment.toAvro()
 

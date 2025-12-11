@@ -13,6 +13,7 @@ import com.mengo.booking.infrastructure.persist.BookingEventStoreJpaRepository
 import com.mengo.booking.infrastructure.persist.BookingEventStoreRepositoryService
 import com.mengo.booking.infrastructure.persist.mappers.BookingEventEntityMapper
 import org.junit.jupiter.api.Assertions.assertThrows
+import org.junit.jupiter.api.Test
 import org.mockito.kotlin.any
 import org.mockito.kotlin.doReturn
 import org.mockito.kotlin.mock
@@ -21,7 +22,6 @@ import org.mockito.kotlin.verify
 import org.mockito.kotlin.whenever
 import java.time.Instant
 import java.util.UUID
-import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertNotNull
 import kotlin.test.assertNull
@@ -115,7 +115,7 @@ class BookingEventStoreRepositoryServiceTest {
 
         // when + then
         val ex =
-            assertThrows(IllegalStateException::class.java) {
+            assertThrows(IllegalArgumentException::class.java) {
                 repository.append(newEvent)
             }
 

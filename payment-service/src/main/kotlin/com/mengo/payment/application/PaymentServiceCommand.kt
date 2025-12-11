@@ -1,9 +1,8 @@
 package com.mengo.payment.application
 
-import com.mengo.payment.domain.model.BookingPayment
-import com.mengo.payment.domain.model.PaymentCompletedEvent
-import com.mengo.payment.domain.model.PaymentFailedEvent
-import com.mengo.payment.domain.model.PaymentInitiatedEvent
+import com.mengo.payment.domain.model.command.PaymentCommand
+import com.mengo.payment.domain.model.command.SagaCommand
+import com.mengo.payment.domain.model.events.PaymentAggregate
 import com.mengo.payment.domain.service.PaymentEventPublisher
 import com.mengo.payment.domain.service.PaymentEventStoreRepository
 import com.mengo.payment.domain.service.PaymentProcessor
@@ -19,42 +18,55 @@ open class PaymentServiceCommand(
     private val eventStoreRepository: PaymentEventStoreRepository,
     private val eventPublisher: PaymentEventPublisher,
 ) : PaymentService {
-    // TODO: command class
+    @Transactional(propagation = Propagation.REQUIRED)
+    override fun onRequestPayment(command: PaymentCommand.BookingPayment) {
+        val newPayment =
+            PaymentAggregate.createPaymentEvent(
+                bookingId = command.bookingId,
+                totalPrice = command.totalPrice,
+            )
+
+        eventStoreRepository.append(newPayment)
+        eventPublisher.publishPaymentInitiated(
+            PaymentCommand.PaymentInitiated(
+                paymentId = newPayment.paymentId,
+                bookingId = command.bookingId,
+                totalPrice = command.totalPrice,
+            ),
+        )
+    }
 
     @Transactional(propagation = Propagation.REQUIRED)
-    override fun onRequestPayment(bookingPayment: BookingPayment) {
-        val createdEvent =
-            PaymentInitiatedEvent(
-                bookingId = bookingPayment.bookingId,
-                totalPrice = bookingPayment.totalPrice,
-                aggregateVersion = 1,
-            )
-        eventStoreRepository.save(createdEvent)
-        eventPublisher.publishPaymentInitiated(createdEvent)
+    override fun onPaymentInitiated(command: PaymentCommand.PaymentInitiated) {
+        val aggregate =
+            eventStoreRepository.load(command.paymentId)
+                ?: error("onPaymentInitiated not found for paymentId ${command.paymentId} ")
 
-        when (val result = processor.executePayment(createdEvent)) {
+        when (val result = processor.executePayment(command.paymentId)) {
             is PaymentProcessorResult.Success -> {
-                val completedEvent =
-                    PaymentCompletedEvent(
-                        paymentId = createdEvent.paymentId,
-                        bookingId = bookingPayment.bookingId,
-                        reference = result.reference,
-                        aggregateVersion = 2,
-                    )
-                eventStoreRepository.save(completedEvent)
-                eventPublisher.publishPaymentCompleted(completedEvent)
+                val completedEvent = aggregate.confirmPayment(result.reference)
+
+                eventStoreRepository.append(completedEvent)
+                eventPublisher.publishPaymentCompleted(
+                    SagaCommand.PaymentCompleted(
+                        paymentId = completedEvent.paymentId,
+                        bookingId = completedEvent.bookingId,
+                        reference = completedEvent.reference,
+                    ),
+                )
             }
 
             is PaymentProcessorResult.Failure -> {
-                val failedEvent =
-                    PaymentFailedEvent(
-                        paymentId = createdEvent.paymentId,
-                        bookingId = bookingPayment.bookingId,
-                        reason = result.reason,
-                        aggregateVersion = 2,
-                    )
-                eventStoreRepository.save(failedEvent)
-                eventPublisher.publishPaymentFailed(failedEvent)
+                val failedEvent = aggregate.failPayment(result.reason)
+
+                eventStoreRepository.append(failedEvent)
+                eventPublisher.publishPaymentFailed(
+                    SagaCommand.PaymentFailed(
+                        paymentId = failedEvent.paymentId,
+                        bookingId = failedEvent.bookingId,
+                        reason = failedEvent.reason,
+                    ),
+                )
             }
         }
     }

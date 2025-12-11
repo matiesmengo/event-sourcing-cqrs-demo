@@ -10,6 +10,7 @@ import com.mengo.orchestrator.fixtures.OrchestratorConstants.BOOKING_ID
 import com.mengo.orchestrator.fixtures.OrchestratorConstants.PRODUCT_ID
 import com.mengo.orchestrator.infrastructure.persist.eventStore.mapper.OrchestratorEventEntityMapper
 import org.junit.jupiter.api.Assertions.assertThrows
+import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertNull
 import org.mockito.kotlin.any
 import org.mockito.kotlin.mock
@@ -19,7 +20,6 @@ import org.mockito.kotlin.whenever
 import java.math.BigDecimal
 import java.time.Instant
 import java.util.UUID
-import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertNotNull
 import kotlin.test.assertTrue
@@ -112,7 +112,7 @@ class OrchestratorEventStoreRepositoryServiceTest {
             .thenReturn(existingEntity)
 
         // when + then
-        val ex = assertThrows(IllegalStateException::class.java) { repository.append(newEvent) }
+        val ex = assertThrows(IllegalArgumentException::class.java) { repository.append(newEvent) }
 
         assertTrue(ex.message!!.contains("Concurrency conflict"))
         verify(jpaRepository)

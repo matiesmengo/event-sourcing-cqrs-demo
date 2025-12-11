@@ -1,7 +1,9 @@
 package com.mengo.payment.domain.service
 
-import com.mengo.payment.domain.model.BookingPayment
+import com.mengo.payment.domain.model.command.PaymentCommand
 
-fun interface PaymentService {
-    fun onRequestPayment(bookingPayment: BookingPayment)
+interface PaymentService {
+    fun onRequestPayment(command: PaymentCommand.BookingPayment)
+
+    fun onPaymentInitiated(command: PaymentCommand.PaymentInitiated)
 }
