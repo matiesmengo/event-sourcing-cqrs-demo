@@ -2,38 +2,38 @@ package com.mengo.e2e
 
 import com.mengo.api.booking.model.BookingProduct
 import com.mengo.api.booking.model.CreateBookingRequest
+import com.mengo.architecture.test.infrastructure.MengoEventStoreAudit
+import com.mengo.architecture.test.infrastructure.MengoEventStoreAudit.assertHasEventType
+import com.mengo.architecture.test.infrastructure.MengoEventStoreAudit.assertVersionsAreStrictlyIncreasing
 import com.mengo.e2e.clients.BookingFeignClient
 import com.mengo.e2e.infrastructure.AbstractServicesE2ETest
-import com.mengo.e2e.infrastructure.EventStoreFetch.fetchEventsFromPostgres
-import com.mengo.e2e.infrastructure.KafkaTestConsumer
+import com.mengo.payload.booking.BookingCancelledPayload
+import com.mengo.payload.booking.BookingConfirmedPayload
 import feign.Feign
 import feign.jackson.JacksonDecoder
 import feign.jackson.JacksonEncoder
-import org.awaitility.Awaitility.await
+import org.awaitility.Awaitility
+import org.junit.jupiter.api.Assertions.assertEquals
+import org.junit.jupiter.api.Assertions.assertNotNull
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.springframework.cloud.openfeign.support.SpringMvcContract
 import java.time.Duration
 import java.util.UUID
-import kotlin.test.assertEquals
-import kotlin.test.assertNotNull
-import kotlin.test.assertTrue
 
 class BookingE2ETest : AbstractServicesE2ETest() {
-    // TODO: e2e errors
-
     @BeforeEach
-    fun startContainers() {
-        orchestratorService.start()
-        bookingService.start()
-        paymentService.start()
-        productService.start()
+    fun resetSystemState() {
+        MengoEventStoreAudit.cleanTable(orchestratorPostgres, "orchestrator", "orchestrator_events")
+        MengoEventStoreAudit.cleanTable(bookingPostgres, "booking", "booking_events")
+        MengoEventStoreAudit.cleanTable(paymentPostgres, "payment", "payment_events")
     }
 
     @Test
     fun `booking completed E2E`() {
         // given
-        val bookingClient = createBookingClient()
+        val successHeaders = mapOf("x-forced-payment-outcome" to "SUCCESS")
+        val bookingClient = createBookingClient(successHeaders)
         val productId = UUID.fromString("22222222-2222-2222-2222-222222222222")
 
         val createRequest =
@@ -55,90 +55,104 @@ class BookingE2ETest : AbstractServicesE2ETest() {
         assertEquals("CREATED", response.status.toString(), "Booking should start in CREATED state")
 
         // then
-        await().atMost(Duration.ofSeconds(15)).untilAsserted {
-            // BookingService events (BookingCreatedEvent, BookingPaymentConfirmedEvent)
-            val bookingEvents = fetchEventsFromPostgres(bookingPostgres, "booking", "booking_events")
-            val bookingTypes = bookingEvents.map { it.type }
+        Awaitility.await().atMost(Duration.ofSeconds(15)).untilAsserted {
+            val bookingEvents = MengoEventStoreAudit.fetchEvents(bookingPostgres, "booking", "booking_events")
+            bookingEvents.assertHasEventType("BookingCreatedEvent")
+            bookingEvents.assertHasEventType("BookingConfirmedEvent")
+            bookingEvents.assertVersionsAreStrictlyIncreasing()
 
-            assertTrue(
-                bookingTypes.contains("BookingCreatedEvent"),
-                "Expected BookingCreatedEvent in booking.booking_events",
-            )
-            assertTrue(
-                bookingTypes.contains("BookingConfirmedEvent"),
-                "Expected BookingConfirmedEvent in booking.booking_events",
-            )
-            assertTrue(
-                bookingEvents.zipWithNext().all { it.first.aggregateVersion < it.second.aggregateVersion },
-                "Aggregate versions in booking.booking_events must increase strictly",
-            )
+            val orchestratorEvents = MengoEventStoreAudit.fetchEvents(orchestratorPostgres, "orchestrator", "orchestrator_events")
+            orchestratorEvents.assertHasEventType("Created")
+            orchestratorEvents.assertHasEventType("ProductReserved")
+            orchestratorEvents.assertHasEventType("PaymentCompleted")
+            orchestratorEvents.assertVersionsAreStrictlyIncreasing()
 
-            // ProductService events (ProductReservedEvent)
-            val productEvents = fetchEventsFromPostgres(productPostgres, "product", "product_events", productId)
-            val productTypes = productEvents.map { it.type }
+            val productEvents = MengoEventStoreAudit.fetchEvents(productPostgres, "product", "product_events", productId)
+            productEvents.assertHasEventType("ProductReservedEvent")
+            productEvents.assertVersionsAreStrictlyIncreasing()
 
-            assertTrue(
-                productTypes.contains("ProductReservedEvent"),
-                "Expected ProductReservedEvent in product.product_events for productId=$productId",
-            )
-            assertTrue(
-                productEvents.zipWithNext().all { it.first.aggregateVersion < it.second.aggregateVersion },
-                "Aggregate versions in product.events must increase strictly",
-            )
-
-            // PaymentService events (PaymentInitiatedEvent, PaymentCompletedEvent)
-            val paymentEvents = fetchEventsFromPostgres(paymentPostgres, "payment", "payment_events")
-            val paymentTypes = paymentEvents.map { it.type }
-
-            assertTrue(
-                paymentTypes.contains("PaymentInitiatedEvent"),
-                "Expected PaymentInitiatedEvent in payment.payment_events",
-            )
-            assertTrue(
-                paymentTypes.contains("PaymentCompletedEvent"),
-                "Expected PaymentCompletedEvent in payment.payment_events",
-            )
-            assertTrue(
-                paymentEvents.zipWithNext().all { it.first.aggregateVersion < it.second.aggregateVersion },
-                "Aggregate versions in payment.events must increase strictly",
-            )
-
-            // BookingServiceOrchestrator events (PaymentInitiatedEvent, ProductReserved, PaymentCompleted )
-            val orchestratorEvents =
-                fetchEventsFromPostgres(orchestratorPostgres, "orchestrator", "orchestrator_events")
-            val orchestratorTypes = orchestratorEvents.map { it.type }
-
-            assertTrue(
-                orchestratorTypes.contains("Created"),
-                "Expected Created in orchestrator.orchestrator_events",
-            )
-            assertTrue(
-                orchestratorTypes.contains("ProductReserved"),
-                "Expected ProductReserved in orchestrator.orchestrator_events",
-            )
-            assertTrue(
-                orchestratorTypes.contains("PaymentCompleted"),
-                "Expected PaymentCompleted in orchestrator.orchestrator_events",
-            )
-            assertTrue(
-                orchestratorEvents.zipWithNext().all { it.first.aggregateVersion < it.second.aggregateVersion },
-                "Aggregate versions in orchestrator.events must increase strictly",
-            )
+            val paymentEvents = MengoEventStoreAudit.fetchEvents(paymentPostgres, "payment", "payment_events")
+            paymentEvents.assertHasEventType("Initiated")
+            paymentEvents.assertHasEventType("Completed")
+            paymentEvents.assertVersionsAreStrictlyIncreasing()
         }
 
-        KafkaTestConsumer(kafka.bootstrapServers).consumeAndAssert("booking.completed") { msg ->
+        createKafkaClient().consumeAndAssert<BookingConfirmedPayload>("booking.completed") { msg ->
             assertNotNull(msg, "Expected a record in booking.completed topic")
             assertEquals(response.bookingId.toString(), msg.key())
         }
     }
 
-    private fun createBookingClient(): BookingFeignClient {
+    @Test
+    fun `booking failed E2E - payment regression`() {
+        // given
+        val successHeaders = mapOf("x-forced-payment-outcome" to "FAILURE")
+        val bookingClient = createBookingClient(successHeaders)
+        val productId = UUID.fromString("22222222-2222-2222-2222-222222222222")
+
+        val createRequest =
+            CreateBookingRequest()
+                .userId(UUID.randomUUID())
+                .products(
+                    listOf(
+                        BookingProduct()
+                            .productId(productId)
+                            .quantity(2),
+                    ),
+                )
+
+        // when
+        val response = bookingClient.bookingsPost(createRequest)
+
+        assertNotNull(response, "Booking response should not be null")
+        assertNotNull(response.bookingId, "Booking ID should be generated by the service")
+        assertEquals("CREATED", response.status.toString(), "Booking should start in CREATED state")
+
+        // then
+        Awaitility.await().atMost(Duration.ofSeconds(15)).untilAsserted {
+            val bookingEvents = MengoEventStoreAudit.fetchEvents(bookingPostgres, "booking", "booking_events")
+            bookingEvents.assertHasEventType("BookingCreatedEvent")
+            bookingEvents.assertHasEventType("BookingFailedEvent")
+            bookingEvents.assertVersionsAreStrictlyIncreasing()
+
+            val orchestratorEvents = MengoEventStoreAudit.fetchEvents(orchestratorPostgres, "orchestrator", "orchestrator_events")
+            orchestratorEvents.assertHasEventType("Created")
+            orchestratorEvents.assertHasEventType("ProductReserved")
+            orchestratorEvents.assertHasEventType("PaymentFailed")
+            orchestratorEvents.assertVersionsAreStrictlyIncreasing()
+
+            val productEvents = MengoEventStoreAudit.fetchEvents(productPostgres, "product", "product_events", productId)
+            productEvents.assertHasEventType("ProductReservedEvent")
+            productEvents.assertVersionsAreStrictlyIncreasing()
+
+            val paymentEvents = MengoEventStoreAudit.fetchEvents(paymentPostgres, "payment", "payment_events")
+            paymentEvents.assertHasEventType("Initiated")
+            paymentEvents.assertHasEventType("Failed")
+            paymentEvents.assertVersionsAreStrictlyIncreasing()
+        }
+
+        createKafkaClient().consumeAndAssert<BookingCancelledPayload>("booking.failed") { msg ->
+            assertNotNull(msg, "Expected a record in booking.failed topic")
+            assertEquals(response.bookingId.toString(), msg.key())
+        }
+    }
+
+    private fun createBookingClient(headers: Map<String, String> = emptyMap()): BookingFeignClient {
         val url = "http://${bookingService.host}:${bookingService.getMappedPort(8080)}"
-        return Feign
-            .builder()
-            .encoder(JacksonEncoder())
-            .decoder(JacksonDecoder())
-            .contract(SpringMvcContract())
-            .target(BookingFeignClient::class.java, url)
+
+        val feignBuilder =
+            Feign
+                .builder()
+                .encoder(JacksonEncoder())
+                .decoder(JacksonDecoder())
+                .contract(SpringMvcContract())
+
+        if (headers.isNotEmpty()) {
+            feignBuilder.requestInterceptor { template ->
+                headers.forEach { (key, value) -> template.header(key, value) }
+            }
+        }
+
+        return feignBuilder.target(BookingFeignClient::class.java, url)
     }
 }

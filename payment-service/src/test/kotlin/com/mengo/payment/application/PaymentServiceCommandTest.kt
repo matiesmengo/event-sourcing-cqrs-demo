@@ -14,7 +14,6 @@ import com.mengo.payment.fixtures.PaymentConstants.PAYMENT_REASON
 import com.mengo.payment.fixtures.PaymentConstants.PAYMENT_REFERENCE
 import com.mengo.payment.fixtures.PaymentConstants.TOTAL_PRICE
 import org.junit.jupiter.api.Test
-import org.junit.jupiter.api.assertNotNull
 import org.mockito.kotlin.any
 import org.mockito.kotlin.argumentCaptor
 import org.mockito.kotlin.mock
@@ -25,6 +24,7 @@ import java.util.UUID
 import kotlin.test.assertEquals
 import kotlin.test.assertFailsWith
 import kotlin.test.assertIs
+import kotlin.test.assertNotNull
 
 class PaymentServiceCommandTest {
     private val processor: PaymentProcessor = mock()

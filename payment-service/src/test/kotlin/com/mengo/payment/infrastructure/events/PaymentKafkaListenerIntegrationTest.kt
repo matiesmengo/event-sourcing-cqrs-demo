@@ -2,7 +2,7 @@ package com.mengo.payment.infrastructure.events
 
 import com.mengo.architecture.KafkaTopics.KAFKA_PAYMENT_INITIATED
 import com.mengo.architecture.KafkaTopics.KAFKA_SAGA_REQUEST_PAYMENT
-import com.mengo.architecture.test.ContainerBase
+import com.mengo.architecture.test.infrastructure.AbstractIntegrationTest
 import com.mengo.payment.application.PaymentServiceCommand
 import com.mengo.payment.fixtures.PayloadTestData.buildOrchestratorRequestPaymentPayload
 import com.mengo.payment.fixtures.PayloadTestData.buildPaymentInitiatedPayload
@@ -18,7 +18,7 @@ import org.springframework.test.context.bean.override.mockito.MockitoBean
 import java.time.Duration
 import java.util.UUID
 
-class PaymentKafkaListenerIntegrationTest : ContainerBase() {
+class PaymentKafkaListenerIntegrationTest : AbstractIntegrationTest() {
     @MockitoBean
     lateinit var paymentServiceCommand: PaymentServiceCommand
 

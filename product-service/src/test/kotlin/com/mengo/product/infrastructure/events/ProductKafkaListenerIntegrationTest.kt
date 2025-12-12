@@ -2,7 +2,7 @@ package com.mengo.product.infrastructure.events
 
 import com.mengo.architecture.KafkaTopics.KAFKA_SAGA_RELEASE_STOCK
 import com.mengo.architecture.KafkaTopics.KAFKA_SAGA_REQUEST_STOCK
-import com.mengo.architecture.test.ContainerBase
+import com.mengo.architecture.test.infrastructure.AbstractIntegrationTest
 import com.mengo.product.application.ProductServiceCommand
 import com.mengo.product.fixtures.PayloadTestData.buildOrchestratorReleaseStockPayload
 import com.mengo.product.fixtures.PayloadTestData.buildOrchestratorRequestStockPayload
@@ -19,7 +19,7 @@ import java.time.Duration
 import java.util.UUID
 import kotlin.test.assertEquals
 
-class ProductKafkaListenerIntegrationTest : ContainerBase() {
+class ProductKafkaListenerIntegrationTest : AbstractIntegrationTest() {
     @MockitoBean
     lateinit var serviceCommand: ProductServiceCommand
 

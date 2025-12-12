@@ -1,7 +1,7 @@
 # Event-Sourcing + CQRS + SAGA Demo
 
-![Spring Boot](https://img.shields.io/badge/SpringBoot-3.5.6-brightgreen)
-![Kotlin](https://img.shields.io/badge/Kotlin-1.9.25-blue)
+![Spring Boot](https://img.shields.io/badge/SpringBoot-3.4.0-brightgreen)
+![Kotlin](https://img.shields.io/badge/Kotlin-2.0.21-blue)
 ![Java](https://img.shields.io/badge/Java-21-orange)
 ![OpenAPI](https://img.shields.io/badge/OpenAPI-3.0.3-brightgreen)
 ![Feign](https://img.shields.io/badge/Feign-4.3.0-blue)

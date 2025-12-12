@@ -16,27 +16,6 @@
     <name>booking-service-orchestrator</name>
 
     <dependencies>
-        <!-- Internal starters -->
-        <dependency>
-            <groupId>com.mengo.platform</groupId>
-            <artifactId>kafka-starter</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>com.mengo.platform</groupId>
-            <artifactId>kafka-starter-test</artifactId>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>com.mengo.platform</groupId>
-            <artifactId>postgresql-starter</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>com.mengo.platform</groupId>
-            <artifactId>postgresql-starter-test</artifactId>
-            <scope>test</scope>
-        </dependency>
-
-        <!-- Internal libraries -->
         <dependency>
             <groupId>com.mengo.platform</groupId>
             <artifactId>schemas-registry</artifactId>
@@ -46,27 +25,6 @@
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-web</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>jakarta.transaction</groupId>
-            <artifactId>jakarta.transaction-api</artifactId>
-        </dependency>
-
-        <dependency>
-            <groupId>org.mockito.kotlin</groupId>
-            <artifactId>mockito-kotlin</artifactId>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>org.springframework.boot</groupId>
-            <artifactId>spring-boot-starter-test</artifactId>
-            <scope>test</scope>
-        </dependency>
-
-        <dependency>
-            <groupId>com.h2database</groupId>
-            <artifactId>h2</artifactId>
-            <scope>test</scope>
         </dependency>
     </dependencies>
 </project>

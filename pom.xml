@@ -16,13 +16,9 @@
         <!-- Common starters -->
         <module>mengo-platform/mengo-bom</module>
         <module>mengo-platform/mengo-parent</module>
-        <module>mengo-platform/mengo-starters/architecture-starter</module>
         <module>mengo-platform/mengo-starters/architecture-starter-test</module>
+        <module>mengo-platform/mengo-starters/architecture-starter</module>
         <module>mengo-platform/mengo-parent-services</module>
-        <module>mengo-platform/mengo-starters/kafka-starter</module>
-        <module>mengo-platform/mengo-starters/kafka-starter-test</module>
-        <module>mengo-platform/mengo-starters/postgresql-starter</module>
-        <module>mengo-platform/mengo-starters/postgresql-starter-test</module>
 
         <!-- Registry -->
         <module>schemas-registry</module>

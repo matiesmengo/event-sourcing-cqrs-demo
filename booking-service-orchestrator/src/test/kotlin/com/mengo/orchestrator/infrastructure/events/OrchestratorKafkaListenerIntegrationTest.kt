@@ -5,7 +5,7 @@ import com.mengo.architecture.KafkaTopics.KAFKA_PAYMENT_COMPLETED
 import com.mengo.architecture.KafkaTopics.KAFKA_PAYMENT_FAILED
 import com.mengo.architecture.KafkaTopics.KAFKA_PRODUCT_RESERVATION_FAILED
 import com.mengo.architecture.KafkaTopics.KAFKA_PRODUCT_RESERVED
-import com.mengo.architecture.test.ContainerBase
+import com.mengo.architecture.test.infrastructure.AbstractIntegrationTest
 import com.mengo.orchestrator.application.OrchestratorServiceCommand
 import com.mengo.orchestrator.fixtures.OrchestratorConstants.BOOKING_ID
 import com.mengo.orchestrator.fixtures.OrchestratorConstants.PAYMENT_ID
@@ -30,7 +30,7 @@ import java.util.UUID
 import kotlin.test.assertEquals
 import kotlin.test.assertTrue
 
-class OrchestratorKafkaListenerIntegrationTest : ContainerBase() {
+class OrchestratorKafkaListenerIntegrationTest : AbstractIntegrationTest() {
     @MockitoBean
     lateinit var serviceCommand: OrchestratorServiceCommand
 

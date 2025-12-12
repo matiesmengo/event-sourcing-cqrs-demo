@@ -49,8 +49,10 @@ The `e2e-test` project was created as a **standalone module** for the following 
 mvn clean package
 
 # Docker images build
-docker build -t booking-service ./booking-service-impl
-docker build -t payment-service ./payment-service
+docker build -t booking-service-orchestrator:latest -f booking-service-orchestrator/Dockerfile .
+docker build -t booking-service:latest -f booking-service/Dockerfile .
+docker build -t payment-service:latest -f payment-service/Dockerfile .
+docker build -t product-service:latest -f product-service/Dockerfile .
 
 # Run e2e tests
 mvn clean test

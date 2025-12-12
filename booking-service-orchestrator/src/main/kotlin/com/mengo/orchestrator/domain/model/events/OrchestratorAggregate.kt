@@ -43,7 +43,7 @@ data class OrchestratorAggregate(
 
         private fun fromEvent(event: OrchestratorEvent): OrchestratorAggregate =
             when (event) {
-                is OrchestratorEvent.Created ->
+                is OrchestratorEvent.Created -> {
                     OrchestratorAggregate(
                         bookingId = event.bookingId,
                         expectedProducts = event.expectedProducts,
@@ -51,7 +51,11 @@ data class OrchestratorAggregate(
                         lastEventVersion = event.aggregateVersion,
                         state = OrchestratorState.CREATED,
                     )
-                else -> error("Unsupported initial event type: ${event::class.simpleName}")
+                }
+
+                else -> {
+                    error("Unsupported initial event type: ${event::class.simpleName}")
+                }
             }
     }
 
@@ -67,9 +71,11 @@ data class OrchestratorAggregate(
 
     private fun applyEvent(event: OrchestratorEvent): OrchestratorAggregate =
         when (event) {
-            is OrchestratorEvent.Created -> fromEvent(event)
+            is OrchestratorEvent.Created -> {
+                fromEvent(event)
+            }
 
-            is OrchestratorEvent.ProductReserved ->
+            is OrchestratorEvent.ProductReserved -> {
                 copy(
                     reservedProducts = reservedProducts + event.product,
                     lastEventVersion = event.aggregateVersion,
@@ -80,43 +86,53 @@ data class OrchestratorAggregate(
                             OrchestratorState.WAITING_STOCK
                         },
                 )
+            }
 
-            is OrchestratorEvent.CompensatedProduct ->
+            is OrchestratorEvent.CompensatedProduct -> {
                 copy(
                     reservedProducts = reservedProducts - event.product,
                     lastEventVersion = event.aggregateVersion,
                 )
+            }
 
-            is OrchestratorEvent.PaymentCompleted ->
+            is OrchestratorEvent.PaymentCompleted -> {
                 copy(
                     lastEventVersion = event.aggregateVersion,
                     state = OrchestratorState.COMPLETED,
                 )
+            }
 
             is OrchestratorEvent.ProductReservationFailed,
             is OrchestratorEvent.PaymentFailed,
-            ->
+            -> {
                 copy(
                     lastEventVersion = event.aggregateVersion,
                     state = OrchestratorState.COMPENSATING,
                 )
+            }
         }
 
     fun reserveProduct(product: Product): OrchestratorEvent =
         when (state) {
-            OrchestratorState.CREATED, OrchestratorState.WAITING_STOCK ->
+            OrchestratorState.CREATED, OrchestratorState.WAITING_STOCK -> {
                 OrchestratorEvent.ProductReserved(
                     bookingId,
                     product,
                     lastEventVersion + 1,
                 )
-            OrchestratorState.COMPENSATING, OrchestratorState.CANCELLED ->
+            }
+
+            OrchestratorState.COMPENSATING, OrchestratorState.CANCELLED -> {
                 OrchestratorEvent.CompensatedProduct(
                     bookingId,
                     product,
                     lastEventVersion + 1,
                 )
-            else -> error("Cannot reserve product in state $state")
+            }
+
+            else -> {
+                error("Cannot reserve product in state $state")
+            }
         }
 
     fun failProductReservation(productId: UUID): OrchestratorEvent {

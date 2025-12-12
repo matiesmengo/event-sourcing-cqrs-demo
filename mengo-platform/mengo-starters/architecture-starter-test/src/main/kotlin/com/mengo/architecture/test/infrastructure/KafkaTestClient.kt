@@ -1,7 +1,8 @@
-package com.mengo.e2e.infrastructure
+package com.mengo.architecture.test.infrastructure
 
-import com.mengo.e2e.infrastructure.AbstractInfrastructureE2ETest.Companion.schemaRegistry
+import io.confluent.kafka.serializers.AbstractKafkaSchemaSerDeConfig
 import io.confluent.kafka.serializers.KafkaAvroDeserializer
+import io.confluent.kafka.serializers.KafkaAvroDeserializerConfig
 import org.apache.avro.specific.SpecificRecord
 import org.apache.kafka.clients.consumer.ConsumerConfig
 import org.apache.kafka.clients.consumer.ConsumerRecord
@@ -12,31 +13,38 @@ import java.util.Properties
 import java.util.UUID
 import kotlin.test.fail
 
-class KafkaTestConsumer(
+class KafkaTestClient(
     private val bootstrapServers: String,
+    private val schemaRegistryUrl: String,
 ) {
-    fun consumeAndAssert(
+    fun <T : SpecificRecord> consumeAndAssert(
         topic: String,
-        assertion: (ConsumerRecord<String, SpecificRecord>) -> Unit,
+        timeout: Duration = Duration.ofSeconds(15),
+        assertion: (ConsumerRecord<String, T>) -> Unit,
     ) {
         val props =
             Properties().apply {
                 put(ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG, bootstrapServers)
-                put(ConsumerConfig.GROUP_ID_CONFIG, "test-consumer-${UUID.randomUUID()}")
+                put(ConsumerConfig.GROUP_ID_CONFIG, "test-group-${UUID.randomUUID()}")
                 put(ConsumerConfig.AUTO_OFFSET_RESET_CONFIG, "earliest")
                 put(ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG, StringDeserializer::class.java)
                 put(ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG, KafkaAvroDeserializer::class.java)
-                put("schema.registry.url", "http://${schemaRegistry.host}:${schemaRegistry.getMappedPort(8081)}")
-                put("specific.avro.reader", "true")
+
+                put(AbstractKafkaSchemaSerDeConfig.SCHEMA_REGISTRY_URL_CONFIG, schemaRegistryUrl)
+                put(KafkaAvroDeserializerConfig.SPECIFIC_AVRO_READER_CONFIG, "true")
             }
 
-        KafkaConsumer<String, SpecificRecord>(props).use { consumer ->
+        KafkaConsumer<String, T>(props).use { consumer ->
             consumer.subscribe(listOf(topic))
-            val records = consumer.poll(Duration.ofSeconds(20))
+            val records = consumer.poll(timeout)
+
             if (records.isEmpty) {
-                fail("No messages received from topic: $topic")
+                fail("No messages received from topic [$topic] after ${timeout.toSeconds()} seconds")
             }
-            records.forEach { record -> assertion(record) }
+
+            records.forEach { record ->
+                assertion(record)
+            }
         }
     }
 }

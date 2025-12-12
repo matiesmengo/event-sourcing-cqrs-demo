@@ -34,7 +34,7 @@ data class ProductAggregate(
 
         private fun fromEvent(event: ProductEvent): ProductAggregate =
             when (event) {
-                is ProductCreatedEvent ->
+                is ProductCreatedEvent -> {
                     ProductAggregate(
                         productId = event.productId,
                         stockTotal = event.stockTotal,
@@ -42,20 +42,27 @@ data class ProductAggregate(
                         lastEventVersion = event.aggregateVersion,
                         reserved = 0,
                     )
+                }
 
-                else -> error("Unsupported initial event type: ${event::class.simpleName}")
+                else -> {
+                    error("Unsupported initial event type: ${event::class.simpleName}")
+                }
             }
     }
 
     private fun applyEvent(event: ProductEvent): ProductAggregate =
         when (event) {
-            is ProductCreatedEvent -> fromEvent(event)
+            is ProductCreatedEvent -> {
+                fromEvent(event)
+            }
 
-            is ProductReservedEvent ->
+            is ProductReservedEvent -> {
                 copy(reserved = reserved + event.quantity, lastEventVersion = event.aggregateVersion)
+            }
 
-            is ProductReleasedEvent ->
+            is ProductReleasedEvent -> {
                 copy(reserved = (reserved - event.quantity).coerceAtLeast(0), lastEventVersion = event.aggregateVersion)
+            }
         }
 
     val availableStock: Int

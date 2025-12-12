@@ -2,7 +2,7 @@ package com.mengo.booking.infrastructure.events
 
 import com.mengo.architecture.KafkaTopics.KAFKA_SAGA_CANCEL_BOOKING
 import com.mengo.architecture.KafkaTopics.KAFKA_SAGA_CONFIRM_BOOKING
-import com.mengo.architecture.test.ContainerBase
+import com.mengo.architecture.test.infrastructure.AbstractIntegrationTest
 import com.mengo.booking.application.BookingServiceCommand
 import com.mengo.booking.fixtures.BookingConstants.BOOKING_ID
 import com.mengo.booking.fixtures.PayloadTestData.buildPaymentCompletedPayload
@@ -17,7 +17,7 @@ import java.time.Duration
 import java.util.UUID
 import kotlin.test.assertEquals
 
-class BookingKafkaListenerIntegrationTest : ContainerBase() {
+class BookingKafkaListenerIntegrationTest : AbstractIntegrationTest() {
     @MockitoBean
     lateinit var bookingServiceCommand: BookingServiceCommand
 

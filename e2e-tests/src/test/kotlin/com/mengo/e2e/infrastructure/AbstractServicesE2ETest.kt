@@ -20,8 +20,10 @@ abstract class AbstractServicesE2ETest : AbstractInfrastructureE2ETest() {
                 .withEnv("SCHEMA_REGISTRY_URL", "http://schema-registry:8081")
                 .withEnv("SPRING_KAFKA_CONSUMER_PROPERTIES_SCHEMA_REGISTRY_URL", "http://schema-registry:8081")
                 .withEnv("SPRING_KAFKA_PRODUCER_PROPERTIES_SCHEMA_REGISTRY_URL", "http://schema-registry:8081")
+                .withEnv("SPRING_KAFKA_CONSUMER_AUTO_OFFSET_RESET", "earliest")
                 .waitingFor(Wait.forLogMessage(".*Started BookingOrchestratorApplication.*", 1))
 
+        @Container
         val bookingService =
             GenericContainer("booking-service:latest")
                 .withExposedPorts(8080)
@@ -50,6 +52,7 @@ abstract class AbstractServicesE2ETest : AbstractInfrastructureE2ETest() {
                 .withEnv("SCHEMA_REGISTRY_URL", "http://schema-registry:8081")
                 .withEnv("SPRING_KAFKA_CONSUMER_PROPERTIES_SCHEMA_REGISTRY_URL", "http://schema-registry:8081")
                 .withEnv("SPRING_KAFKA_PRODUCER_PROPERTIES_SCHEMA_REGISTRY_URL", "http://schema-registry:8081")
+                .withEnv("SPRING_KAFKA_CONSUMER_AUTO_OFFSET_RESET", "earliest")
                 .waitingFor(Wait.forLogMessage(".*Started PaymentServiceApplication.*", 1))
 
         @Container
@@ -65,6 +68,7 @@ abstract class AbstractServicesE2ETest : AbstractInfrastructureE2ETest() {
                 .withEnv("SCHEMA_REGISTRY_URL", "http://schema-registry:8081")
                 .withEnv("SPRING_KAFKA_CONSUMER_PROPERTIES_SCHEMA_REGISTRY_URL", "http://schema-registry:8081")
                 .withEnv("SPRING_KAFKA_PRODUCER_PROPERTIES_SCHEMA_REGISTRY_URL", "http://schema-registry:8081")
+                .withEnv("SPRING_KAFKA_CONSUMER_AUTO_OFFSET_RESET", "earliest")
                 .waitingFor(Wait.forLogMessage(".*Started ProductServiceApplication.*", 1))
     }
 }

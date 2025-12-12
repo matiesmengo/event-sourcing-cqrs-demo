@@ -36,7 +36,7 @@ data class BookingAggregate(
 
         private fun fromEvent(event: BookingEvent): BookingAggregate =
             when (event) {
-                is BookingCreatedEvent ->
+                is BookingCreatedEvent -> {
                     BookingAggregate(
                         bookingId = event.bookingId,
                         userId = event.userId,
@@ -44,13 +44,19 @@ data class BookingAggregate(
                         status = BookingAggregateStatus.CREATED,
                         lastEventVersion = event.aggregateVersion,
                     )
-                else -> error("Unsupported initial event type: ${event::class.simpleName}")
+                }
+
+                else -> {
+                    error("Unsupported initial event type: ${event::class.simpleName}")
+                }
             }
     }
 
     private fun applyEvent(event: BookingEvent): BookingAggregate =
         when (event) {
-            is BookingCreatedEvent -> fromEvent(event)
+            is BookingCreatedEvent -> {
+                fromEvent(event)
+            }
 
             is BookingConfirmedEvent -> {
                 copy(status = BookingAggregateStatus.CONFIRMED, lastEventVersion = event.aggregateVersion)

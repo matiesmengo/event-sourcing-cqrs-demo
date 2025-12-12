@@ -1,4 +1,0 @@
-spring:
-  jpa:
-    properties:
-      hibernate.hbm2ddl.create_namespaces: true
