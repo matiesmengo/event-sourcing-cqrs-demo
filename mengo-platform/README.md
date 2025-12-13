@@ -1,59 +1,53 @@
-# 📦 mengo-platform
-> ⚡ **Mengo Platform** is the parent project for the microservices ecosystem, providing **common dependencies, configurations, and starters** to ensure consistency across all services.
+# 🚀 Mengo Platform Foundation
+
+**The Backbone of the Ecosystem**  
+`mengo-platform` centralizes governance across all microservices: dependency management, build lifecycles, and architectural standards. It ensures consistency, maintainability, and developer productivity across the platform.
 
 ---
 
-## 🛠️ Purpose
+## 🏗️ Maven Hierarchy & Architecture
 
-The `mengo-platform` project serves as the **foundation** for all microservices:
-
-- **Centralizes versions and dependency management** through the **BOM** (Bill of Materials).
-- Provides a **parent POM** with common build plugins, code style, and configuration defaults.
-- Offers **custom Spring Boot starters** to simplify common patterns, libraries, and configuration for microservices.
-
-By using this structure, all services remain **consistent, maintainable, and easy to evolve**.
+The platform uses a **multi-tiered inheritance model** to decouple dependency versions from build configuration.  
+Services inherit standard settings, libraries, and architectural patterns without duplication.
 
 ---
 
-## 📂 Project Structure
+## 🧩 Components Breakdown
 
-```text
-mengo-platform/
-├─ bom/            # Bill of Materials defining dependency versions
-|   └─ pom.xml     
-├─ parent/         # Parent POM with common plugins and configurations
-|   └─ pom.xml     
-├─ starters/       # Custom starters for shared functionality
-|   └─ xxxx-starter/
-|   |    └─ pom.xml     
-|   └─ xxxx-starter-test/          
-|   |    └─ pom.xml     
-```
-
-### 🔹 Submodules
-
-- **bom**
-   - Centralized dependency versions for Java, Kotlin, Spring Boot, and common libraries.
-   - Ensures **all microservices use the same versions**.
-
-- **parent**
-   - Provides **Maven build configuration**, plugin management, and code quality rules.
-   - Can be extended by any microservice POM.
-
-- **starters**
-   - Custom Spring Boot starters that include **common dependencies and auto-configuration**.
-   - Simplifies setup of new microservices and ensures **best practices are enforced**.
+| Artifact                      | Purpose & Highlights                                                                                                                       |
+|-------------------------------|-------------------------------------------------------------------------------------------------------------------------------------------|
+| **mengo-bom**                 | Bill of Materials: centralizes all library versions (Spring Boot, Kotlin, Avro, etc.), preventing version mismatches.                     |
+| **mengo-parent**              | Defines build lifecycle, Kotlin compiler plugins (`all-open`, `jpa`), and global repositories (Confluent, Maven Central).                 |
+| **mengo-parent-services**     | Parent for business microservices. Injects `architecture-starter`, configures Spring Boot repackaging, Docker layering, and common plugins. |
+| **architecture-starter**      | Implements Outbox/Inbox patterns, AOP telemetry, and distributed tracing for microservices.                                             |
+| **architecture-starter-test** | Provides Testcontainers factories, ArchUnit rules, Kafka/EventStore audit helpers, and ensures hexagonal architecture compliance.       |
 
 ---
 
-## 💡 Benefits
+## 🔄 Dependency & Inheritance Flow
 
-- **Centralized Dependency Management:** Ensures consistent library versions across all microservices.
-- **Reduced Boilerplate:** Starters provide ready-to-use features and configurations.
-- **Maintainable:** Common configurations live in the parent POM, simplifying upgrades.
-- **Fast Onboarding:** New microservices can start quickly by importing the BOM, parent, and starters.
-- **Standardized Best Practices:** Enforces coding standards, build plugins, and common patterns.
+The structure ensures that every microservice inherits a consistent set of **dependencies, build plugins, and architectural rules**.
+
+![Maven Diagram](../docs/maven-structure.png)
+
+- **BOM (`mengo-bom`)** → controls library versions.
+- **Parent POM (`mengo-parent`)** → defines build lifecycle and plugins.
+- **Service Parent (`mengo-parent-services`)** → injects architecture patterns and Spring Boot optimizations.
+- **Microservices** → inherit the full stack automatically (`booking-service`, `payment-service`, etc.).
+
+> Each layer is intentionally separated to allow **independent evolution** of dependencies, build rules, and architectural patterns.
 
 ---
 
-> 🚀 `mengo-platform` is the **foundation of the microservices ecosystem**, enabling consistency, maintainability, and rapid development of new services.
+## ⚙️ Implementation Details
+
+### 🐳 Optimized Docker Layering
+
+Spring Boot layers are enabled in `mengo-parent-services`:
+
+```xml
+<configuration>
+    <layers>
+        <enabled>true</enabled>
+    </layers>
+</configuration>

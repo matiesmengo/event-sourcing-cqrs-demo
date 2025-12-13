@@ -1,0 +1,50 @@
+@startuml
+title Maven Multi-Module Structure
+!theme plain
+
+' ========= GLOBAL STYLING =========
+skinparam backgroundColor #FFFFFF
+skinparam defaultFontName "Inter, Segoe UI, Helvetica"
+skinparam defaultFontColor #2C3E50
+skinparam shadowing false
+skinparam arrowThickness 1.2
+skinparam arrowColor #555555
+
+skinparam rectangle {
+  FontSize 14
+  RoundCorner 15
+  BorderColor #CCCCCC
+  BackgroundColor #FAFAFA
+}
+
+rectangle "Mengo Platform" #F2F4F4 {
+    rectangle [mengo-bom] <<BOM>> #D6EAF8
+
+    rectangle [mengo-parent] <<Parent POM>> #D5F5E3
+    rectangle [mengo-parent-services] <<Service Parent>> #ABEBC6
+
+    rectangle "Starters" #FEF9E7 {
+        rectangle [architecture-starter] #F9E79F
+        rectangle [architecture-starter-test] #FAD7A0
+    }
+}
+
+rectangle "Microservices" #FBFCFC {
+    rectangle [booking-service] #EBEDEF
+    rectangle [payment-service] #EBEDEF
+    rectangle [product-service] #EBEDEF
+    rectangle [booking-service-orchestrator] #D5DBDB
+}
+
+[mengo-bom] <.. [mengo-parent] : <<import>>
+[mengo-parent] <-- [mengo-parent-services] : <<parent>>
+[mengo-parent] <-- [architecture-starter] : <<parent>>
+[mengo-parent] <-- [architecture-starter-test] : <<parent>>
+
+[mengo-parent-services] <-- [booking-service] : <<parent>>
+[mengo-parent-services] <-- [payment-service] : <<parent>>
+[mengo-parent-services] <-- [product-service] : <<parent>>
+[mengo-parent-services] <-- [booking-service-orchestrator] : <<parent>>
+
+[architecture-starter] <.. [mengo-parent-services] : <<transitive dependency>>
+@enduml

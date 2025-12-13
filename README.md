@@ -25,18 +25,20 @@ services.
 
 ## 🧠 Key Concepts Demonstrated
 
-| Category          | Concept                    | Description                                                                                                                                                                                         |
-|-------------------|----------------------------|-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| **Architecture**  | Hexagonal                  | Services follow the hexagonal design, decoupling core domain logic from infrastructure like Kafka, REST APIs, and databases for modularity, testability, and maintainability.                       |
-| **Data Pattern**  | Event Sourcing             | Application state is captured as a sequence of domain events **published to Kafka**. Events are persisted in PostgreSQL for durability and can be replayed or reconstructed for full auditability.  |
-| **Data Pattern**  | CQRS (Command / Query)     | Separates commands (writes) from queries (reads). Commands update PostgreSQL events; queries are served from MongoDB projections, enabling independent scaling and optimized read/write operations. |
-| **Orchestration** | SAGA Pattern               | Centralized coordination of distributed workflows using the Booking Service Orchestrator, with compensating transactions to handle failures and ensure eventual consistency.                        |
-| **Consistency**   | Eventual consistency       | Each service maintains local state derived from domain events, ensuring eventual consistency across the system.                                                                                     |
-| **Reliability**   | Idempotent consumers       | Guarantees events are processed logically exactly once, even if received multiple times.                                                                                                            |
-| **Contracts**     | Schema Registry            | Central repository of Avro schemas for validation, versioning, and backward/forward compatibility of events.                                                                                        |
-| **Testing**       | Testcontainers             | End-to-end testing with ephemeral Kafka, PostgreSQL, and MongoDB instances to ensure reliable integration and system behavior.                                                                      |
-| **Resilience**    | Retry, DLQ, Outbox Pattern | Ensures reliable message delivery under transient failures, preventing lost or duplicate events.                                                                                                    |
-| **Observability** | Tracing & Metrics          | Distributed tracing and metrics collection using OpenTelemetry and Micrometer for monitoring, debugging, and performance analysis across services.                                                  |
+| Category          | Concept                | Description                                                                                                                                                                                         |
+|-------------------|------------------------|-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| **Architecture**  | Hexagonal              | Services follow the hexagonal design, decoupling core domain logic from infrastructure like Kafka, REST APIs, and databases for modularity, testability, and maintainability.                       |
+| **Data Pattern**  | Event Sourcing         | Application state is captured as a sequence of domain events **published to Kafka**. Events are persisted in PostgreSQL for durability and can be replayed or reconstructed for full auditability.  |
+| **Data Pattern**  | CQRS (Command / Query) | Separates commands (writes) from queries (reads). Commands update PostgreSQL events; queries are served from MongoDB projections, enabling independent scaling and optimized read/write operations. |
+| **Orchestration** | SAGA Pattern           | Coordinates distributed transactions across services with compensating actions to ensure eventual consistency.                                                                                      |
+| **Contracts**     | Schema Registry        | Central repository of Avro schemas for validation, versioning, and backward/forward compatibility of events.                                                                                        |
+| **Testing**       | Testcontainers         | End-to-end testing with ephemeral Kafka, PostgreSQL, and MongoDB instances to ensure reliable integration and system behavior.                                                                      |
+| **Resilience**    | Inbox Pattern          | Ensures idempotent processing of incoming messages, preventing side effects from duplicated events.                                                                                                 |
+| **Resilience**    | Transactional Outbox   | Guarantees "at-least-once" delivery by persisting events in the DB before publishing them to Kafka, avoiding data loss.                                                                             |
+| **Resilience**    | Dead Letter Queue      | Automated handling of unprocessable messages to prevent pipeline clogging and facilitate debugging.                                                                                                 |
+| **Observability** | Monitoring             | Prometheus collects time-series metrics while Grafana provides centralized dashboards for system health and KPIs.                                                                                   |
+| **Observability** | Logging                | Promtail ships logs from containers to Loki, enabling log aggregation and correlation with metrics and traces.                                                                                      |
+| **Observability** | Distributed Tracing    | End-to-end visibility using Jaeger and OpenTelemetry to visualize and debug SAGA transactions across multiple microservices.                                                                        |
 
 ---
 
@@ -85,7 +87,7 @@ services.
 
 | Layer / Purpose                | Technology & Version                        | Description / Role                                                                                                |
 |--------------------------------|---------------------------------------------|-------------------------------------------------------------------------------------------------------------------|
-| **Language & Framework**       | Java 21 / Kotlin 1.9.25 / Spring Boot 3.5.x | Core language and framework for microservices, dependency injection, REST, and application bootstrapping.         |
+| **Language & Framework**       | Java 21 / Kotlin 2.0.21 / Spring Boot 3.4.0 | Core language and framework for microservices, dependency injection, REST, and application bootstrapping.         |
 | **Messaging / Event Bus**      | Apache Kafka                                | Asynchronous backbone for event-driven communication between microservices.                                       |
 | **Schema Management**          | Confluent Schema Registry                   | Centralized Avro schemas for validation, evolution, and backward/forward compatibility.                           |
 | **Persistence**                | PostgreSQL                                  | Relational database for persisting events, snapshots, and transactional state in each service.                    |
@@ -185,8 +187,6 @@ mvn -pl e2e-tests test
 | Area              | Next Step                                                                      |
 |-------------------|--------------------------------------------------------------------------------|
 | **Persistence**   | Implement Queries and update projections (CQRS)                                |
-| **Resilience**    | Implement retries, DLQ, and idempotent message handling                        |
-| **Observability** | Integrate Micrometer + Prometheus + OpenTelemetry tracing                      |
 | **CI/CD**         | Automate tests and build with GitHub Actions                                   |
 | **Performance**   | Implement load and performance tests to evaluate system throughput and latency |
 

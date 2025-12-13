@@ -48,7 +48,4 @@ else payment failed
     Saga -> Product : (publish: saga.release_stock)
 end
 
-== 7. Booking Finalization ==
-Booking -> Saga : publish booking.completed
-
 @enduml
