@@ -1,4 +1,4 @@
-# ADR 0006: Implement Observability Stack with Grafana, Prometheus, Loki, and Jaeger
+# ADR 0007: Implement Observability Stack with Grafana, Prometheus, Loki, and Jaeger
 ## Context:
 
 As the system evolves into a distributed microservices architecture that relies on CQRS, SAGA, and Kafka-based communication, the complexity of diagnosing and understanding system behavior has significantly increased.
