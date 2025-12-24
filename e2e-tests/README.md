@@ -25,7 +25,7 @@ The `e2e-test` project is a **standalone module** designed to:
 
 The infrastructure is **fully containerized**:
 
-* **Microservices**: `booking-service`, `booking-service-orchestrator`, `payment-service`, `product-service`.
+* **Microservices**: `booking-service-command`, `booking-service-query`, `booking-service-orchestrator`, `payment-service`, `product-service`.
 * **Databases**: Isolated PostgreSQL instances for each service (`booking`, `orchestrator`, `payment`, `product`).
 * **Event Bus**: Kafka cluster and Confluent Schema Registry for Avro serialization.
 * **Network isolation**: All containers share a dedicated Docker network to simulate real service-to-service communication.
@@ -91,7 +91,7 @@ The test framework provides:
 ## ⚙️ Requirements
 
 * **Docker** installed and running.
-* Built Docker images for all services (`booking-service`, `booking-service-orchestrator`, `payment-service`, `product-service`).
+* Built Docker images for all services (`booking-service-command`,`booking-service-query`, `booking-service-orchestrator`, `payment-service`, `product-service`).
 * No Artifactory or private credentials needed – all images are local builds.
 
 ---
@@ -104,7 +104,8 @@ mvn clean package
 
 # Build Docker images
 docker build -t booking-service-orchestrator:latest -f booking-service-orchestrator/Dockerfile .
-docker build -t booking-service:latest -f booking-service/Dockerfile .
+docker build -t booking-service-command:latest -f booking-service-command/Dockerfile .
+docker build -t booking-service-query:latest -f booking-service-query/Dockerfile .
 docker build -t payment-service:latest -f payment/Dockerfile .
 docker build -t product-service:latest -f product/Dockerfile .
 

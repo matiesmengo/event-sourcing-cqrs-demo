@@ -33,7 +33,7 @@ The structure ensures that every microservice inherits a consistent set of **dep
 - **BOM (`mengo-bom`)** → controls library versions.
 - **Parent POM (`mengo-parent`)** → defines build lifecycle and plugins.
 - **Service Parent (`mengo-parent-services`)** → injects architecture patterns and Spring Boot optimizations.
-- **Microservices** → inherit the full stack automatically (`booking-service`, `payment-service`, etc.).
+- **Microservices** → inherit the full stack automatically (`booking-service-command`, `payment-service`, etc.).
 
 > Each layer is intentionally separated to allow **independent evolution** of dependencies, build rules, and architectural patterns.
 

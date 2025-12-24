@@ -3,11 +3,9 @@ package com.mengo.architecture.inbox
 import com.mengo.architecture.metadata.MetadataContextHolder
 import jakarta.persistence.EntityManager
 import org.springframework.beans.factory.annotation.Value
-import org.springframework.stereotype.Repository
 import org.springframework.transaction.annotation.Propagation
 import org.springframework.transaction.annotation.Transactional
 
-@Repository
 open class InboxRepositoryService(
     private val entityManager: EntityManager,
     @Value("\${spring.jpa.properties.hibernate.default_schema}")

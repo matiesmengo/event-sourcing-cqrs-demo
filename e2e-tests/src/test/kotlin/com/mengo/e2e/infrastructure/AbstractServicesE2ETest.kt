@@ -25,7 +25,7 @@ abstract class AbstractServicesE2ETest : AbstractInfrastructureE2ETest() {
 
         @Container
         val bookingService =
-            GenericContainer("booking-service:latest")
+            GenericContainer("booking-service-command:latest")
                 .withExposedPorts(8080)
                 .dependsOn(bookingPostgres, kafka, schemaRegistry)
                 .withNetwork(network)

@@ -4,11 +4,9 @@ import com.fasterxml.jackson.databind.ObjectMapper
 import com.mengo.architecture.metadata.Metadata
 import com.mengo.architecture.metadata.MetadataContextHolder
 import org.apache.avro.specific.SpecificRecord
-import org.springframework.stereotype.Repository
 import org.springframework.transaction.annotation.Transactional
 import java.util.UUID
 
-@Repository
 open class OutboxRepositoryService(
     private val repository: OutboxJpaRepository,
     private val objectMapper: ObjectMapper,

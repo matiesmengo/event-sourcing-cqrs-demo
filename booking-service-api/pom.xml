@@ -77,6 +77,8 @@
                                 <useSpringBoot3>true</useSpringBoot3>
                                 <dateLibrary>java8</dateLibrary>
                                 <library>spring-cloud</library>
+                                <useTags>true</useTags>
+                                <skipDefaultInterface>true</skipDefaultInterface>
                             </configOptions>
                         </configuration>
                     </execution>

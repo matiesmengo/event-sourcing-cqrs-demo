@@ -10,12 +10,10 @@ import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.kafka.core.KafkaTemplate
 import org.springframework.scheduling.annotation.Scheduled
-import org.springframework.stereotype.Component
 import org.springframework.transaction.annotation.Transactional
 import java.nio.charset.StandardCharsets
 import java.time.Instant
 
-@Component
 open class OutboxDispatcher(
     private val repository: OutboxJpaRepository,
     private val kafkaTemplate: KafkaTemplate<String, SpecificRecord>,

@@ -4,6 +4,7 @@ import org.springframework.test.context.DynamicPropertyRegistry
 import org.springframework.test.context.DynamicPropertySource
 import org.testcontainers.containers.GenericContainer
 import org.testcontainers.containers.KafkaContainer
+import org.testcontainers.containers.MongoDBContainer
 import org.testcontainers.containers.Network
 import org.testcontainers.containers.PostgreSQLContainer
 import org.testcontainers.junit.jupiter.Container
@@ -33,6 +34,12 @@ abstract class AbstractInfrastructureIntegrationTest {
                     withPassword("test")
                 }
 
+        @Container
+        val mongoContainer: MongoDBContainer =
+            MongoDBContainer("mongo:7.0")
+                .withNetwork(network)
+                .withNetworkAliases("mongodb")
+
         @JvmStatic
         @DynamicPropertySource
         fun registerDynamicProperties(registry: DynamicPropertyRegistry) {
@@ -56,6 +63,8 @@ abstract class AbstractInfrastructureIntegrationTest {
             registry.add("spring.flyway.schemas") { "testschema" }
             registry.add("spring.jpa.properties.hibernate.default_schema") { "testschema" }
             registry.add("spring.jpa.hibernate.ddl-auto") { "update" }
+
+            registry.add("spring.data.mongodb.uri") { mongoContainer.replicaSetUrl }
         }
     }
 }

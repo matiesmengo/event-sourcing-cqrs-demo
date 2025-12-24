@@ -52,7 +52,7 @@ services.
 | [`schemas-registry` 🔗 ](schemas-registry/README.md)                                                               | Centralized Avro schemas for all domain events, used for validation and compatibility.                              |
 | [`booking-service-api/`🔗 ](booking-service-api/README.md)                                                         | OpenAPI definitions and Feign clients. API contracts decoupled from implementations.                                |
 | [`booking-service-orchestrator/` 🔗 ](booking-service-orchestrator/README.md)                                      | SAGA orchestrator coordinating booking, product, and payment workflows.                                             |
-| [`booking-service/`🔗 ](booking-service/README.md)                                                                 | Booking write model. Receives commands and emits domain events.                                                     |
+| [`booking-service-command/`🔗 ](booking-service-command/README.md)                                                 | Booking write model. Receives commands and emits domain events.                                                     |
 | [`payment-service/`🔗 ](payment-service/README.md)                                                                 | Handles payment workflows and compensations.                                                                        |
 | [`product-service/`🔗 ](product-service/README.md)                                                                 | Handles product reservation and stock consistency.                                                                  |
 | [`e2e-tests/`🔗 ](e2e-tests/README.md)                                                                             | Full end-to-end tests with Docker + Testcontainers.                                                                 |
@@ -153,7 +153,8 @@ docker-compose up -d
 mvn clean package
 
 # 3. Launch run time services
-cd booking-service | mvn spring-boot:run
+cd booking-service-command | mvn spring-boot:run
+cd booking-service-query | mvn spring-boot:run
 cd payment-service | mvn spring-boot:run
 cd product-service | mvn spring-boot:run
 cd booking-service-orchestration | mvn spring-boot:run
@@ -200,7 +201,7 @@ End-to-end tests spin up:
 
 > No mocks. No shortcuts.
 
-[E2E Documentation 🔗 ](./e2e-tests/readme.md)
+[E2E Documentation 🔗 ](e2e-tests/README.md)
 
 ---
 

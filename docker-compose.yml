@@ -37,7 +37,7 @@ services:
       SCHEMA_REGISTRY_LISTENERS: http://0.0.0.0:8081
       SCHEMA_REGISTRY_KAFKASTORE_BOOTSTRAP_SERVERS: PLAINTEXT://kafka:29092
 
-  # Postgres (event store)
+  # Postgres (Write Model)
   postgres:
     image: postgres:16
     container_name: postgres
@@ -51,6 +51,22 @@ services:
       - pgdata:/var/lib/postgresql/data
     healthcheck:
       test: [ "CMD-SHELL", "pg_isready -U demo -d demoEventDrivenDB" ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # MongoDB (Read Model)
+  mongodb:
+    image: mongo:7.0
+    container_name: mongodb
+    ports:
+      - "27017:27017"
+    environment:
+      MONGO_INITDB_DATABASE: booking_query_db
+    volumes:
+      - mongodb_data:/data/db
+    healthcheck:
+      test: ["CMD", "mongosh", "--eval", "db.adminCommand('ping')"]
       interval: 10s
       timeout: 5s
       retries: 5
@@ -140,3 +156,4 @@ networks:
 
 volumes:
   pgdata:
+  mongodb_data:

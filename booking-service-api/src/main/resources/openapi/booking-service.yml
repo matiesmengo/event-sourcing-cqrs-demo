@@ -5,6 +5,8 @@ info:
 paths:
   /bookings/{bookingId}:
     get:
+      tags:
+        - BookingQuery
       operationId: getBookingById
       summary: Get booking by ID
       parameters:
@@ -23,6 +25,8 @@ paths:
                 $ref: '#/components/schemas/BookingRetrievedResponse'
   /bookings:
     post:
+      tags:
+        - BookingCommand
       operationId: createBooking
       summary: Create a new booking
       requestBody:
@@ -82,7 +86,7 @@ components:
           type: string
         totalPrice:
           type: number
-          format: double
+          format: decimal
 
     BookingProduct:
       type: object
@@ -107,5 +111,5 @@ components:
           type: integer
         price:
           type: number
-          format: double
+          format: decimal
 
