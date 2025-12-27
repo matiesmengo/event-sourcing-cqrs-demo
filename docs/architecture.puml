@@ -11,22 +11,22 @@ skinparam arrowThickness 1.2
 skinparam arrowColor #555555
 
 skinparam rectangle {
-  FontSize 14
-  RoundCorner 15
-  BorderColor #CCCCCC
-  BackgroundColor #FAFAFA
+    FontSize 14
+    RoundCorner 15
+    BorderColor #CCCCCC
+    BackgroundColor #FAFAFA
 }
 skinparam database {
-  BackgroundColor #EAF4F9
-  BorderColor #9CC3D5
+    BackgroundColor #EAF4F9
+    BorderColor #9CC3D5
 }
 skinparam node {
-  BackgroundColor #F8F9FA
-  BorderColor #BBBBBB
+    BackgroundColor #F8F9FA
+    BorderColor #BBBBBB
 }
 skinparam component {
-  BackgroundColor #F8F9FA
-  BorderColor #BBBBBB
+    BackgroundColor #F8F9FA
+    BorderColor #BBBBBB
 }
 skinparam actorStyle awesome
 
@@ -36,64 +36,55 @@ actor "User" as user #4F81BD
 ' ========= SERVICE CONTEXTS =========
 rectangle "<b>Booking Context</b>" as booking #EFF6FF {
     node "Booking API" as booking_api
-    node "Booking Service" as booking_service
-}
-
-rectangle "<b>Infrastructure</b>" as bookingdb #F8F8F8 {
+    node "Booking\nCommand" as booking_service_command
+    node "Booking\nQuery" as booking_service_query
     database "Booking\nWrite model\nPostgreSQL" as booking_write_db
     database "Booking\nRead model\nMongoDB" as booking_read_db
-    database "Orchestrator\nWrite model\nPostgreSQL" as orchestrator_write_db
-    database "Orchestrator\nRead model\nMongoDB" as orchestrator_read_db
-    database "Product\nWrite model\nPostgreSQL" as product_write_db
-    database "Product\nRead model\nMongoDB" as product_read_db
-    database "Payment\nWrite model\nPostgreSQL" as payment_write_db
-    database "Payment\nRead model\nMongoDB" as payment_read_db
 }
 
 rectangle "<b>Orchestrator Context</b>" as orchestrator #FFF3F3 {
-  node "Orchestrator Service" as saga
+    node "Orchestrator Service" as saga
+    database "Orchestrator\nWrite model\nPostgreSQL" as orchestrator_write_db
+}
 
-  rectangle "<b>Broker</b>" as broker #F8F8F8 {
+rectangle "<b>Broker</b>" as broker #F8F8F8 {
     node "Kafka Broker" as kafka #FFF4E6
     node "Schema Registry" as registry #FFF9E8
-  }
 }
 
 rectangle "<b>Product Context</b>" as product #F0FDF4 {
     node "Product Service" as product_service
+    database "Product\nWrite model\nPostgreSQL" as product_write_db
 }
 
 rectangle "<b>Payment Context</b>" as payment #FDF6EC {
     node "Payment Service" as payment_service
+    database "Payment\nWrite model\nPostgreSQL" as payment_write_db
 }
 
 ' ========= FLOWS =========
 
 ' User -> Booking
 user --> booking_api
-booking_api --> booking_service
-booking_service --> booking_write_db
-booking_service --> booking_read_db
+booking_api --> booking_service_command
+booking_api --> booking_service_query
+booking_service_command --> booking_write_db
+booking_service_query --> booking_read_db
+kafka <-[#3366CC,dashed]-> booking_service_command
+kafka <-[#3366CC,dashed]-> booking_service_query
 
 ' Booking & Orchestrator
-kafka <-[#3366CC,dashed]-> booking_service
-kafka <-[#3366CC,dashed]-> saga
 saga --> orchestrator_write_db
-saga --> orchestrator_read_db
+kafka <-[#3366CC,dashed]-> saga
 
 ' Product
 product_service --> product_write_db
-product_service --> product_read_db
 kafka <-[#3366CC,dashed]-> product_service
 
 ' Payment
 kafka <-[#3366CC,dashed]-> payment_service
 payment_service --> payment_write_db
-payment_service --> payment_read_db
-
 
 ' DataBase
-kafka --> registry: Validate
-
-
+registry  -> kafka : Validate
 @enduml

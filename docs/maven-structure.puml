@@ -33,7 +33,7 @@ rectangle "Microservices" #FBFCFC {
     rectangle [booking-service] #EBEDEF
     rectangle [payment-service] #EBEDEF
     rectangle [product-service] #EBEDEF
-    rectangle [booking-service-orchestrator] #D5DBDB
+    rectangle [booking-service-orchestrator] #EBEDEF
 }
 
 [mengo-bom] <.. [mengo-parent] : <<import>>

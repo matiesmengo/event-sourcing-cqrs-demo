@@ -1,51 +1,70 @@
 @startuml
-title Event Flow Diagram - Event-Source + SAGA Demo
+!theme plain
+skinparam sequenceMessageAlign center
+skinparam shadowing false
 
-actor User
-participant "booking-service" as Booking
-participant "booking-service-orchestrator" as Saga
-participant "product-service" as Product
-participant "payment-service" as Payment
+title **Event Flow**
 
-== 1. Booking Creation ==
-User -> Booking : POST /bookings [P1, P2, P3]
-Booking -> Saga : (publish: booking.created)
+actor User #LightBlue
+participant "**Booking Service**" as booking #APPLICATION
+participant "**Orchestrator Service**" as orchestrator #LightGreen
+participant "**Product Service**" as product #Orange
+participant "**Payment Service**" as payment #Pink
 
-== 2. Start Product Reservations ==
-Saga -> Saga : create SagaState(expectedProducts=[P1,P2,P3])
-Saga -> Product : (publish: saga.request_stock) ×3 \n one per product
+== 1. Initiation ==
+User -> booking : **POST** /bookings
+booking -> booking : **[ES]** Append: BookingCreatedEvent
+booking -> orchestrator : <font color=blue>**BOOKING_CREATED**</font>
 
-== 3. Product Reservations ==
-Product -> Product : check availability
-alt all products available
-    Product -> Saga : (publish: product.reserved) ×3
-else some product unavailable
-    Product -> Saga : (publish: product.reservation_failed)
+== 2. Inventory Phase ==
+orchestrator -> orchestrator : **[ES]** Append: Created
+loop for each product
+    orchestrator -> product : <font color=blue>**SAGA_REQUEST_STOCK**</font>
+    alt #HoneyDew Stock Available
+        product -> product : **[ES]** Append: ProductReservedEvent
+        product -> orchestrator : <font color=green>**PRODUCT_RESERVED**</font>
+        orchestrator -> orchestrator : **[ES]** Append: ProductReserved
+    else #LavenderBlush Out of Stock
+        product -> orchestrator : <font color=red>**PRODUCT_RESERVATION_FAILED**</font>
+        orchestrator -> orchestrator : **[ES]** Append: ProductReservationFailed
+        loop #khaki for each reserved product
+            orchestrator -> orchestrator : **[ES]** Append: CompensatedProduct
+            orchestrator -> product : <font color=orange>**SAGA_RELEASE_STOCK**</font>
+            product -> product : **[ES]** Append: ProductReleasedEvent
+        end
+        orchestrator -> booking : <font color=red>**SAGA_CANCEL_BOOKING**</font>
+        booking -> booking : **[ES]** Append: BookingFailedEvent
+    end
 end
 
-== 4. Saga Payment Process ==
-Saga -> Saga : update SagaState\n(track reserved products)
-alt all reserved
-    Saga -> Payment : (publish: saga.request_payment)
-else any failed
-    Saga -> Booking : (publish: saga.cancel_booking)
-    Saga -> Product : (publish: saga.release_stock)
-end
+== 3. Payment Phase ==
+    orchestrator -> payment : <font color=blue>**SAGA_REQUEST_PAYMENT**</font>
+    payment -> payment : **[ES]** Append: Initiated\nInternal: **PAYMENT_INITIATED**
 
-== 5. Payment Process ==
-Payment -> Payment : process payment
-alt success
-    Payment -> Saga : (publish: payment.completed)
-else failed
-    Payment -> Saga : (publish: payment.failed)
-end
+    alt #HoneyDew Payment Success
+        payment -> payment : **[ES]** Append: Completed
+        payment -> orchestrator : <font color=green>**PAYMENT_COMPLETED**</font>
+        orchestrator -> orchestrator : **[ES]** Append: PaymentCompleted
 
-== 6. Saga Finalization ==
-alt payment completed
-    Saga -> Booking : (publish: saga.confirm_booking)
-else payment failed
-    Saga -> Booking : (publish: saga.cancel_booking)
-    Saga -> Product : (publish: saga.release_stock)
+    else #LavenderBlush Payment Failed
+        payment -> payment : **[ES]** Append: Failed
+        payment -> orchestrator : <font color=red>**PAYMENT_FAILED**</font>
+        orchestrator -> orchestrator : **[ES]** Append: PaymentFailed
+    end
+
+
+== 4. Finalization ==
+alt #HoneyDew Payment Success
+    orchestrator -> booking : <font color=green>**SAGA_CONFIRM_BOOKING**</font>
+    booking -> booking : **[ES]** Append: BookingConfirmedEvent
+else #LavenderBlush Payment Failed
+    loop #khaki for each reserved product
+        orchestrator -> orchestrator : **[ES]** Append: CompensatedProduct
+        orchestrator -> product : <font color=orange>**SAGA_RELEASE_STOCK**</font>
+        product -> product : **[ES]** Append: ProductReleasedEvent
+    end
+    orchestrator -> booking : <font color=red>**SAGA_CANCEL_BOOKING**</font>
+    booking -> booking : **[ES]** Append: BookingFailedEvent
 end
 
 @enduml
