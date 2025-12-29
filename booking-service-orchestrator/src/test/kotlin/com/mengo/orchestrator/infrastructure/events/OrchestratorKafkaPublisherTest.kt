@@ -12,7 +12,6 @@ import com.mengo.orchestrator.fixtures.CommandTestData.buildSagaCommandReleaseSt
 import com.mengo.orchestrator.fixtures.CommandTestData.buildSagaCommandRequestPayment
 import com.mengo.orchestrator.fixtures.CommandTestData.buildSagaCommandRequestStock
 import com.mengo.orchestrator.fixtures.OrchestratorConstants.BOOKING_ID
-import com.mengo.orchestrator.infrastructure.SagaMetrics
 import com.mengo.orchestrator.infrastructure.events.mapper.toAvro
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
@@ -22,14 +21,12 @@ import org.mockito.kotlin.verify
 
 class OrchestratorKafkaPublisherTest {
     private lateinit var outboxRepository: OutboxRepository
-    private lateinit var sagaMetrics: SagaMetrics
     private lateinit var publisher: OrchestratorKafkaPublisher
 
     @BeforeEach
     fun setUp() {
         outboxRepository = mock()
-        sagaMetrics = mock()
-        publisher = OrchestratorKafkaPublisher(outboxRepository, sagaMetrics)
+        publisher = OrchestratorKafkaPublisher(outboxRepository)
     }
 
     @Test

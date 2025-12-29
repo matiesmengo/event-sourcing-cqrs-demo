@@ -4,14 +4,18 @@ server:
 spring:
   application:
     name: booking-service-orchestrator
+  transaction:
+    default-timeout: 20
   datasource:
     url: jdbc:postgresql://localhost:5432/demoEventDrivenDB
     username: demo
     password: demo
     driver-class-name: org.postgresql.Driver
     hikari:
-      maximum-pool-size: 10
-      connection-timeout: 10000
+      maximum-pool-size: 100
+      minimum-idle: 10
+      idle-timeout: 10000
+      connection-timeout: 60000
   jpa:
     hibernate:
       ddl-auto: validate
@@ -28,28 +32,41 @@ spring:
     connect-retries: 3
   kafka:
     bootstrap-servers: localhost:9092
+    listener:
+      observation-enabled: true
     producer:
       key-serializer: org.apache.kafka.common.serialization.StringSerializer
       value-serializer: io.confluent.kafka.serializers.KafkaAvroSerializer
+      acks: all
+      batch-size: 16384
+      buffer-memory: 33554432
       properties:
         schema.registry.url: http://localhost:8081
         auto.register.schemas: true
         otel.instrumentation.kafka.enabled: true
         metrics.recording.level: INFO
         metrics.sample.window.ms: 5000
+        compression.type: snappy
+        retries: 3
     consumer:
       group-id: orchestrator-service-group
       key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
       value-deserializer: io.confluent.kafka.serializers.KafkaAvroDeserializer
+      max-poll-records: 500
+      fetch-min-size: 1024
+      fetch-max-wait: 500
+      auto-offset-reset: earliest
       properties:
-        interceptor.classes: com.mengo.architecture.metadata.MetadataConsumerInterceptor
         schema.registry.url: http://localhost:8081
         specific.avro.reader: true
         otel.instrumentation.kafka.enabled: true
         metrics.recording.level: INFO
         metrics.sample.window.ms: 5000
+        max.poll.interval.ms: 300000
 
 logging:
+  level:
+    org.hibernate.SQL_SLOW: info
   file:
     name: ./observability/temp/orchestrator-service.log
   charset: UTF-8

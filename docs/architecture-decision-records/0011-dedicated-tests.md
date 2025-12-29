@@ -10,7 +10,7 @@ Embedding E2E tests inside individual services leads to:
 
 ## Decision:
 
-Create a **dedicated e2e-tests** module.
+Create a **dedicated test-suite** module.
 
 - Runs all services as Docker containers.
 - Uses Testcontainers for Kafka, databases, and infrastructure.

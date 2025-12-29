@@ -56,7 +56,7 @@ services.
 | [`booking-service-query/`🔗 ](booking-service-query/README.md)                                                     | Booking read model. Receives commands and create a booking projection.                                              |
 | [`payment-service/`🔗 ](payment-service/README.md)                                                                 | Handles payment workflows and compensations.                                                                        |
 | [`product-service/`🔗 ](product-service/README.md)                                                                 | Handles product reservation and stock consistency.                                                                  |
-| [`e2e-tests/`🔗 ](e2e-tests/README.md)                                                                             | Full end-to-end tests with Docker + Testcontainers.                                                                 |
+| [`test-suite/`🔗 ](test-suite/README.md)                                                                             | Full end-to-end tests with Docker + Testcontainers.                                                                 |
 | [`observability/`🔗 ](observability/README.md)                                                                     | Metrics, logs, traces correlated by design.                                                                         |
 | [`docs/`🔗 ](https://github.com/matiesmengo/event-sourcing-cqrs-demo/tree/main/docs/architecture-decision-records) | Architecture diagrams, ADRs, and technical documentation.                                                           |
 
@@ -202,7 +202,7 @@ End-to-end tests spin up:
 
 > No mocks. No shortcuts.
 
-[E2E Documentation 🔗 ](e2e-tests/README.md)
+[E2E Documentation 🔗 ](test-suite/README.md)
 
 ---
 

@@ -25,7 +25,7 @@
       },
       "targets": [
         {
-          "expr": "saga_started_total{service=\"orchestrator-service\"}",
+          "expr": "sum(saga_instances_started_total{saga_name=\"booking_saga\"})",
           "legendFormat": "Started",
           "refId": "A"
         }
@@ -79,7 +79,7 @@
       },
       "targets": [
         {
-          "expr": "saga_completed_total{service=\"orchestrator-service\"}",
+          "expr": "sum(saga_completed_total{saga_name=\"booking_saga\"})",
           "legendFormat": "Completed",
           "refId": "A"
         }
@@ -133,8 +133,8 @@
       },
       "targets": [
         {
-          "expr": "saga_failed_total{service=\"orchestrator-service\"}",
-          "legendFormat": "Failed",
+          "expr": "sum(saga_compensated_total{saga_name=\"booking_saga\"})",
+          "legendFormat": "Compensated",
           "refId": "A"
         }
       ],
@@ -187,8 +187,8 @@
       },
       "targets": [
         {
-          "expr": "saga_started_total{service=\"orchestrator-service\"} - (saga_completed_total{service=\"orchestrator-service\"} + saga_failed_total{service=\"orchestrator-service\"})",
-          "legendFormat": "Pending",
+          "expr": "sum(saga_instances_started_total{saga_name=\"booking_saga\"}) - (sum(saga_completed_total{saga_name=\"booking_saga\"}) + sum(saga_compensated_total{saga_name=\"booking_saga\"}))",
+          "legendFormat": "Active Sagas",
           "refId": "A"
         }
       ],
@@ -241,7 +241,7 @@
       },
       "targets": [
         {
-          "expr": "(sum(increase(saga_completed_total[5m])) / sum(increase(saga_started_total[5m]))) * 100",
+          "expr": "(sum(saga_completed_total{saga_name=\"booking_saga\"}) / sum(saga_instances_started_total{saga_name=\"booking_saga\"})) * 100",
           "refId": "A"
         }
       ],
@@ -280,6 +280,49 @@
           "min": 0
         },
         "overrides": []
+      }
+    },
+    {
+      "type": "stat",
+      "title": "Kafka Consumer Lag",
+      "id": 6,
+      "gridPos": {
+        "x": 20,
+        "y": 0,
+        "w": 4,
+        "h": 4
+      },
+      "targets": [
+        {
+          "expr": "sum(kafka_consumergroup_group_lag) or vector(0)",
+          "legendFormat": "Messages Behind",
+          "refId": "A"
+        }
+      ],
+      "options": {
+        "colorMode": "value",
+        "graphMode": "area",
+        "justifyMode": "auto",
+        "reduceOptions": {
+          "calcs": ["lastNotNull"]
+        },
+        "textMode": "value_and_name"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "messages",
+          "color": {
+            "mode": "thresholds"
+          },
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              { "color": "green", "value": null },
+              { "color": "orange", "value": 50 },
+              { "color": "red", "value": 200 }
+            ]
+          }
+        }
       }
     },
     {

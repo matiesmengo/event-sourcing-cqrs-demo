@@ -69,6 +69,17 @@ class OrchestratorAggregateTest {
     }
 
     @Test
+    fun `failProductReservation works if the first product was already failed`() {
+        val created = OrchestratorEvent.Created(bookingId, setOf(product1, product2), 0)
+        val productFailed = OrchestratorEvent.ProductReservationFailed(bookingId, product1.productId, 1)
+        val aggregate = OrchestratorAggregate.rehydrate(listOf(created, productFailed))
+
+        val event = aggregate.failProductReservation(product2.productId)
+        assertTrue(event is OrchestratorEvent.ProductReservationFailed)
+        assertEquals(2, event.aggregateVersion)
+    }
+
+    @Test
     fun `failProductReservation throws in invalid state`() {
         val created = OrchestratorEvent.Created(bookingId, setOf(product1), 0)
         val aggregate = OrchestratorAggregate.rehydrate(listOf(created)).copy(state = OrchestratorState.COMPLETED)

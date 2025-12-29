@@ -34,12 +34,11 @@ open class OutboxRepositoryService(
         )
     }
 
-    // TODO: Move to Metadata directory
     private fun Metadata.toHeaderMap(): Map<String, String> =
         buildMap {
             put("message-id", UUID.randomUUID().toString())
             put("correlation-id", correlationId.toString())
-            causationId?.let { put("causation-id", it.toString()) }
+            put("causation-id", causationId.toString())
             if (attributes.isNotEmpty()) put("meta-attributes", objectMapper.writeValueAsString(attributes))
             traceParent?.let { put("traceparent", it) }
         }

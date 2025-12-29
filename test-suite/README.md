@@ -1,4 +1,4 @@
-# 🧪 e2e-test
+# 🧪 test-suite
 
 > ⚡ **End-to-End Test Project** for the Mengo microservices ecosystem.  
 > Provides a **dedicated playground** to validate all services working together in a realistic, production-like environment.
@@ -7,7 +7,7 @@
 
 ## 🎯 Purpose
 
-The `e2e-test` project is a **standalone module** designed to:
+The `test-suite` project is a **standalone module** designed to:
 
 * **Test the full ecosystem end-to-end** – from REST API requests to Kafka events and Event Store persistence.
 * **Decouple test code from production services** – keep service code clean and maintainable.

@@ -75,6 +75,7 @@ open class OrchestratorServiceCommand(
         val aggregate =
             eventStoreRepository.load(command.bookingId)
                 ?: error("onProductReservationFailed not found for booking ${command.bookingId} ")
+        if (aggregate.state == OrchestratorState.COMPENSATING) return
 
         val failEvent = aggregate.failProductReservation(command.productId)
         eventStoreRepository.append(failEvent)

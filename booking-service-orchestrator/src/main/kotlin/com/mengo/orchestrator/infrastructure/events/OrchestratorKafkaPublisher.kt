@@ -8,7 +8,6 @@ import com.mengo.architecture.KafkaTopics.KAFKA_SAGA_REQUEST_STOCK
 import com.mengo.architecture.outbox.OutboxRepository
 import com.mengo.orchestrator.domain.model.command.SagaCommand
 import com.mengo.orchestrator.domain.service.OrchestratorEventPublisher
-import com.mengo.orchestrator.infrastructure.SagaMetrics
 import com.mengo.orchestrator.infrastructure.events.mapper.toAvro
 import com.mengo.payload.orchestrator.OrchestratorCancelBookingPayload
 import com.mengo.payload.orchestrator.OrchestratorConfirmBookingPayload
@@ -22,7 +21,6 @@ import org.springframework.transaction.annotation.Transactional
 @Service
 open class OrchestratorKafkaPublisher(
     private val outboxRepository: OutboxRepository,
-    private val sagaMetrics: SagaMetrics,
 ) : OrchestratorEventPublisher {
     @Transactional(propagation = Propagation.REQUIRED)
     override fun publishRequestStock(requestStock: SagaCommand.RequestStock) {
@@ -60,7 +58,6 @@ open class OrchestratorKafkaPublisher(
     @Transactional(propagation = Propagation.REQUIRED)
     override fun publishConfirmBooking(bookingCompleted: SagaCommand.ConfirmBooking) {
         val avroPayload: OrchestratorConfirmBookingPayload = bookingCompleted.toAvro()
-        sagaMetrics.incrementCompleted("booking_saga")
 
         outboxRepository.persistOutboxEvent(
             topic = KAFKA_SAGA_CONFIRM_BOOKING,
@@ -72,7 +69,6 @@ open class OrchestratorKafkaPublisher(
     @Transactional(propagation = Propagation.REQUIRED)
     override fun publishCancelBooking(cancelBooking: SagaCommand.CancelBooking) {
         val avroPayload: OrchestratorCancelBookingPayload = cancelBooking.toAvro()
-        sagaMetrics.incrementFailed("booking_saga")
 
         outboxRepository.persistOutboxEvent(
             topic = KAFKA_SAGA_CANCEL_BOOKING,

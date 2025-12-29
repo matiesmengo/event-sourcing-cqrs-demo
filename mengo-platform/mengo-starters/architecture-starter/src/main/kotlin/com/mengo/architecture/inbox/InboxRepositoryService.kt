@@ -18,8 +18,7 @@ open class InboxRepositoryService(
      */
     @Transactional(propagation = Propagation.REQUIRES_NEW)
     override fun validateIdempotencyEvent(): Boolean {
-        val metadata = MetadataContextHolder.get() ?: error("MetadataContextHolder is lost")
-        val causationId = metadata.causationId ?: error("MetadataContextHolder.CausationId is lost")
+        val metadata = MetadataContextHolder.get() ?: error("IdempotencyEvent - MetadataContextHolder is lost")
 
         val sql =
             """
@@ -32,7 +31,7 @@ open class InboxRepositoryService(
 
         return entityManager
             .createNativeQuery(sql)
-            .setParameter("causationId", causationId)
+            .setParameter("causationId", metadata.causationId)
             .setParameter("correlationId", metadata.correlationId)
             .executeUpdate() == 1
     }

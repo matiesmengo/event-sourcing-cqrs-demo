@@ -1,12 +1,7 @@
 package com.mengo.architecture.observability
 
-import java.util.UUID
-
 interface Telemetry {
-    fun recordSagaStarted(
-        sagaName: String,
-        sagaId: UUID,
-    )
+    fun recordSagaStarted(sagaName: String)
 
     fun recordSagaStepSuccess(
         sagaName: String,
@@ -21,16 +16,11 @@ interface Telemetry {
 
     fun recordSagaCompleted(sagaName: String)
 
-    fun recordSagaCompensated(
-        sagaName: String,
-        cause: String,
-    )
+    fun recordSagaCompensated(sagaName: String)
 
     fun logStateChange(
         sagaName: String,
-        sagaId: UUID,
         step: String,
         state: String,
-        cause: String? = null,
     )
 }

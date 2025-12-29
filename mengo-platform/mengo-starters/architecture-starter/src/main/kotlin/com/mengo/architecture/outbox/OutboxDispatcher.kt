@@ -86,7 +86,7 @@ open class OutboxDispatcher(
             kafkaTemplate.send(record).get()
             true
         } catch (ex: Exception) {
-            logger.warn(("Error dispatching message ${entity.id}: ${ex.message}"))
+            logger.error("Error dispatching message ${entity.id}: ${ex.message}", ex)
             false
         }
 }

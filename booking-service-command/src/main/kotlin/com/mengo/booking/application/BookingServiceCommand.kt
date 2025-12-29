@@ -16,7 +16,6 @@ open class BookingServiceCommand(
     private val eventPublisher: BookingEventPublisher,
 ) : BookingService {
     // TODO: handle custom errors
-    // TODO: Transactional required for rest clients?
 
     @Transactional
     override fun onCreateBooking(command: BookingCommand.CreateBooking) {

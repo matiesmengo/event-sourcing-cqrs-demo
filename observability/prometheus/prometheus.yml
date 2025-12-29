@@ -2,34 +2,34 @@ global:
   scrape_interval: 5s
 
 scrape_configs:
-  - job_name: 'booking-service-query
+  - job_name: 'booking-service-query'
     metrics_path: '/actuator/prometheus'
     static_configs:
-      - targets: ['host.docker.internal:8079']
+      - targets: [ 'host.docker.internal:8079' ]
 
-  - job_name: 'booking-service-command
+  - job_name: 'booking-service-command'
     metrics_path: '/actuator/prometheus'
     static_configs:
-      - targets: ['host.docker.internal:8080']
+      - targets: [ 'host.docker.internal:8080' ]
 
   - job_name: 'booking-service-orchestrator'
     metrics_path: '/actuator/prometheus'
     static_configs:
-      - targets: ['host.docker.internal:8085']
+      - targets: [ 'host.docker.internal:8085' ]
 
   - job_name: 'product-service'
     metrics_path: '/actuator/prometheus'
     static_configs:
-      - targets: ['host.docker.internal:8084']
+      - targets: [ 'host.docker.internal:8084' ]
 
   - job_name: 'payment-service'
     metrics_path: '/actuator/prometheus'
     static_configs:
-      - targets: ['host.docker.internal:8083']
+      - targets: [ 'host.docker.internal:8083' ]
 
   - job_name: 'kafka'
     static_configs:
-      - targets: ['kafka:9092']
+      - targets: [ 'kafka:9092' ]
 
   - job_name: 'jaeger'
     static_configs:

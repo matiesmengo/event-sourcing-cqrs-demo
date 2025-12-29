@@ -9,10 +9,10 @@
         <relativePath>../mengo-platform/mengo-parent/pom.xml</relativePath>
     </parent>
 
-    <artifactId>e2e-tests</artifactId>
+    <artifactId>test-suite</artifactId>
     <version>0.0.1-SNAPSHOT</version>
     <packaging>jar</packaging>
-    <name>e2e-tests</name>
+    <name>test-suite</name>
 
     <dependencies>
         <dependency>

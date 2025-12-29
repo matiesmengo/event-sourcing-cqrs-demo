@@ -18,7 +18,7 @@ open class ProductKafkaListener(
     private val inboxRepository: InboxRepository,
 ) {
     @Transactional
-    @KafkaListener(topics = [KAFKA_SAGA_REQUEST_STOCK], groupId = "product-service-group")
+    @KafkaListener(topics = [KAFKA_SAGA_REQUEST_STOCK], groupId = "product-service-group", concurrency = "6")
     @ObservabilityStep(name = "product_request_stock")
     open fun onReserveProduct(payload: OrchestratorRequestStockPayload) {
         if (!inboxRepository.validateIdempotencyEvent()) return
@@ -28,7 +28,7 @@ open class ProductKafkaListener(
     }
 
     @Transactional
-    @KafkaListener(topics = [KAFKA_SAGA_RELEASE_STOCK], groupId = "product-service-group")
+    @KafkaListener(topics = [KAFKA_SAGA_RELEASE_STOCK], groupId = "product-service-group", concurrency = "6")
     @ObservabilityStep(name = "product_release_stock")
     open fun onReleaseProduct(payload: OrchestratorReleaseStockPayload) {
         if (!inboxRepository.validateIdempotencyEvent()) return

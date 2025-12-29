@@ -3,6 +3,7 @@ package com.mengo.booking.infrastructure.events
 import com.mengo.architecture.KafkaTopics.KAFKA_BOOKING_COMPLETED
 import com.mengo.architecture.KafkaTopics.KAFKA_BOOKING_CREATED
 import com.mengo.architecture.KafkaTopics.KAFKA_BOOKING_FAILED
+import com.mengo.architecture.observability.Telemetry
 import com.mengo.architecture.outbox.OutboxRepository
 import com.mengo.booking.fixtures.BookingConstants.BOOKING_ID
 import com.mengo.booking.fixtures.CommandTestData.buildSagaCommandBookingConfirmed
@@ -17,12 +18,14 @@ import org.mockito.kotlin.verify
 
 class BookingKafkaPublisherTest {
     private lateinit var outboxRepository: OutboxRepository
+    private lateinit var telemetry: Telemetry
     private lateinit var publisher: BookingKafkaPublisher
 
     @BeforeEach
     fun setUp() {
         outboxRepository = mock()
-        publisher = BookingKafkaPublisher(outboxRepository)
+        telemetry = mock()
+        publisher = BookingKafkaPublisher(outboxRepository, telemetry)
     }
 
     @Test

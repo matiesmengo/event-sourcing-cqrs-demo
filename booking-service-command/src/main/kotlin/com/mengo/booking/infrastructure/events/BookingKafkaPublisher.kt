@@ -3,6 +3,7 @@ package com.mengo.booking.infrastructure.events
 import com.mengo.architecture.KafkaTopics.KAFKA_BOOKING_COMPLETED
 import com.mengo.architecture.KafkaTopics.KAFKA_BOOKING_CREATED
 import com.mengo.architecture.KafkaTopics.KAFKA_BOOKING_FAILED
+import com.mengo.architecture.observability.Telemetry
 import com.mengo.architecture.outbox.OutboxRepository
 import com.mengo.booking.domain.model.command.SagaCommand
 import com.mengo.booking.domain.service.BookingEventPublisher
@@ -17,6 +18,7 @@ import org.springframework.transaction.annotation.Transactional
 @Service
 open class BookingKafkaPublisher(
     private val outboxRepository: OutboxRepository,
+    private val telemetry: Telemetry,
 ) : BookingEventPublisher {
     @Transactional(propagation = Propagation.REQUIRED)
     override fun publishBookingCreated(bookingCreated: SagaCommand.BookingCreated) {
@@ -27,6 +29,8 @@ open class BookingKafkaPublisher(
             key = avroPayload.bookingId.toString(),
             payloadJson = avroPayload,
         )
+
+        telemetry.recordSagaStarted("booking_saga")
     }
 
     @Transactional(propagation = Propagation.REQUIRED)
@@ -38,6 +42,8 @@ open class BookingKafkaPublisher(
             key = avroPayload.bookingId.toString(),
             payloadJson = avroPayload,
         )
+
+        telemetry.recordSagaCompleted("booking_saga")
     }
 
     @Transactional(propagation = Propagation.REQUIRED)
@@ -49,5 +55,7 @@ open class BookingKafkaPublisher(
             key = avroPayload.bookingId.toString(),
             payloadJson = avroPayload,
         )
+
+        telemetry.recordSagaCompensated("booking_saga")
     }
 }

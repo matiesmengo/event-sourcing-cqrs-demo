@@ -8,7 +8,6 @@ import com.mengo.architecture.KafkaTopics.KAFKA_PRODUCT_RESERVED
 import com.mengo.architecture.inbox.InboxRepository
 import com.mengo.architecture.observability.ObservabilityStep
 import com.mengo.orchestrator.application.OrchestratorServiceCommand
-import com.mengo.orchestrator.infrastructure.SagaMetrics
 import com.mengo.orchestrator.infrastructure.events.mapper.toDomain
 import com.mengo.payload.booking.BookingCreatedPayload
 import com.mengo.payload.payment.PaymentCompletedPayload
@@ -21,22 +20,20 @@ import org.springframework.transaction.annotation.Transactional
 
 @Component
 open class OrchestratorKafkaListener(
-    private val sagaMetrics: SagaMetrics,
     private val inboxRepository: InboxRepository,
     private val orchestratorServiceCommand: OrchestratorServiceCommand,
 ) {
     @Transactional
-    @KafkaListener(topics = [KAFKA_BOOKING_CREATED], groupId = "booking-saga-orchestrator")
+    @KafkaListener(topics = [KAFKA_BOOKING_CREATED], groupId = "booking-saga-orchestrator", concurrency = "6")
     @ObservabilityStep(name = "orchestrator_booking_created")
     open fun onBookingCreated(payload: BookingCreatedPayload) {
         if (!inboxRepository.validateIdempotencyEvent()) return
 
-        sagaMetrics.incrementStarted("booking_saga")
         orchestratorServiceCommand.onBookingCreated(payload.toDomain())
     }
 
     @Transactional
-    @KafkaListener(topics = [KAFKA_PRODUCT_RESERVED], groupId = "booking-saga-orchestrator")
+    @KafkaListener(topics = [KAFKA_PRODUCT_RESERVED], groupId = "booking-saga-orchestrator", concurrency = "6")
     @ObservabilityStep(name = "orchestrator_product_reserved")
     open fun onProductReserved(payload: ProductReservedPayload) {
         if (!inboxRepository.validateIdempotencyEvent()) return
@@ -45,7 +42,7 @@ open class OrchestratorKafkaListener(
     }
 
     @Transactional
-    @KafkaListener(topics = [KAFKA_PRODUCT_RESERVATION_FAILED], groupId = "booking-saga-orchestrator")
+    @KafkaListener(topics = [KAFKA_PRODUCT_RESERVATION_FAILED], groupId = "booking-saga-orchestrator", concurrency = "6")
     @ObservabilityStep(name = "orchestrator_product_reserved_failed")
     open fun onProductReservationFailed(payload: ProductReservationFailedPayload) {
         if (!inboxRepository.validateIdempotencyEvent()) return
@@ -54,7 +51,7 @@ open class OrchestratorKafkaListener(
     }
 
     @Transactional
-    @KafkaListener(topics = [KAFKA_PAYMENT_COMPLETED], groupId = "booking-saga-orchestrator")
+    @KafkaListener(topics = [KAFKA_PAYMENT_COMPLETED], groupId = "booking-saga-orchestrator", concurrency = "6")
     @ObservabilityStep(name = "orchestrator_payment_completed")
     open fun onPaymentCompleted(payload: PaymentCompletedPayload) {
         if (!inboxRepository.validateIdempotencyEvent()) return
@@ -63,7 +60,7 @@ open class OrchestratorKafkaListener(
     }
 
     @Transactional
-    @KafkaListener(topics = [KAFKA_PAYMENT_FAILED], groupId = "booking-saga-orchestrator")
+    @KafkaListener(topics = [KAFKA_PAYMENT_FAILED], groupId = "booking-saga-orchestrator", concurrency = "6")
     @ObservabilityStep(name = "orchestrator_payment_failed")
     open fun onPaymentFailed(payload: PaymentFailedPayload) {
         if (!inboxRepository.validateIdempotencyEvent()) return
