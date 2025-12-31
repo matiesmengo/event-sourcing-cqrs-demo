@@ -12,10 +12,10 @@ spring:
     password: demo
     driver-class-name: org.postgresql.Driver
     hikari:
-      maximum-pool-size: 100
+      maximum-pool-size: 30
       minimum-idle: 10
       idle-timeout: 10000
-      connection-timeout: 60000
+      connection-timeout: 30000
   jpa:
     hibernate:
       ddl-auto: validate
@@ -34,6 +34,8 @@ spring:
     bootstrap-servers: localhost:9092
     listener:
       observation-enabled: true
+      concurrency: 6
+      ack-mode: record
     producer:
       key-serializer: org.apache.kafka.common.serialization.StringSerializer
       value-serializer: io.confluent.kafka.serializers.KafkaAvroSerializer
@@ -52,7 +54,7 @@ spring:
       group-id: booking-command-group
       key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
       value-deserializer: io.confluent.kafka.serializers.KafkaAvroDeserializer
-      max-poll-records: 500
+      max-poll-records: 100
       fetch-min-size: 1024
       fetch-max-wait: 500
       auto-offset-reset: earliest

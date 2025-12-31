@@ -37,7 +37,7 @@ abstract class AbstractServicesE2ETest : AbstractInfrastructureE2ETest() {
                 .withEnv("SPRING_KAFKA_CONSUMER_PROPERTIES_SCHEMA_REGISTRY_URL", "http://schema-registry:8081")
                 .withEnv("SPRING_KAFKA_PRODUCER_PROPERTIES_SCHEMA_REGISTRY_URL", "http://schema-registry:8081")
                 .withEnv("SPRING_KAFKA_CONSUMER_AUTO_OFFSET_RESET", "earliest")
-                .waitingFor(Wait.forLogMessage(".*Started BookingServiceApplication.*", 1))
+                .waitingFor(Wait.forLogMessage(".*Started BookingCommandApplication.*", 1))
 
         @Container
         val paymentService =

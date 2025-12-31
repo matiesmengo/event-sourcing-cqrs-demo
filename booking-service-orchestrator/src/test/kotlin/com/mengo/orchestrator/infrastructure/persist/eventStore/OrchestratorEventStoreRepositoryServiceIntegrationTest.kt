@@ -8,20 +8,22 @@ import com.mengo.orchestrator.infrastructure.persist.eventStore.mapper.Orchestra
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
-import org.springframework.dao.InvalidDataAccessApiUsageException
+import org.springframework.transaction.annotation.Transactional
 import java.math.BigDecimal
 import java.util.UUID
 import kotlin.test.assertEquals
-import kotlin.test.assertFailsWith
 import kotlin.test.assertNotNull
 import kotlin.test.assertNull
 
 class OrchestratorEventStoreRepositoryServiceIntegrationTest : AbstractIntegrationTest() {
-    @Autowired private lateinit var orchestratorRepository: OrchestratorEventStoreJpaRepository
+    @Autowired
+    private lateinit var orchestratorRepository: OrchestratorEventStoreJpaRepository
 
-    @Autowired private lateinit var orchestratorEventMapper: OrchestratorEventEntityMapper
+    @Autowired
+    private lateinit var orchestratorEventMapper: OrchestratorEventEntityMapper
 
-    @Autowired private lateinit var repository: OrchestratorEventStoreRepositoryService
+    @Autowired
+    private lateinit var repository: OrchestratorEventStoreRepositoryService
 
     @BeforeEach
     fun cleanup() {
@@ -29,12 +31,14 @@ class OrchestratorEventStoreRepositoryServiceIntegrationTest : AbstractIntegrati
     }
 
     @Test
+    @Transactional
     fun `load should return null when no events exist`() {
         val result = repository.load(BOOKING_ID)
         assertNull(result)
     }
 
     @Test
+    @Transactional
     fun `load should rehydrate OrchestratorAggregate from stored events`() {
         // given
         val product = Product(UUID.randomUUID(), 2, BigDecimal.TEN)
@@ -60,6 +64,7 @@ class OrchestratorEventStoreRepositoryServiceIntegrationTest : AbstractIntegrati
     }
 
     @Test
+    @Transactional
     fun `append should persist event when version matches`() {
         // given
         val product = Product(UUID.randomUUID(), 1, BigDecimal.ONE)
@@ -72,19 +77,5 @@ class OrchestratorEventStoreRepositoryServiceIntegrationTest : AbstractIntegrati
         val stored = orchestratorRepository.findByBookingIdOrderByAggregateVersionAsc(BOOKING_ID)
         assertEquals(1, stored.size)
         assertEquals(0, stored.first().aggregateVersion)
-    }
-
-    @Test
-    fun `append should throw on concurrency conflict`() {
-        val product = Product(UUID.randomUUID(), 1, BigDecimal.ONE)
-        val firstEvent = OrchestratorEvent.Created(BOOKING_ID, setOf(product), 0)
-        val secondEvent = OrchestratorEvent.Created(BOOKING_ID, setOf(product), 5)
-
-        // when
-        orchestratorRepository.save(orchestratorEventMapper.toEntity(firstEvent))
-
-        // when + then
-        val ex = assertFailsWith<InvalidDataAccessApiUsageException> { repository.append(secondEvent) }
-        assert(ex.message!!.contains("Concurrency conflict"))
     }
 }

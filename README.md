@@ -173,11 +173,11 @@ curl --location 'localhost:8080/bookings' \
     "userId": "99999999-0000-0000-0000-999999999999",
     "products": [
         {
-            "productId": "11111111-1111-1111-1111-111111111111",
+            "productId": "aaaa0000-aaaa-0000-aaaa-000000000001",
             "quantity": 1
         },
         {
-            "productId": "22222222-2222-2222-2222-222222222222",
+            "productId": "bbbb0000-bbbb-0000-bbbb-000000000002",
             "quantity": 2
         }
     ]
@@ -186,7 +186,7 @@ curl --location 'localhost:8080/bookings' \
 
 ---
 
-## 🧪 Testing Strategy (Serious Testing)
+## 🧪 Testing Strategy
 
 Testing mirrors production as closely as possible.
 
@@ -210,9 +210,8 @@ End-to-end tests spin up:
 
 | Area            | Next Step                                                                      |
 |-----------------|--------------------------------------------------------------------------------|
-| **Persistence** | Implement Queries and update projections (CQRS)                                |
-| **CI/CD**       | Automate tests and build with GitHub Actions                                   |
 | **Performance** | Implement load and performance tests to evaluate system throughput and latency |
+| **CI/CD**       | Automate tests and build with GitHub Actions                                   |
 
 ---
 

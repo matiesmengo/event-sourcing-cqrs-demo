@@ -9,24 +9,22 @@ import com.mengo.product.domain.model.eventstore.ProductReservedEvent
 import com.mengo.product.fixtures.ProductConstants.BOOKING_ID
 import com.mengo.product.fixtures.ProductConstants.PRODUCT_ID
 import com.mengo.product.infrastructure.persist.eventstore.mappers.ProductEventEntityMapper
+import jakarta.persistence.EntityManager
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertNotNull
-import org.junit.jupiter.api.Assertions.assertThrows
 import org.junit.jupiter.api.Test
 import org.mockito.kotlin.any
 import org.mockito.kotlin.doReturn
 import org.mockito.kotlin.mock
-import org.mockito.kotlin.never
 import org.mockito.kotlin.times
 import org.mockito.kotlin.verify
 import org.mockito.kotlin.whenever
 import java.math.BigDecimal
-import java.time.Instant
-import java.util.UUID
 import kotlin.test.assertNull
-import kotlin.test.assertTrue
 
 class ProductEventStoreRepositoryServiceTest {
+    private val query: jakarta.persistence.Query = mock()
+    private val entityManager: EntityManager = mock()
     private val jpaRepository: ProductEventStoreJpaRepository = mock()
     private val mapper =
         ProductEventEntityMapper(
@@ -36,11 +34,14 @@ class ProductEventStoreRepositoryServiceTest {
                 disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS)
             },
         )
-    private val repository = ProductEventStoreRepositoryService(jpaRepository, mapper)
+    private val repository = ProductEventStoreRepositoryService(entityManager, jpaRepository, mapper)
 
     @Test
     fun `load should return null when no events exist`() {
         // given
+        whenever(entityManager.createNativeQuery(any())).thenReturn(query)
+        whenever(query.setParameter(any<String>(), any())).thenReturn(query)
+        whenever(query.singleResult).thenReturn(1)
         whenever(jpaRepository.findByProductIdOrderByAggregateVersionAsc(PRODUCT_ID)) doReturn listOf()
 
         // when
@@ -60,6 +61,9 @@ class ProductEventStoreRepositoryServiceTest {
         val reservedEvent = ProductReservedEvent(PRODUCT_ID, BOOKING_ID, 1, 1)
         val reservedEntity = mapper.toEntity(reservedEvent)
 
+        whenever(entityManager.createNativeQuery(any())).thenReturn(query)
+        whenever(query.setParameter(any<String>(), any())).thenReturn(query)
+        whenever(query.singleResult).thenReturn(1)
         whenever(jpaRepository.findByProductIdOrderByAggregateVersionAsc(PRODUCT_ID))
             .thenReturn(listOf(createdEntity, reservedEntity))
 
@@ -78,41 +82,12 @@ class ProductEventStoreRepositoryServiceTest {
         val createdEvent = ProductCreatedEvent(PRODUCT_ID, BigDecimal.TEN, 10, 0)
         val createdEntity = mapper.toEntity(createdEvent)
 
-        whenever(jpaRepository.findFirstByProductIdOrderByAggregateVersionDesc(PRODUCT_ID))
-            .thenReturn(null)
         whenever(jpaRepository.save(any())).thenReturn(createdEntity)
 
         // when
         repository.append(createdEvent)
 
         // then
-        verify(jpaRepository, times(1)).findFirstByProductIdOrderByAggregateVersionDesc(PRODUCT_ID)
         verify(jpaRepository, times(1)).save(any())
-    }
-
-    @Test
-    fun `append should throw on concurrency conflict`() {
-        // given
-        val existingEntity =
-            ProductEventEntity(
-                eventId = UUID.randomUUID(),
-                productId = PRODUCT_ID,
-                eventType = "ProductCreatedEvent",
-                eventData = "{}",
-                aggregateVersion = 1,
-                createdAt = Instant.now(),
-            )
-        val newEvent = ProductReservedEvent(PRODUCT_ID, BOOKING_ID, 1, 10)
-
-        whenever(jpaRepository.findFirstByProductIdOrderByAggregateVersionDesc(BOOKING_ID))
-            .thenReturn(existingEntity)
-
-        // when & then
-        val ex = assertThrows(IllegalArgumentException::class.java) { repository.append(newEvent) }
-
-        assertTrue(ex.message!!.contains("Concurrency conflict"))
-        verify(jpaRepository, times(1))
-            .findFirstByProductIdOrderByAggregateVersionDesc(PRODUCT_ID)
-        verify(jpaRepository, never()).save(any())
     }
 }

@@ -10,26 +10,23 @@ import com.mengo.payment.fixtures.PaymentConstants.BOOKING_ID
 import com.mengo.payment.fixtures.PaymentConstants.PAYMENT_ID
 import com.mengo.payment.fixtures.PaymentConstants.PAYMENT_REFERENCE
 import com.mengo.payment.fixtures.PaymentConstants.TOTAL_PRICE
-import com.mengo.payment.infrastructure.persist.eventstore.PaymentEventEntity
 import com.mengo.payment.infrastructure.persist.eventstore.PaymentEventStoreJpaRepository
 import com.mengo.payment.infrastructure.persist.eventstore.PaymentEventStoreRepositoryService
 import com.mengo.payment.infrastructure.persist.eventstore.mapers.PaymentEventEntityMapper
-import org.junit.jupiter.api.Assertions.assertThrows
+import jakarta.persistence.EntityManager
 import org.junit.jupiter.api.Test
 import org.mockito.kotlin.any
 import org.mockito.kotlin.doReturn
 import org.mockito.kotlin.mock
-import org.mockito.kotlin.never
 import org.mockito.kotlin.verify
 import org.mockito.kotlin.whenever
-import java.time.Instant
-import java.util.UUID
 import kotlin.test.assertEquals
 import kotlin.test.assertNotNull
 import kotlin.test.assertNull
-import kotlin.test.assertTrue
 
 class PaymentEventStoreRepositoryServiceTest {
+    private val query: jakarta.persistence.Query = mock()
+    private val entityManager: EntityManager = mock()
     private val paymentRepository: PaymentEventStoreJpaRepository = mock()
     private val paymentEventMapper =
         PaymentEventEntityMapper(
@@ -39,11 +36,14 @@ class PaymentEventStoreRepositoryServiceTest {
                 disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS)
             },
         )
-    private val repository = PaymentEventStoreRepositoryService(paymentRepository, paymentEventMapper)
+    private val repository = PaymentEventStoreRepositoryService(entityManager, paymentRepository, paymentEventMapper)
 
     @Test
     fun `load should return null when no events exist`() {
         // given
+        whenever(entityManager.createNativeQuery(any())).thenReturn(query)
+        whenever(query.setParameter(any<String>(), any())).thenReturn(query)
+        whenever(query.singleResult).thenReturn(1)
         whenever(paymentRepository.findByPaymentIdOrderByAggregateVersionAsc(PAYMENT_ID)) doReturn emptyList()
 
         // when
@@ -63,6 +63,9 @@ class PaymentEventStoreRepositoryServiceTest {
         val createdEntity = paymentEventMapper.toEntity(createdEvent)
         val confirmedEntity = paymentEventMapper.toEntity(confirmedEvent)
 
+        whenever(entityManager.createNativeQuery(any())).thenReturn(query)
+        whenever(query.setParameter(any<String>(), any())).thenReturn(query)
+        whenever(query.singleResult).thenReturn(1)
         whenever(paymentRepository.findByPaymentIdOrderByAggregateVersionAsc(BOOKING_ID))
             .thenReturn(listOf(createdEntity, confirmedEntity))
 
@@ -83,43 +86,12 @@ class PaymentEventStoreRepositoryServiceTest {
         val createdEvent = PaymentEvent.Initiated(PAYMENT_ID, BOOKING_ID, TOTAL_PRICE, 0)
         val createdEntity = paymentEventMapper.toEntity(createdEvent)
 
-        whenever(paymentRepository.findFirstByPaymentIdOrderByAggregateVersionDesc(PAYMENT_ID))
-            .thenReturn(null)
         whenever(paymentRepository.save(any())).thenReturn(createdEntity)
 
         // when
         repository.append(createdEvent)
 
         // then
-        verify(paymentRepository).findFirstByPaymentIdOrderByAggregateVersionDesc(PAYMENT_ID)
         verify(paymentRepository).save(any())
-    }
-
-    @Test
-    fun `append should throw on concurrency conflict`() {
-        // given
-        val existingEntity =
-            PaymentEventEntity(
-                eventId = UUID.randomUUID(),
-                paymentId = PAYMENT_ID,
-                eventType = "Completed",
-                eventData = "{}",
-                aggregateVersion = 1,
-                createdAt = Instant.now(),
-            )
-        val newEvent = PaymentEvent.Completed(PAYMENT_ID, BOOKING_ID, PAYMENT_REFERENCE, 5)
-
-        whenever(paymentRepository.findFirstByPaymentIdOrderByAggregateVersionDesc(PAYMENT_ID))
-            .thenReturn(existingEntity)
-
-        // when + then
-        val ex =
-            assertThrows(IllegalArgumentException::class.java) {
-                repository.append(newEvent)
-            }
-
-        assertTrue(ex.message!!.contains("Concurrency conflict"))
-        verify(paymentRepository).findFirstByPaymentIdOrderByAggregateVersionDesc(PAYMENT_ID)
-        verify(paymentRepository, never()).save(any())
     }
 }

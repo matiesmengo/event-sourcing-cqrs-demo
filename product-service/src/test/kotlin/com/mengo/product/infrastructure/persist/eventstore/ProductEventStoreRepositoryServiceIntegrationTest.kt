@@ -10,9 +10,8 @@ import com.mengo.product.infrastructure.persist.eventstore.mappers.ProductEventE
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
-import org.springframework.dao.InvalidDataAccessApiUsageException
+import org.springframework.transaction.annotation.Transactional
 import kotlin.test.assertEquals
-import kotlin.test.assertFailsWith
 import kotlin.test.assertNotNull
 import kotlin.test.assertNull
 
@@ -35,12 +34,14 @@ class ProductEventStoreRepositoryServiceIntegrationTest : AbstractIntegrationTes
     val reservedEvent = ProductReservedEvent(PRODUCT_ID, BOOKING_ID, 5, 1)
 
     @Test
+    @Transactional
     fun `load should return null when no events exist`() {
         val result = repository.load(PRODUCT_ID)
         assertNull(result)
     }
 
     @Test
+    @Transactional
     fun `load should rehydrate BookingAggregate from stored events`() {
         // given
         jpaRepository.saveAll(
@@ -60,6 +61,7 @@ class ProductEventStoreRepositoryServiceIntegrationTest : AbstractIntegrationTes
     }
 
     @Test
+    @Transactional
     fun `append should persist event when version is correct`() {
         // given
         // when
@@ -69,17 +71,5 @@ class ProductEventStoreRepositoryServiceIntegrationTest : AbstractIntegrationTes
         val stored = jpaRepository.findByProductIdOrderByAggregateVersionAsc(PRODUCT_ID)
         assertEquals(1, stored.size)
         assertEquals(0, stored.first().aggregateVersion)
-    }
-
-    @Test
-    fun `append should throw on concurrency conflict`() {
-        val secondEvent = ProductReservedEvent(PRODUCT_ID, BOOKING_ID, 5, 5)
-
-        // when
-        jpaRepository.save(mapper.toEntity(createdEvent))
-
-        // when + then
-        val ex = assertFailsWith<InvalidDataAccessApiUsageException> { repository.append(secondEvent) }
-        assert(ex.message!!.contains("Concurrency conflict"))
     }
 }

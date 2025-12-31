@@ -13,9 +13,8 @@ import com.mengo.payment.infrastructure.persist.eventstore.mapers.PaymentEventEn
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
-import org.springframework.dao.InvalidDataAccessApiUsageException
+import org.springframework.transaction.annotation.Transactional
 import kotlin.test.assertEquals
-import kotlin.test.assertFailsWith
 import kotlin.test.assertNotNull
 import kotlin.test.assertNull
 
@@ -35,12 +34,29 @@ class PaymentEventStoreRepositoryServiceIntegrationTest : AbstractIntegrationTes
     }
 
     @Test
+    @Transactional
     fun `load should return null when no events exist`() {
         val result = repository.load(PAYMENT_ID)
         assertNull(result)
     }
 
     @Test
+    @Transactional
+    fun `append should persist event when version is correct`() {
+        // given
+        val createdEvent = PaymentEvent.Initiated(PAYMENT_ID, BOOKING_ID, TOTAL_PRICE, 0)
+
+        // when
+        repository.append(createdEvent)
+
+        // then
+        val stored = jpaRepository.findByPaymentIdOrderByAggregateVersionAsc(PAYMENT_ID)
+        assertEquals(1, stored.size)
+        assertEquals(0, stored.first().aggregateVersion)
+    }
+
+    @Test
+    @Transactional
     fun `load should rehydrate PaymentAggregate from stored events`() {
         // given
         val createdEvent = PaymentEvent.Initiated(PAYMENT_ID, BOOKING_ID, TOTAL_PRICE, 0)
@@ -62,32 +78,5 @@ class PaymentEventStoreRepositoryServiceIntegrationTest : AbstractIntegrationTes
         assertEquals(BOOKING_ID, aggregate.bookingId)
         assertEquals(PaymentState.COMPLETED, aggregate.status)
         assertEquals(1, aggregate.lastEventVersion)
-    }
-
-    @Test
-    fun `append should persist event when version is correct`() {
-        // given
-        val createdEvent = PaymentEvent.Initiated(PAYMENT_ID, BOOKING_ID, TOTAL_PRICE, 0)
-
-        // when
-        repository.append(createdEvent)
-
-        // then
-        val stored = jpaRepository.findByPaymentIdOrderByAggregateVersionAsc(PAYMENT_ID)
-        assertEquals(1, stored.size)
-        assertEquals(0, stored.first().aggregateVersion)
-    }
-
-    @Test
-    fun `append should throw on concurrency conflict`() {
-        val firstEvent = PaymentEvent.Initiated(PAYMENT_ID, BOOKING_ID, TOTAL_PRICE, 0)
-        val secondEvent = PaymentEvent.Completed(PAYMENT_ID, BOOKING_ID, PAYMENT_REFERENCE, 5)
-
-        // when
-        jpaRepository.save(mapper.toEntity(firstEvent))
-
-        // when + then
-        val ex = assertFailsWith<InvalidDataAccessApiUsageException> { repository.append(secondEvent) }
-        assert(ex.message!!.contains("Concurrency conflict"))
     }
 }

@@ -11,10 +11,8 @@ import com.mengo.booking.infrastructure.persist.mappers.BookingEventEntityMapper
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
-import org.springframework.dao.InvalidDataAccessApiUsageException
-import java.util.UUID
+import org.springframework.transaction.annotation.Transactional
 import kotlin.test.assertEquals
-import kotlin.test.assertFailsWith
 import kotlin.test.assertNotNull
 import kotlin.test.assertNull
 
@@ -34,12 +32,14 @@ class BookingEventStoreRepositoryServiceIntegrationTest : AbstractIntegrationTes
     }
 
     @Test
+    @Transactional
     fun `load should return null when no events exist`() {
         val result = repository.load(BOOKING_ID)
         assertNull(result)
     }
 
     @Test
+    @Transactional
     fun `load should rehydrate BookingAggregate from stored events`() {
         // given
         val products = listOf<BookingItem>()
@@ -65,6 +65,7 @@ class BookingEventStoreRepositoryServiceIntegrationTest : AbstractIntegrationTes
     }
 
     @Test
+    @Transactional
     fun `append should persist event when version is correct`() {
         // given
         val products = listOf<BookingItem>()
@@ -77,19 +78,5 @@ class BookingEventStoreRepositoryServiceIntegrationTest : AbstractIntegrationTes
         val stored = jpaRepository.findByBookingIdOrderByAggregateVersionAsc(BOOKING_ID)
         assertEquals(1, stored.size)
         assertEquals(0, stored.first().aggregateVersion)
-    }
-
-    @Test
-    fun `append should throw on concurrency conflict`() {
-        val product = BookingItem(UUID.randomUUID(), 1)
-        val firstEvent = BookingCreatedEvent(BOOKING_ID, USER_ID, listOf(product), 0)
-        val secondEvent = BookingConfirmedEvent(BOOKING_ID, 5)
-
-        // when
-        jpaRepository.save(mapper.toEntity(firstEvent))
-
-        // when + then
-        val ex = assertFailsWith<InvalidDataAccessApiUsageException> { repository.append(secondEvent) }
-        assert(ex.message!!.contains("Concurrency conflict"))
     }
 }

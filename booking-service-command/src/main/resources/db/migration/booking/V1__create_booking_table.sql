@@ -7,5 +7,9 @@ CREATE TABLE booking_events (
     event_type TEXT NOT NULL,
     event_data JSONB NOT NULL,
     aggregate_version INT NOT NULL,
-    created_at TIMESTAMP NOT NULL DEFAULT NOW()
+    created_at TIMESTAMP NOT NULL DEFAULT NOW(),
+
+    CONSTRAINT uk_booking_aggregate_version UNIQUE (aggregate_id, aggregate_version)
 );
+
+CREATE INDEX idx_booking_events_aggregate ON booking_events (aggregate_id, aggregate_version ASC);

@@ -9,22 +9,21 @@ import com.mengo.orchestrator.domain.model.events.OrchestratorEvent
 import com.mengo.orchestrator.fixtures.OrchestratorConstants.BOOKING_ID
 import com.mengo.orchestrator.fixtures.OrchestratorConstants.PRODUCT_ID
 import com.mengo.orchestrator.infrastructure.persist.eventStore.mapper.OrchestratorEventEntityMapper
-import org.junit.jupiter.api.Assertions.assertThrows
+import jakarta.persistence.EntityManager
 import org.junit.jupiter.api.Test
 import org.mockito.kotlin.any
 import org.mockito.kotlin.mock
-import org.mockito.kotlin.never
 import org.mockito.kotlin.verify
 import org.mockito.kotlin.whenever
 import java.math.BigDecimal
-import java.time.Instant
 import java.util.UUID
 import kotlin.test.assertEquals
 import kotlin.test.assertNotNull
 import kotlin.test.assertNull
-import kotlin.test.assertTrue
 
 class OrchestratorEventStoreRepositoryServiceTest {
+    private val query: jakarta.persistence.Query = mock()
+    private val entityManager: EntityManager = mock()
     private val jpaRepository: OrchestratorEventStoreJpaRepository = mock()
     private val mapper =
         OrchestratorEventEntityMapper(
@@ -34,11 +33,14 @@ class OrchestratorEventStoreRepositoryServiceTest {
                 disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS)
             },
         )
-    private val repository = OrchestratorEventStoreRepositoryService(jpaRepository, mapper)
+    private val repository = OrchestratorEventStoreRepositoryService(entityManager, jpaRepository, mapper)
 
     @Test
     fun `load should return null when no events exist`() {
         // given
+        whenever(entityManager.createNativeQuery(any())).thenReturn(query)
+        whenever(query.setParameter(any<String>(), any())).thenReturn(query)
+        whenever(query.singleResult).thenReturn(1)
         whenever(jpaRepository.findByBookingIdOrderByAggregateVersionAsc(BOOKING_ID))
             .thenReturn(emptyList())
 
@@ -53,6 +55,10 @@ class OrchestratorEventStoreRepositoryServiceTest {
     @Test
     fun `load should rehydrate OrchestratorAggregate from stored events`() {
         // given
+        whenever(entityManager.createNativeQuery(any())).thenReturn(query)
+        whenever(query.setParameter(any<String>(), any())).thenReturn(query)
+        whenever(query.singleResult).thenReturn(1)
+
         val product1 = Product(UUID.randomUUID(), 2, BigDecimal.TEN)
         val product2 = Product(UUID.randomUUID(), 3, BigDecimal.ONE)
 
@@ -82,41 +88,12 @@ class OrchestratorEventStoreRepositoryServiceTest {
         val product = Product(PRODUCT_ID, 1, BigDecimal.ONE)
         val event = OrchestratorEvent.Created(BOOKING_ID, setOf(product), 0)
 
-        whenever(jpaRepository.findFirstByBookingIdOrderByAggregateVersionDesc(BOOKING_ID))
-            .thenReturn(null)
         whenever(jpaRepository.save(any())).thenAnswer { it.arguments[0] }
 
         // when
         repository.append(event)
 
         // then
-        verify(jpaRepository).findFirstByBookingIdOrderByAggregateVersionDesc(BOOKING_ID)
         verify(jpaRepository).save(any())
-    }
-
-    @Test
-    fun `append should throw on concurrency conflict`() {
-        // given
-        val existingEntity =
-            OrchestratorEventEntity(
-                eventId = UUID.randomUUID(),
-                bookingId = BOOKING_ID,
-                eventType = "BookingCreatedEvent",
-                eventData = "{}",
-                aggregateVersion = 1,
-                createdAt = Instant.now(),
-            )
-        val newEvent = OrchestratorEvent.PaymentCompleted(BOOKING_ID, 5)
-
-        whenever(jpaRepository.findFirstByBookingIdOrderByAggregateVersionDesc(BOOKING_ID))
-            .thenReturn(existingEntity)
-
-        // when + then
-        val ex = assertThrows(IllegalArgumentException::class.java) { repository.append(newEvent) }
-
-        assertTrue(ex.message!!.contains("Concurrency conflict"))
-        verify(jpaRepository)
-            .findFirstByBookingIdOrderByAggregateVersionDesc(BOOKING_ID)
-        verify(jpaRepository, never()).save(any())
     }
 }

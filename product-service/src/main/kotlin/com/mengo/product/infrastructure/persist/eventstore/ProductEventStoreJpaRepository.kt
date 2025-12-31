@@ -7,6 +7,4 @@ import java.util.UUID
 @Repository
 interface ProductEventStoreJpaRepository : JpaRepository<ProductEventEntity, UUID> {
     fun findByProductIdOrderByAggregateVersionAsc(productId: UUID): List<ProductEventEntity>
-
-    fun findFirstByProductIdOrderByAggregateVersionDesc(productId: UUID): ProductEventEntity?
 }

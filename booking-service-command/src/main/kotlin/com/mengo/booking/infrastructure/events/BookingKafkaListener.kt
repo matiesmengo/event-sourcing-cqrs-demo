@@ -18,7 +18,7 @@ open class BookingKafkaListener(
     private val inboxRepository: InboxRepository,
 ) {
     @Transactional
-    @KafkaListener(topics = [KAFKA_SAGA_CONFIRM_BOOKING], groupId = "booking-command-group")
+    @KafkaListener(topics = [KAFKA_SAGA_CONFIRM_BOOKING], groupId = "booking-command-group", concurrency = "6")
     @ObservabilityStep(name = "booking_confirm_booking")
     open fun onPaymentCompletedEvent(payload: OrchestratorConfirmBookingPayload) {
         if (!inboxRepository.validateIdempotencyEvent()) return
@@ -27,7 +27,7 @@ open class BookingKafkaListener(
     }
 
     @Transactional
-    @KafkaListener(topics = [KAFKA_SAGA_CANCEL_BOOKING], groupId = "booking-command-group")
+    @KafkaListener(topics = [KAFKA_SAGA_CANCEL_BOOKING], groupId = "booking-command-group", concurrency = "6")
     @ObservabilityStep(name = "booking_cancel_booking")
     open fun onPaymentFailedEvent(payload: OrchestratorCancelBookingPayload) {
         if (!inboxRepository.validateIdempotencyEvent()) return

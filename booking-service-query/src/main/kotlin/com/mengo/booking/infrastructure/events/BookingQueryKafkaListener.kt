@@ -24,7 +24,7 @@ import org.springframework.stereotype.Service
 class BookingQueryKafkaListener(
     private val service: UpdateService,
 ) {
-    @KafkaListener(topics = [KAFKA_BOOKING_CREATED], groupId = "booking-query-group")
+    @KafkaListener(topics = [KAFKA_BOOKING_CREATED], groupId = "booking-query-group", concurrency = "6")
     @ObservabilityStep(name = "query_booking_created")
     fun onBookingCreated(
         payload: BookingCreatedPayload,
@@ -33,7 +33,7 @@ class BookingQueryKafkaListener(
         service.handleCreated(payload.toDomain(ts))
     }
 
-    @KafkaListener(topics = [KAFKA_PRODUCT_RESERVED], groupId = "booking-query-group")
+    @KafkaListener(topics = [KAFKA_PRODUCT_RESERVED], groupId = "booking-query-group", concurrency = "6")
     @ObservabilityStep(name = "query_product_reserved")
     fun onProductReserved(
         payload: ProductReservedPayload,
@@ -42,7 +42,7 @@ class BookingQueryKafkaListener(
         service.handleProductReserved(payload.toDomain(ts))
     }
 
-    @KafkaListener(topics = [KAFKA_PAYMENT_COMPLETED], groupId = "booking-query-group")
+    @KafkaListener(topics = [KAFKA_PAYMENT_COMPLETED], groupId = "booking-query-group", concurrency = "6")
     @ObservabilityStep(name = "query_payment_completed")
     fun onPaymentCompleted(
         payload: PaymentCompletedPayload,
@@ -51,7 +51,7 @@ class BookingQueryKafkaListener(
         service.handlePaymentCompleted(payload.toDomain(ts))
     }
 
-    @KafkaListener(topics = [KAFKA_PAYMENT_FAILED], groupId = "booking-query-group")
+    @KafkaListener(topics = [KAFKA_PAYMENT_FAILED], groupId = "booking-query-group", concurrency = "6")
     @ObservabilityStep(name = "query_payment_failed")
     fun onPaymentFailed(
         payload: PaymentFailedPayload,
@@ -60,7 +60,7 @@ class BookingQueryKafkaListener(
         service.handleStatusChange(payload.toDomain(ts))
     }
 
-    @KafkaListener(topics = [KAFKA_BOOKING_FAILED], groupId = "booking-query-group")
+    @KafkaListener(topics = [KAFKA_BOOKING_FAILED], groupId = "booking-query-group", concurrency = "6")
     @ObservabilityStep(name = "query_booking_failed")
     fun onBookingCancelled(
         payload: BookingCancelledPayload,
@@ -69,7 +69,7 @@ class BookingQueryKafkaListener(
         service.handleStatusChange(payload.toDomain(ts))
     }
 
-    @KafkaListener(topics = [KAFKA_BOOKING_COMPLETED], groupId = "booking-query-group")
+    @KafkaListener(topics = [KAFKA_BOOKING_COMPLETED], groupId = "booking-query-group", concurrency = "6")
     @ObservabilityStep(name = "query_booking_completed")
     fun onBookingConfirmed(
         payload: BookingConfirmedPayload,

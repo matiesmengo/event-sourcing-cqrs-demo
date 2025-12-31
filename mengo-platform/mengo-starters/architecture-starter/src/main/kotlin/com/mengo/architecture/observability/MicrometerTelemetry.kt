@@ -48,6 +48,25 @@ class MicrometerTelemetry(
         }
     }
 
+    override fun recordSagaCompleted(sagaName: String) {
+        Counter
+            .builder("saga_completed_total")
+            .tag("saga_name", sagaName)
+            .register(meterRegistry)
+            .increment()
+    }
+
+    override fun recordSagaCompensated(sagaName: String) {
+        Counter
+            .builder("saga_compensated_total")
+            .tag("saga_name", sagaName)
+            .register(meterRegistry)
+            .increment()
+
+        logger.warn("SAGA compensated sagaName={}", sagaName)
+        tracer.currentSpan()?.tag("saga.compensated", "true")
+    }
+
     override fun recordSagaStepSuccess(
         sagaName: String,
         step: String,
@@ -59,6 +78,7 @@ class MicrometerTelemetry(
             .register(meterRegistry)
             .increment()
 
+        logger.info("Tracer sagaName={} step={} state=SUCCESS", sagaName, step)
         tracer.currentSpan()?.tag("saga.step", step)
     }
 
@@ -75,17 +95,9 @@ class MicrometerTelemetry(
             .register(meterRegistry)
             .increment()
 
-        logger.error("SAGA error sagaName={} step={} cause={}", sagaName, step, cause)
+        logger.error("Tracer sagaName={} step={} state=FAILURE cause={}", sagaName, step, cause)
         tracer.currentSpan()?.tag("saga.step", step)
         tracer.currentSpan()?.tag("saga.step.error", cause ?: "")
-    }
-
-    override fun recordSagaCompleted(sagaName: String) {
-        Counter
-            .builder("saga_completed_total")
-            .tag("saga_name", sagaName)
-            .register(meterRegistry)
-            .increment()
     }
 
     override fun logStateChange(
@@ -94,16 +106,5 @@ class MicrometerTelemetry(
         state: String,
     ) {
         logger.info("Tracer sagaName={} step={} state={}", sagaName, step, state)
-    }
-
-    override fun recordSagaCompensated(sagaName: String) {
-        Counter
-            .builder("saga_compensated_total")
-            .tag("saga_name", sagaName)
-            .register(meterRegistry)
-            .increment()
-
-        logger.warn("SAGA compensated sagaName={}", sagaName)
-        tracer.currentSpan()?.tag("saga.compensated", "true")
     }
 }

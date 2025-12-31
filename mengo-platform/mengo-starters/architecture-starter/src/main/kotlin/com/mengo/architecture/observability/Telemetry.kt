@@ -3,6 +3,10 @@ package com.mengo.architecture.observability
 interface Telemetry {
     fun recordSagaStarted(sagaName: String)
 
+    fun recordSagaCompleted(sagaName: String)
+
+    fun recordSagaCompensated(sagaName: String)
+
     fun recordSagaStepSuccess(
         sagaName: String,
         step: String,
@@ -13,10 +17,6 @@ interface Telemetry {
         step: String,
         cause: String?,
     )
-
-    fun recordSagaCompleted(sagaName: String)
-
-    fun recordSagaCompensated(sagaName: String)
 
     fun logStateChange(
         sagaName: String,

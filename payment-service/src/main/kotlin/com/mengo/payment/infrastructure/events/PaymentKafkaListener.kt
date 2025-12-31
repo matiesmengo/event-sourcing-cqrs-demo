@@ -18,7 +18,7 @@ open class PaymentKafkaListener(
     private val inboxRepository: InboxRepository,
 ) {
     @Transactional
-    @KafkaListener(topics = [KAFKA_SAGA_REQUEST_PAYMENT], groupId = "payment-service-group")
+    @KafkaListener(topics = [KAFKA_SAGA_REQUEST_PAYMENT], groupId = "payment-service-group", concurrency = "6")
     @ObservabilityStep(name = "payment_request_payment")
     open fun onRequestPayment(payload: OrchestratorRequestPaymentPayload) {
         if (!inboxRepository.validateIdempotencyEvent()) return
@@ -27,7 +27,7 @@ open class PaymentKafkaListener(
     }
 
     @Transactional
-    @KafkaListener(topics = [KAFKA_PAYMENT_INITIATED], groupId = "payment-service-group")
+    @KafkaListener(topics = [KAFKA_PAYMENT_INITIATED], groupId = "payment-service-group", concurrency = "6")
     @ObservabilityStep(name = "payment_request_payment")
     open fun onPaymentInitiated(payload: PaymentInitiatedPayload) {
         if (!inboxRepository.validateIdempotencyEvent()) return

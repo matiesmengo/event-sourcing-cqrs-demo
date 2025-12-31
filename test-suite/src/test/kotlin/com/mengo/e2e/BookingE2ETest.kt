@@ -24,8 +24,8 @@ import java.util.UUID
 class BookingE2ETest : AbstractServicesE2ETest() {
     @BeforeEach
     fun resetSystemState() {
-        MengoEventStoreAudit.cleanTable(orchestratorPostgres, "orchestrator", "orchestrator_events")
         MengoEventStoreAudit.cleanTable(bookingPostgres, "booking", "booking_events")
+        MengoEventStoreAudit.cleanTable(orchestratorPostgres, "orchestrator", "orchestrator_events")
         MengoEventStoreAudit.cleanTable(paymentPostgres, "payment", "payment_events")
     }
 

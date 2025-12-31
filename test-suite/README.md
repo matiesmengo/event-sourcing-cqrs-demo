@@ -106,8 +106,8 @@ mvn clean package
 docker build -t booking-service-orchestrator:latest -f booking-service-orchestrator/Dockerfile .
 docker build -t booking-service-command:latest -f booking-service-command/Dockerfile .
 docker build -t booking-service-query:latest -f booking-service-query/Dockerfile .
-docker build -t payment-service:latest -f payment/Dockerfile .
-docker build -t product-service:latest -f product/Dockerfile .
+docker build -t payment-service:latest -f payment-service/Dockerfile .
+docker build -t product-service:latest -f product-service/Dockerfile .
 
 # Run the end-to-end tests
 mvn clean test

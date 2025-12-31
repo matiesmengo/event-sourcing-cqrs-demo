@@ -7,5 +7,9 @@ CREATE TABLE product_events (
     event_type TEXT NOT NULL,
     event_data JSONB NOT NULL,
     aggregate_version INT NOT NULL,
-    created_at TIMESTAMP NOT NULL DEFAULT NOW()
+    created_at TIMESTAMP NOT NULL DEFAULT NOW(),
+
+    CONSTRAINT uk_product_aggregate_version UNIQUE (aggregate_id, aggregate_version)
 );
+
+CREATE INDEX idx_product_events_aggregate ON product_events (aggregate_id, aggregate_version ASC);
