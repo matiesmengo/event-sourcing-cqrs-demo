@@ -294,7 +294,7 @@
       },
       "targets": [
         {
-          "expr": "sum(kafka_consumergroup_group_lag) or vector(0)",
+          "expr": "sum(kafka_consumer_fetch_manager_records_lag) or vector(0)",
           "legendFormat": "Messages Behind",
           "refId": "A"
         }

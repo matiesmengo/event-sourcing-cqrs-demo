@@ -20,15 +20,21 @@ scrape_configs:
           __path__: /host/logs/*.log
 
     pipeline_stages:
-      - regex:
-          expression: '^(?P<ts>\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{3}(?:Z|[+-]\d{2}:\d{2}))\s+(?P<level>\w+)\s+(?:(?P<pid>\d+)\s+)?--- \[(?P<thread>[^\]]+)\](?:\s+\[(?P<service>[^\]]+)\])?\s+(?P<logger>[^\s]+)\s+:\s+(?P<msg>.*)$'
+      - multiline:
+          firstline: '^{"'
+          max_wait_time: 3s
+      - json:
+          expressions:
+            level: level
+            service: service
+            traceId: traceId
+            logger: logger_name
+            msg: message
       - timestamp:
           source: ts
           format: RFC3339Nano
       - labels:
           level:
           service:
+          traceId:
           logger:
-          thread:
-      - output:
-          source: msg

@@ -101,6 +101,3 @@ management:
 observability:
   serviceName: ${spring.application.name}
   environment: dev
-
-testmode:
-  enabled: true

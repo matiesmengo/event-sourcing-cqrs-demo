@@ -1,7 +1,10 @@
 {
   "uid": "loki-centralized-logs",
   "title": "Loki - Centralized Logs",
-  "tags": ["logs", "services"],
+  "tags": [
+    "logs",
+    "infrastructure"
+  ],
   "timezone": "browser",
   "refresh": "5s",
   "time": {
@@ -11,20 +14,72 @@
   "panels": [
     {
       "type": "logs",
-      "title": "Logs",
-      "gridPos": { "x": 0, "y": 0, "w": 24, "h": 25 },
+      "title": "Microservices Live Logs",
       "id": 1,
+      "gridPos": {
+        "x": 0,
+        "y": 0,
+        "w": 24,
+        "h": 20
+      },
       "datasource": "loki",
       "targets": [
         {
-          "expr": "{job=\"services\", service=~\"$service\", level=~\"$level\", logger=~\"$logger\"}",
+          "expr": "{job=\"services\", service=~\"$service\", level=~\"$level\"} | json | line_format \"{{.level}} \\t [{{.traceId}}] \\t {{.logger_name}} \\t: {{.message}}\" |~ \"(?i)$search\"",
           "refId": "A"
         }
       ],
       "options": {
-        "showLabels": true,
         "showTime": true,
-        "wrapLogMessage": true
+        "showLabels": false,
+        "wrapLogMessage": true,
+        "prettifyLogMessage": false,
+        "enableLogDetails": true,
+        "sortOrder": "Descending"
+      },
+      "fieldConfig": {
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "level"
+            },
+            "properties": [
+              {
+                "id": "mappings",
+                "value": [
+                  {
+                    "type": "value",
+                    "options": {
+                      "ERROR": {
+                        "color": "red",
+                        "index": 0
+                      }
+                    }
+                  },
+                  {
+                    "type": "value",
+                    "options": {
+                      "WARN": {
+                        "color": "orange",
+                        "index": 1
+                      }
+                    }
+                  },
+                  {
+                    "type": "value",
+                    "options": {
+                      "INFO": {
+                        "color": "green",
+                        "index": 2
+                      }
+                    }
+                  }
+                ]
+              }
+            ]
+          }
+        ]
       }
     }
   ],
@@ -32,7 +87,7 @@
     "list": [
       {
         "name": "service",
-        "label": "Microservices",
+        "label": "Service",
         "type": "query",
         "datasource": "loki",
         "query": "label_values({job=\"services\"}, service)",
@@ -43,7 +98,7 @@
       },
       {
         "name": "level",
-        "label": "Log level",
+        "label": "Level",
         "type": "query",
         "datasource": "loki",
         "query": "label_values({job=\"services\"}, level)",
@@ -53,19 +108,15 @@
         "refresh": 1
       },
       {
-        "name": "logger",
-        "label": "Logger",
-        "type": "query",
-        "datasource": "loki",
-        "query": "label_values({job=\"services\"}, logger)",
-        "multi": true,
-        "includeAll": true,
-        "allValue": ".*",
-        "refresh": 1
+        "name": "search",
+        "label": "Regex Search",
+        "type": "textbox",
+        "defaultValue": ""
       }
     ]
-  },
-  "editable": true,
-  "schemaVersion": 36,
-  "version": 1
+  }
+},
+"editable": true,
+"schemaVersion": 36,
+"version": 1
 }
