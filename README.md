@@ -1,4 +1,4 @@
-# Event-Sourcing · CQRS · SAGA · Observability Platform
+# High-Resilience Distributed Systems: Event Sourcing, CQRS & SAGA
 
 ![Spring Boot](https://img.shields.io/badge/SpringBoot-3.4.0-brightgreen)
 ![Kotlin](https://img.shields.io/badge/Kotlin-2.0.21-blue)
@@ -7,44 +7,62 @@
 ![Feign](https://img.shields.io/badge/Feign-4.3.0-blue)
 ![Flyway](https://img.shields.io/badge/Flyway-10.20.1-orange)
 ![PostgreSQL](https://img.shields.io/badge/PostgreSQL-16-blue)
+![MongoDB](https://img.shields.io/badge/MongoDB-7-blue)
 ![Kafka](https://img.shields.io/badge/Kafka-3.6.0-orange)
 ![Testcontainers](https://img.shields.io/badge/Testcontainers-1.19.0-brightgreen)
 ![Avro](https://img.shields.io/badge/Avro-1.11.2-orange)
 ![Maven](https://img.shields.io/badge/Maven-3.9.11-brightgreen)
 ![Docker](https://img.shields.io/badge/Docker-required-blue)
 
-This project is a technical demonstration of an event-sourcing microservices architecture, designed to showcase advanced
-backend engineering concepts such as CQRS, SAGA orchestration, idempotency, event versioning, distributed tracing, and
-resilience patterns.
+## 🎯 The Objective: Reliability at Scale
+Distributed consistency is the "Achilles' heel" of microservices. This project moves beyond basic CRUD to showcase a **production-grade Booking Engine** where data integrity and system availability are non-negotiable.
 
-The objective is to illustrate how to design, implement, and operate a production-grade distributed system based on
-asynchronous communication using Apache Kafka, ensuring eventual consistency, traceability, and observability across
-services.
+The architecture is engineered to guarantee:
+
+- **Total Auditability:** A 100% immutable history of every business decision using Event Sourcing.
+- **Zero Data Loss:** Atomic state changes and reliable messaging via Transactional Outbox.
+- **Fault Tolerance:** Self-healing distributed transactions with SAGA Orchestration and automated rollbacks.
+- **Elastic Performance:** Independent scaling of Read and Write models through CQRS.
+
+**The Result:** A system designed for high-concurrency that maintains 100% integrity, even when critical services like Payments or Inventory face latency or downtime.
 
 ---
 
-## 🧠 Key Concepts Demonstrated
+## 🏗️ High-Level Architecture
 
-| Category          | Concept                | Description                                                                                                                                                                                         |
-|-------------------|------------------------|-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| **Architecture**  | Hexagonal              | Services follow the hexagonal design, decoupling core domain logic from infrastructure like Kafka, REST APIs, and databases for modularity, testability, and maintainability.                       |
-| **Data Pattern**  | Event Sourcing         | Application state is captured as a sequence of domain events **published to Kafka**. Events are persisted in PostgreSQL for durability and can be replayed or reconstructed for full auditability.  |
-| **Data Pattern**  | CQRS (Command / Query) | Separates commands (writes) from queries (reads). Commands update PostgreSQL events; queries are served from MongoDB projections, enabling independent scaling and optimized read/write operations. |
-| **Workflow**      | SAGA Orchestration     | Coordinates distributed transactions across services with compensating actions to ensure eventual consistency.                                                                                      |
-| **Messaging**     | Kafka-centric Design   | Kafka is the backbone for all domain communication and integration events.                                                                                                                          |
-| **Contracts**     | Avro + Schema Registry | Central repository of Avro schemas for validation, versioning, and backward/forward compatibility of events.                                                                                        |
-| **Resilience**    | Inbox Pattern          | Ensures idempotent processing of incoming messages, preventing side effects from duplicated events.                                                                                                 |
-| **Resilience**    | Transactional Outbox   | Guarantees "at-least-once" delivery by persisting events in the DB before publishing them to Kafka, avoiding data loss.                                                                             |
-| **Resilience**    | Dead Letter Queue      | Automated handling of unprocessable messages to prevent pipeline clogging and facilitate debugging.                                                                                                 |
-| **Observability** | Monitoring             | Prometheus collects time-series metrics while Grafana provides centralized dashboards for system health and KPIs.                                                                                   |
-| **Observability** | Logging                | Promtail ships logs from containers to Loki, enabling log aggregation and correlation with metrics and traces.                                                                                      |
-| **Observability** | Distributed Tracing    | End-to-end visibility using Jaeger and OpenTelemetry to visualize and debug SAGA transactions across multiple microservices.                                                                        |
-| **Testing**       | Testcontainers         | End-to-end testing with ephemeral Kafka, PostgreSQL, and MongoDB instances to ensure reliable integration and system behavior.                                                                      |
+The system follows a **Polyglot Persistence strategy** and an asynchronous communication model. 
+**Apache Kafka** serves as the central nervous system, decoupling domains while ensuring reliable event propagation.
 
-> These concepts are implemented, not described theoretically.
+![Architecture Diagram](./docs/images/architecture.png)
+
 ---
 
-## 🧩 Project Structure
+## 🔄 Event Flow
+
+Managing transactions across multiple services (Booking, Payment, Product) requires a robust coordination strategy. This project implements an **Orchestrated SAGA** to handle both the "Happy Path" and automated **Compensating Transactions** (rollbacks) in case of failure.
+
+![Event Flow Diagram](./docs/images/SAGA-diagram.png)
+
+---
+
+## 🔍 Observability & Traceability
+
+In a distributed environment, "blindness" is the biggest operational risk. This project implements a full observability stack to ensure that every asynchronous message and service call is accounted for.
+
+* **Distributed Tracing:** End-to-end visibility using **OpenTelemetry** and **Jaeger**.
+* **Metrics & Dashboards:** Real-time system health via **Prometheus** and **Grafana**.
+* **Log Aggregation:** Centralized and correlated logs using **Loki** and **Promtail**.
+
+![Distributed Trace Example](./docs/images/grafana-performance.gif)
+
+
+> For a deep dive into how these tools are integrated, check the [Observability documentation 🔗](./observability/README.md).
+
+---
+
+## 🧩 Project Structure & Modules
+
+The repository is organized into specialized modules to enforce a clean separation of concerns and facilitate independent scaling.
 
 | Directory                                                                                                          | Description                                                                                                         |
 |--------------------------------------------------------------------------------------------------------------------|---------------------------------------------------------------------------------------------------------------------|
@@ -62,88 +80,59 @@ services.
 
 ---
 
-## 🧱 Architecture Overview
+## 🧠 Technical Deep Dive
 
-### 📑 Core Patterns
+### 📑 Core Patterns & Reliability
+Instead of theory, this project focuses on **real-world implementation** of distributed patterns:
 
-- Hexagonal Architecture (strict layer enforcement)
-- Event Sourcing per aggregate
-- CQRS (write model + read model separation)
-- SAGA orchestration with compensation
-- Contract-first APIs & events
-
-[Architecture Decision Records 🔗 ](https://github.com/matiesmengo/event-sourcing-cqrs-demo/tree/main/docs/architecture-decision-records)
-
-### 🛡️ Messaging & Data Integrity
-
-- Kafka as event backbone
-- Transactional Outbox (at-least-once delivery)
-- Inbox pattern (SQL-level idempotency)
-- Event versioning & replay safety
-- Private database per service (no sharing)
-- Dead Letter Topics
-
-### 📊 Observability
-
-- Distributed tracing (Jaeger + OpenTelemetry)
-- Metrics (Prometheus + Micrometer)
-- Structured logging (Loki + Promtail)
-- Correlation across logs, metrics i traces
-- Pre-built Grafana dashboards
-
-[Observability documentation 🔗 ](./observability/README.md)
-
-### 🧰 Platform Engineering (Hidden Work, Explicitly Done)
-
-The mengo-platform module encapsulates:
-
-- Observability interceptors
-- Kafka test utilities
-- Shared retry and error handling
-- Architecture enforcement
-- Dependency alignment
-
-This avoids infrastructure duplication and keeps domains clean.
-
-[Platform documentation 🔗 ](./mengo-platform/README.md)
+| Category          | Concept                  | Implementation Highlights                                   |
+|:------------------|:-------------------------|:------------------------------------------------------------|
+| **Data**          | **Event Sourcing**       | Immutable event store in PostgreSQL with Kafka propagation. |
+| **Data**          | **CQRS**                 | Write model (Postgres) / Read model (MongoDB) separation.   |
+| **Resilience**    | **Transactional Outbox** | Atomic DB updates & event publishing.                       |
+| **Resilience**    | **Inbox Pattern**        | Guaranteed idempotency at the database level.               |
+| **Contracts**     | **Avro**                 | Schema Registry enforcement for all integration events.     |
+| **Observability** | **Full Stack**           | Traces (Jaeger), Metrics (Grafana), Logs (Loki).            |
 
 
-## High-Level Architecture
 
-![Architecture Diagram](./docs/architecture.png)
+> 💡 *Check the [Architecture Decision Records (ADRs) 🔗](https://github.com/matiesmengo/event-sourcing-cqrs-demo/tree/main/docs/architecture-decision-records) for a deep dive into "The Why" behind these choices.*
+
+### 🧰 Platform Engineering (The "Shared Core")
+The `mengo-platform` module encapsulates infrastructure concerns to keep business domains clean:
+- 🚀 **Standardized Kafka Tooling:** Common producer/consumer configurations.
+- 🛡️ **Resilience Starters:** Global error handling and retry policies.
+- 📊 **Auto-Tracing:** Pre-configured OpenTelemetry interceptors.
+- 🧪 **Test Utilities:** Shared Testcontainers abstractions.
+
+> For a deep dive into maven management, check the [Platform documentation 🔗 ](./mengo-platform/README.md)
 
 ---
 
-## 🔄 Event Flow
+## 🧪 Testing Strategy: No Mocks, No Shortcuts
+Testing mirrors production environments using **Testcontainers**.
 
-![Event Flow Diagram](./docs/SAGA-diagram.png)
+- **Unit Tests:** Pure domain logic validation.
+- **Integration Tests:** Verifying Kafka & DB interactions in real environments.
+- **End-to-End Tests:** Full SAGA flow execution using Dockerized services.
 
+> Check the documentation [Test suite documentation 🔗 ](test-suite/README.md)
 
 ---
 
-## 📕 Tech Stack
+## 📕 Tech Stack Summary
 
-| Layer / Purpose                | Technology & Version                        | Description / Role                                                                                                |
-|--------------------------------|---------------------------------------------|-------------------------------------------------------------------------------------------------------------------|
-| **Language & Framework**       | Java 21 / Kotlin 2.0.21 / Spring Boot 3.4.0 | Core language and framework for microservices, dependency injection, REST, and application bootstrapping.         |
-| **Messaging / Event Bus**      | Apache Kafka                                | Asynchronous backbone for event-driven communication between microservices.                                       |
-| **Schema Management**          | Confluent Schema Registry                   | Centralized Avro schemas for validation, evolution, and backward/forward compatibility.                           |
-| **Persistence**                | PostgreSQL                                  | Relational database for persisting events, snapshots, and transactional state in each service.                    |
-| **Read Model / Projection DB** | MongoDB                                     | Stores read-model projections for efficient queries in CQRS, enabling fast and flexible read operations.          |
-| **Testing / CI**               | Testcontainers                              | Ephemeral Kafka, PostgreSQL, and MongoDB environments for unit, integration, and end-to-end testing.              |
-| **Containerization / DevOps**  | Docker Compose                              | Local orchestration of microservices, databases, and Kafka for reproducible development and testing environments. |
-| **Observability**              | OpenTelemetry / Micrometer                  | Distributed tracing and metrics collection for monitoring, performance, and troubleshooting.                      |
+| Layer | Technology | Role |
+|:------|:-----------|:-----|
+| **Framework** | **Kotlin / Java 21 / Spring Boot 3.4** | Core language and application framework. |
+| **Messaging** | **Apache Kafka & Schema Registry** | Backbone for event-driven communication and contract safety. |
+| **Databases** | **PostgreSQL & MongoDB** | Event store (Relational) and Projections (Document-based). |
+| **Observability** | **OTel, Prometheus, Grafana, Jaeger** | The "Golden Signals" of monitoring (Traces, Metrics, Logs). |
+| **DevOps/Testing** | **Docker & Testcontainers** | Local orchestration and ephemeral testing environments. |
 
 ---
 
 ## 🚀 Getting Started
-
-### Requirements
-
-* **Java 21+**
-* **Docker**
-* **Maven 3.9+**
-
 ### Run Locally
 
 ```bash
@@ -151,14 +140,14 @@ This avoids infrastructure duplication and keeps domains clean.
 docker-compose up -d
 
 # 2. Build all modules
-mvn clean package
+mvn clean package -DskipTests
 
 # 3. Launch run time services
-cd booking-service-command | mvn spring-boot:run
-cd booking-service-query | mvn spring-boot:run
-cd payment-service | mvn spring-boot:run
-cd product-service | mvn spring-boot:run
-cd booking-service-orchestration | mvn spring-boot:run
+mvn spring-boot:run -pl booking-service-command
+mvn spring-boot:run -pl booking-service-query
+mvn spring-boot:run -pl payment-service
+mvn spring-boot:run -pl product-service
+mvn spring-boot:run -pl booking-service-orchestration
 ```
 
 ### Access points
@@ -186,32 +175,13 @@ curl --location 'localhost:8080/bookings' \
 
 ---
 
-## 🧪 Testing Strategy
+## 🧭 Future Roadmap & Evolution
 
-Testing mirrors production as closely as possible.
-
-- *Unit Tests*: Validate pure domain logic.
-- *Integration Tests*: Kafka + PostgreSQL via Testcontainers.
-- *End-to-End Tests*: Full system execution using Docker images and real infrastructure.
-
-End-to-end tests spin up:
-
-- Kafka + Schema Registry
-- Multiple PostgreSQL instances
-- All microservices as Docker containers
-
-> No mocks. No shortcuts.
-
-[E2E Documentation 🔗 ](test-suite/README.md)
-
----
-
-## 🧭 To do
-
-| Area            | Next Step                                                                      |
-|-----------------|--------------------------------------------------------------------------------|
-| **Performance** | Implement load and performance tests to evaluate system throughput and latency |
-| **CI/CD**       | Automate tests and build with GitHub Actions                                   |
+| Area | Next Step | Impact |
+|:---|:---|:---|
+| **Scalability** | Snapshotting | Optimize Event Sourcing recovery time for long-lived aggregates. |
+| **CI/CD** | GitHub Actions Pipeline | Automate the full build-test-deploy lifecycle with quality gates. |
+| **Performance** | K6 Load Testing | Stress test the SAGA coordinator to identify orchestration bottlenecks. |
 
 ---
 

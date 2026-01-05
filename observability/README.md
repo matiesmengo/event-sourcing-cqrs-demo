@@ -45,7 +45,7 @@ The Observability Stack provides a **single source of truth** for monitoring all
 
 ## 🛠️ Components
 
-### 1️⃣ Jaeger (Distributed Tracing)
+### Jaeger (Distributed Tracing)
 
 **Image:** `jaegertracing/all-in-one:1.74.0`
 
@@ -59,7 +59,7 @@ Track end-to-end request flows and measure latency per SAGA step or HTTP/Kafka r
 
 ---
 
-### 2️⃣ Prometheus (Metrics)
+### Prometheus (Metrics)
 
 **Image:** `prom/prometheus:v3.7.2`
 
@@ -73,7 +73,7 @@ Aggregate real-time metrics to monitor service health, throughput, error rates, 
 
 ---
 
-### 3️⃣ Grafana (Dashboards)
+### Grafana (Dashboards)
 
 **Image:** `grafana/grafana:12.2`
 
@@ -87,7 +87,7 @@ Visualize system state in real-time, create alerts, and correlate metrics, logs,
 
 ---
 
-### 4️⃣ Loki (Centralized Logs)
+### Loki (Centralized Logs)
 
 **Image:** `grafana/loki:3.3.4`
 
@@ -101,7 +101,7 @@ Provide centralized log storage, enabling query-based log inspection and correla
 
 ---
 
-### 5️⃣ Promtail (Log Forwarder)
+### Promtail (Log Forwarder)
 
 **Image:** `grafana/promtail:3.3.4`
 

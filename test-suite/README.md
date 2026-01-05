@@ -1,7 +1,8 @@
-# 🧪 test-suite
+# 🧪 Engineering Test Suite
 
-> ⚡ **End-to-End Test Project** for the Mengo microservices ecosystem.  
-> Provides a **dedicated playground** to validate all services working together in a realistic, production-like environment.
+> **Reliability is not an accident; it's a verified property.**
+
+> This module contains the specialized suites to validate the system under two dimensions: **Functional Integrity (E2E)** and **Operational Limits (Performance)**.
 
 ---
 
@@ -9,94 +10,78 @@
 
 The `test-suite` project is a **standalone module** designed to:
 
-* **Test the full ecosystem end-to-end** – from REST API requests to Kafka events and Event Store persistence.
-* **Decouple test code from production services** – keep service code clean and maintainable.
-* **Simulate realistic environments** – ephemeral Docker containers via **Testcontainers** spin up isolated instances of all services, databases, and Kafka.
-* **Control the service lifecycle** – start, stop, and reset services and data between test runs for consistent and reproducible results.
-
-> 🐳 **Why Testcontainers?**  
-> Ensures **ephemeral, reproducible environments** for each test run without affecting local development setups.
+* **Full Ecosystem Validation:** Tests the entire flow from REST API requests to Kafka events and Event Store persistence.
+* **Clean Decoupling:** Keeps test logic separated from production services to ensure maintainability.
+* **Production Parity:** Uses **Testcontainers** to spin up ephemeral, isolated instances of all services, databases, and Kafka.
+* **Deterministic Lifecycle:** Provides total control to start, stop, and reset services/data between runs for reproducible results.
 
 ---
 
-## ✨ Key Functionality
+## ⚡ Performance & Stress Suite (k6)
 
-### 🐳 Containerized Services
+Located in `/performance`, these scripts use the **k6** engine to push the SAGA orchestrator and Kafka consumers to their limits.
 
-The infrastructure is **fully containerized**:
+### 📊 Performance Visualization
+We use **Grafana** to monitor the system's "vital signs" during stress tests. This allows us to correlate load spikes with service latency and resource consumption.
 
-* **Microservices**: `booking-service-command`, `booking-service-query`, `booking-service-orchestrator`, `payment-service`, `product-service`.
-* **Databases**: Isolated PostgreSQL instances for each service (`booking`, `orchestrator`, `payment`, `product`).
-* **Event Bus**: Kafka cluster and Confluent Schema Registry for Avro serialization.
-* **Network isolation**: All containers share a dedicated Docker network to simulate real service-to-service communication.
+![Grafana Stress Test Performance](../docs/images/grafana-performance.gif)
 
-Each service container is configured with:
+⚠️ **Stress Test Insights: Contention & Bottlenecks** The demonstration above showcases a high-pressure scenario designed to test **concurrency limits.** By using only **3 distinct products** to handle **21,562 booking requests,** we intentionally created a massive **database and row-level locking bottleneck.**
 
-* Spring DataSource pointing to its respective PostgreSQL.
-* Kafka bootstrap servers and Schema Registry URL.
-* Automatic `earliest` offset reset for Kafka consumers.
-* Log-based health checks (`waitingFor`) to ensure the service is fully started.
+In a real-world scenario, high traffic is usually spread across thousands of SKUs. By narrowing it down to 3, thousands of threads are forced to compete for the same database rows simultaneously.
 
----
+**Key Metrics:**
+- **Throughput:** Ingested all requests in just 1 minute and 30 seconds.
+- **Execution:** Configured with 6 Kafka partitions and 6 concurrent consumer threads (@KafkaListener) on a single instance.
+- **Recovery:** Despite the intense row contention and surge in consumer lag, the system remained stable and fully settled the entire backlog in less than 7 minutes.
 
-### 🔗 End-to-End Testing
+### 🎯 Objectives
+* **Throughput (RPS):** Measure the maximum concurrent bookings the system can coordinate. In this setup, we achieved an ingestion rate of ~200 requests per second.
+* **Latency Distribution:** Monitor p95/p99 response times during traffic spikes to ensure the SAGA state machine remains responsive.
+* **Consumer Efficiency:** Validate that the 1:1 ratio between Kafka partitions and consumer threads optimizes "drainage" time and minimizes message lag.
+* **Resilience Under Pressure:** Verify data integrity and SAGA completion (including compensations) even under high heavy load.
 
-The e2e tests verify:
 
-* **SAGA flows across multiple services**.
-* **Event persistence and versioning** in each Event Store.
-* **Kafka events** published with correct payloads and headers.
-* **Failure scenarios** such as payment rejection or stock unavailability.
-
-> `Awaitility` is used to **poll asynchronous processes**, ensuring robust assertions.
-
----
-
-### 🛠 Infrastructure Management
-
-The test framework provides:
-
-* **AbstractInfrastructureE2ETest**: spins up core infrastructure containers:
-    * Kafka broker
-    * Schema Registry
-    * PostgreSQL instances
-* **AbstractServicesE2ETest**: spins up all microservice containers with proper dependencies and environment variables.
-* **KafkaTestClient**: helper to consume/produce messages with Avro serialization in tests.
-* **Clean slate between tests**: database tables are cleaned automatically before each test run.
+### 🚀 How to Run
+Execute the stress test using Docker to ensure a clean k6 environment:
+```bash
+Get-Content booking-stress-test.js | docker run --rm -i --add-host=host.docker.internal:host-gateway grafana/k6 run -
+```
 
 ---
 
-### 🧩 Example Test Scenarios
+## ⚡ End-to-End Functional Suite (Java/Kotlin)
 
-#### ✅ Booking Completed
+Located in `src/test/kotlin`, this suite validates the distributed coordination of the **SAGA flows** and **Event Sourcing** integrity.
 
-1. A booking request is submitted with products.
-2. Payment is forced to **SUCCESS**.
-3. Assertions verify:
-    * Events in Booking, Orchestrator, Product, and Payment Event Stores.
-    * Kafka message sent to `booking.completed`.
-    * Aggregate versions strictly increase.
+### ✨ Key Capabilities
+* **Eventual Consistency Handling:** Uses `Awaitility` to poll asynchronous processes, avoiding flaky tests.
+* **State Audit:** Uses specialized helpers to verify that every event has been persisted in the Event Store with strictly increasing versions.
+* **Infrastructure Abstraction:** `AbstractServicesE2ETest` manages the complex lifecycle of spinning up 5+ microservices and their dependencies.
 
-#### ❌ Booking Failed (Payment Regression)
+### 🏗️ Test Architecture
 
-1. A booking request is submitted with products.
-2. Payment is forced to **FAILURE**.
-3. Assertions verify:
-    * Correct failure events emitted.
-    * Kafka message sent to `booking.failed`.
-    * Product reservation still occurs, ensuring compensating actions work.
+The infrastructure is **fully containerized** using **Testcontainers**, simulating a production-like network environment:
 
----
+* **Microservices:** `booking-command`, `booking-query`, `orchestrator`, `payment`, and `product`.
+* **Databases:** Isolated PostgreSQL instances per service with specific Spring DataSources.
+* **Event Bus:** Kafka cluster (with `earliest` offset reset) and Confluent Schema Registry.
+* **Health Checks:** Log-based `waitingFor` strategies to ensure services are ready before tests start.
 
-## ⚙️ Requirements
+### 🧩 Example Scenarios
+| Scenario             | Focus             | Expected Outcome                                                                   |
+|:---------------------|:------------------|:-----------------------------------------------------------------------------------|
+| **Happy Path**       | Standard Booking  | All services commit; `booking.completed` event emitted; stock reduced.             |
+| **Payment Rejected** | SAGA Compensation | Booking cancelled; Product stock restored via compensating transaction.            |
+| **Stock Shortage**   | Edge Case         | SAGA fails at the first step; Payment is never triggered; System stays consistent. |
+
+
+### 🚀 How to Run
 
 * **Docker** installed and running.
 * Built Docker images for all services (`booking-service-command`,`booking-service-query`, `booking-service-orchestrator`, `payment-service`, `product-service`).
 * No Artifactory or private credentials needed – all images are local builds.
 
----
-
-## 🚀 How to Run
 
 ```bash
 # Compile all services in the monorepo
@@ -110,18 +95,6 @@ docker build -t payment-service:latest -f payment-service/Dockerfile .
 docker build -t product-service:latest -f product-service/Dockerfile .
 
 # Run the end-to-end tests
-mvn clean test
+mvn clean test -pl test-suite
 ```
-
----
-
-
-## 💡 Key Benefits
-
-- Reproducible E2E scenarios for the entire microservice ecosystem.
-- Full SAGA coverage, validating both success and failure flows.
-- Safe isolation, with ephemeral containers and clean state per test.
-- Realistic environment, mimicking production as closely as possible.
-- Developer confidence, knowing that domain logic, orchestration, and messaging are correctly wired.
-
 ---

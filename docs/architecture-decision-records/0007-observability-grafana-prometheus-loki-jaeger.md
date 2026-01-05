@@ -15,6 +15,7 @@ We will integrate a complete observability stack composed of Prometheus, Grafana
 - **Jaeger** will be used for distributed tracing, enabling analysis of SAGA orchestration flows and identification of latency within or between services.
 
 All services will expose standardized telemetry endpoints — using `/metrics` (via `io.micrometer`) for Prometheus-compatible metrics and OpenTelemetry instrumentation (via `io.opentelemetry`) for traces and logs — ensuring consistent and interoperable data collection across the entire system.
+
 ## Rationale:
 
 Observability is essential for building resilient and self-healing distributed systems.
