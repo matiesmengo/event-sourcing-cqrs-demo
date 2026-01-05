@@ -15,8 +15,6 @@ open class BookingServiceCommand(
     private val eventStoreRepository: BookingEventStoreRepository,
     private val eventPublisher: BookingEventPublisher,
 ) : BookingService {
-    // TODO: handle custom errors
-
     @Transactional
     override fun onCreateBooking(command: BookingCommand.CreateBooking) {
         if (eventStoreRepository.load(command.bookingId) != null) error("This booking already exists")

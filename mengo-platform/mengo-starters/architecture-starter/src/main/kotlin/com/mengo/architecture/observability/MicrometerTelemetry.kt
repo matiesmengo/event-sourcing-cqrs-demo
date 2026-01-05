@@ -11,7 +11,6 @@ class MicrometerTelemetry(
     private val meterRegistry: MeterRegistry,
     private val tracer: Tracer,
 ) : Telemetry {
-    // TODO: Reuse timers and counters
     private val logger = LoggerFactory.getLogger(MicrometerTelemetry::class.java)
 
     init {

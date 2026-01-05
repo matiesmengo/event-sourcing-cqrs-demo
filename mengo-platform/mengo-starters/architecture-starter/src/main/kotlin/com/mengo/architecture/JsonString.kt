@@ -2,11 +2,10 @@ package com.mengo.architecture
 
 import org.intellij.lang.annotations.Language
 
-// TODO: Refactor
 class JsonString(
     @Language("JSON") private val json: String,
 ) {
     fun asString(): String = json
 }
 
-fun @receiver:Language("JSON") String.asJson(): JsonString = JsonString(this)
+fun String.asJson(): JsonString = JsonString(this)

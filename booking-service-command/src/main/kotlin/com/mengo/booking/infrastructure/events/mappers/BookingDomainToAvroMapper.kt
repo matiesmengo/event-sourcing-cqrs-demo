@@ -30,5 +30,3 @@ fun SagaCommand.BookingFailed.toAvro(): BookingCancelledPayload =
         bookingId.toString(),
         "reason",
     )
-
-// TODO: check BookingCancelledPayload reason is needed

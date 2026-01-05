@@ -9,13 +9,18 @@ import com.mengo.booking.infrastructure.api.mappers.toDomain
 import jakarta.validation.Valid
 import org.springframework.http.ResponseEntity
 import org.springframework.http.ResponseEntity.ok
+import org.springframework.validation.annotation.Validated
+import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RestController
 
+@Validated
 @RestController
 class BookingCommandController(
     private val bookingService: BookingService,
 ) : BookingCommandApi {
-    override fun createBooking(createBookingRequest: @Valid CreateBookingRequest): ResponseEntity<BookingResponse>? {
+    override fun createBooking(
+        @Valid @RequestBody createBookingRequest: CreateBookingRequest,
+    ): ResponseEntity<BookingResponse>? {
         val bookingDomain = createBookingRequest.toDomain()
         bookingService.onCreateBooking(bookingDomain)
         return ok(bookingDomain.toApi())

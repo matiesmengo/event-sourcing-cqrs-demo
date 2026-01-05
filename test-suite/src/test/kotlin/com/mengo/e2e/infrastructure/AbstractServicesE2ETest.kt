@@ -3,9 +3,9 @@ package com.mengo.e2e.infrastructure
 import org.testcontainers.containers.GenericContainer
 import org.testcontainers.containers.wait.strategy.Wait
 import org.testcontainers.junit.jupiter.Container
+import java.time.Duration
 
 abstract class AbstractServicesE2ETest : AbstractInfrastructureE2ETest() {
-    // TODO: migrate from "waitingFor" to health checks
     companion object {
         @Container
         val orchestratorService =
@@ -21,7 +21,13 @@ abstract class AbstractServicesE2ETest : AbstractInfrastructureE2ETest() {
                 .withEnv("SPRING_KAFKA_CONSUMER_PROPERTIES_SCHEMA_REGISTRY_URL", "http://schema-registry:8081")
                 .withEnv("SPRING_KAFKA_PRODUCER_PROPERTIES_SCHEMA_REGISTRY_URL", "http://schema-registry:8081")
                 .withEnv("SPRING_KAFKA_CONSUMER_AUTO_OFFSET_RESET", "earliest")
-                .waitingFor(Wait.forLogMessage(".*Started BookingOrchestratorApplication.*", 1))
+                .waitingFor(
+                    Wait
+                        .forHttp("/actuator/health")
+                        .forPort(8085)
+                        .forStatusCode(200)
+                        .withStartupTimeout(Duration.ofSeconds(45)),
+                )
 
         @Container
         val bookingService =
@@ -37,7 +43,13 @@ abstract class AbstractServicesE2ETest : AbstractInfrastructureE2ETest() {
                 .withEnv("SPRING_KAFKA_CONSUMER_PROPERTIES_SCHEMA_REGISTRY_URL", "http://schema-registry:8081")
                 .withEnv("SPRING_KAFKA_PRODUCER_PROPERTIES_SCHEMA_REGISTRY_URL", "http://schema-registry:8081")
                 .withEnv("SPRING_KAFKA_CONSUMER_AUTO_OFFSET_RESET", "earliest")
-                .waitingFor(Wait.forLogMessage(".*Started BookingCommandApplication.*", 1))
+                .waitingFor(
+                    Wait
+                        .forHttp("/actuator/health")
+                        .forPort(8080)
+                        .forStatusCode(200)
+                        .withStartupTimeout(Duration.ofSeconds(45)),
+                )
 
         @Container
         val paymentService =
@@ -53,7 +65,13 @@ abstract class AbstractServicesE2ETest : AbstractInfrastructureE2ETest() {
                 .withEnv("SPRING_KAFKA_CONSUMER_PROPERTIES_SCHEMA_REGISTRY_URL", "http://schema-registry:8081")
                 .withEnv("SPRING_KAFKA_PRODUCER_PROPERTIES_SCHEMA_REGISTRY_URL", "http://schema-registry:8081")
                 .withEnv("SPRING_KAFKA_CONSUMER_AUTO_OFFSET_RESET", "earliest")
-                .waitingFor(Wait.forLogMessage(".*Started PaymentServiceApplication.*", 1))
+                .waitingFor(
+                    Wait
+                        .forHttp("/actuator/health")
+                        .forPort(8083)
+                        .forStatusCode(200)
+                        .withStartupTimeout(Duration.ofSeconds(45)),
+                )
 
         @Container
         val productService =
@@ -69,6 +87,12 @@ abstract class AbstractServicesE2ETest : AbstractInfrastructureE2ETest() {
                 .withEnv("SPRING_KAFKA_CONSUMER_PROPERTIES_SCHEMA_REGISTRY_URL", "http://schema-registry:8081")
                 .withEnv("SPRING_KAFKA_PRODUCER_PROPERTIES_SCHEMA_REGISTRY_URL", "http://schema-registry:8081")
                 .withEnv("SPRING_KAFKA_CONSUMER_AUTO_OFFSET_RESET", "earliest")
-                .waitingFor(Wait.forLogMessage(".*Started ProductServiceApplication.*", 1))
+                .waitingFor(
+                    Wait
+                        .forHttp("/actuator/health")
+                        .forPort(8084)
+                        .forStatusCode(200)
+                        .withStartupTimeout(Duration.ofSeconds(45)),
+                )
     }
 }

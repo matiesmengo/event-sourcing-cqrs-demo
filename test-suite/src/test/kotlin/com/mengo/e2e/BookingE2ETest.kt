@@ -34,7 +34,7 @@ class BookingE2ETest : AbstractServicesE2ETest() {
         // given
         val successHeaders = mapOf("x-forced-payment-outcome" to "SUCCESS")
         val bookingClient = createBookingClient(successHeaders)
-        val productId = UUID.fromString("22222222-2222-2222-2222-222222222222")
+        val productId = UUID.fromString("aaaa0000-aaaa-0000-aaaa-000000000001")
 
         val createRequest =
             CreateBookingRequest()
@@ -88,7 +88,7 @@ class BookingE2ETest : AbstractServicesE2ETest() {
         // given
         val successHeaders = mapOf("x-forced-payment-outcome" to "FAILURE")
         val bookingClient = createBookingClient(successHeaders)
-        val productId = UUID.fromString("22222222-2222-2222-2222-222222222222")
+        val productId = UUID.fromString("aaaa0000-aaaa-0000-aaaa-000000000001")
 
         val createRequest =
             CreateBookingRequest()

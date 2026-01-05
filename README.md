@@ -181,7 +181,6 @@ curl --location 'localhost:8080/bookings' \
 |:---|:---|:---|
 | **Scalability** | Snapshotting | Optimize Event Sourcing recovery time for long-lived aggregates. |
 | **CI/CD** | GitHub Actions Pipeline | Automate the full build-test-deploy lifecycle with quality gates. |
-| **Performance** | K6 Load Testing | Stress test the SAGA coordinator to identify orchestration bottlenecks. |
 
 ---
 
