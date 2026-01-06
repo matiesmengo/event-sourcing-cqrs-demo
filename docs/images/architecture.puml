@@ -1,5 +1,5 @@
 @startuml
-title System Architecture - Event-Source + CQRS + SAGA Demo
+title System Architecture - Event-Sourcing + CQRS + SAGA Demo
 !theme plain
 
 ' ========= GLOBAL STYLING =========
